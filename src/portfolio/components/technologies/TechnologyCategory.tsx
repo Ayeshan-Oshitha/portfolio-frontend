@@ -13,7 +13,7 @@ export default function TechnologyCategory({
       <h3 className="text-lg font-semibold text-text-primary tracking-tight">
         {category.category}
       </h3>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-1">
         {category.items.map((tech) => (
           <TechnologyBadge key={tech.name} technology={tech} />
         ))}
