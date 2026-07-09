@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { IconType } from "react-icons";
 
 // ─── Navigation ──────────────────────────────────────────────
 export interface NavItem {
@@ -9,7 +10,7 @@ export interface NavItem {
 export interface SocialLink {
   readonly platform: string;
   readonly href: string;
-  readonly icon: LucideIcon;
+  readonly icon: LucideIcon | IconType;
   readonly ariaLabel: string;
 }
 
@@ -49,17 +50,44 @@ export interface Project {
   readonly title: string;
   readonly tagline: string;
   readonly description: string;
-  readonly year: number;
+  readonly year: number; // Used for internal sorting, not displayed on Work card
   readonly index: number;
-  readonly tags: readonly string[];
+  readonly tags: readonly string[]; // Used for Home page featured cards
+  readonly categories: readonly string[];
+  readonly technologies: readonly string[];
   readonly imagePlaceholder: string;
   readonly href: string;
+}
+
+export interface BlogPost {
+  readonly id: string;
+  readonly title: string;
+  readonly excerpt: string;
+  readonly category: string;
+  readonly date: string;
+  readonly readTime: string;
+  readonly imagePlaceholder: string;
+  readonly href: string;
+}
+
+export interface ServiceOffering {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: LucideIcon;
+  readonly features: readonly string[];
+}
+
+export interface FAQ {
+  readonly id: string;
+  readonly question: string;
+  readonly answer: string;
 }
 
 // ─── Technologies ────────────────────────────────────────────
 export interface Technology {
   readonly name: string;
-  readonly icon: LucideIcon;
+  readonly icon: string;
 }
 
 export interface TechnologyCategoryData {
@@ -94,6 +122,33 @@ export interface AboutData {
   readonly imagePlaceholder: string;
 }
 
+export interface Experience {
+  readonly id: string;
+  readonly role: string;
+  readonly company: string;
+  readonly period: string;
+  readonly description: string;
+}
+
+export interface StoryData {
+  readonly badge: string;
+  readonly title: string;
+  readonly paragraphs: readonly string[];
+}
+
+export interface Highlight {
+  readonly id: string;
+  readonly metric: string;
+  readonly label: string;
+}
+
+export interface CoreValue {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: LucideIcon;
+}
+
 // ─── Contact ─────────────────────────────────────────────────
 export interface ContactData {
   readonly badge: string;
@@ -113,6 +168,26 @@ export interface FormFieldConfig {
   readonly placeholder: string;
   readonly required: boolean;
   readonly halfWidth?: boolean;
+}
+
+// ─── Footer ──────────────────────────────────────────────────
+export interface FooterLink {
+  readonly label: string;
+  readonly href: string;
+  readonly isAccent?: boolean;
+}
+
+export interface FooterLinkGroup {
+  readonly title: string;
+  readonly links: readonly FooterLink[];
+}
+
+export interface FooterData {
+  readonly addressLines: readonly string[];
+  readonly email: string;
+  readonly serviceArea: string;
+  readonly linkGroups: readonly FooterLinkGroup[];
+  readonly copyright: string;
 }
 
 // ─── Shared UI ───────────────────────────────────────────────

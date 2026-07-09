@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { ButtonVariant, ButtonSize } from "../../types";
 
 interface ButtonBaseProps {
@@ -67,10 +68,17 @@ export default function Button({
   );
 
   if ("href" in props && props.href) {
+    if (props.href.startsWith("http")) {
+      return (
+        <a href={props.href} className={classes} target="_blank" rel="noopener noreferrer">
+          {content}
+        </a>
+      );
+    }
     return (
-      <a href={props.href} className={classes}>
+      <Link to={props.href} className={classes}>
         {content}
-      </a>
+      </Link>
     );
   }
 

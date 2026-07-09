@@ -13,7 +13,7 @@ export default function MobileMenuButton({
     <button
       type="button"
       onClick={onToggle}
-      className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-800/50 transition-colors duration-200 cursor-pointer"
+      className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-800/50 transition-colors duration-200 cursor-pointer"
       aria-label={isOpen ? "Close menu" : "Open menu"}
       aria-expanded={isOpen}
     >

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Logo from "./Logo";
 import DesktopNav from "./DesktopNav";
+import HeaderActions from "./HeaderActions";
 import MobileMenuButton from "./MobileMenuButton";
 import MobileNav from "./MobileNav";
 
@@ -34,17 +35,25 @@ export default function Header() {
   }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-surface-950/80 backdrop-blur-xl border-b border-border-subtle shadow-2xl shadow-black/20"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[73px]">
+    <header className="fixed top-0 left-0 right-0 z-50 pt-4 sm:pt-6 pointer-events-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-auto">
+        <div
+          className={`flex items-center justify-between h-[68px] px-3 sm:px-5 rounded-full border transition-shadow duration-300 bg-[#1f202c] border-[#2a2b45] ${
+            isScrolled
+              ? "shadow-2xl shadow-black/60"
+              : "shadow-lg shadow-black/30"
+          }`}
+        >
+          {/* Part 1: Logo — Left */}
           <Logo />
+
+          {/* Part 2: Nav Links — Absolutely centered */}
           <DesktopNav />
+
+          {/* Part 3: Icons + CTA — Right */}
+          <HeaderActions />
+
+          {/* Mobile menu button (shown on smaller screens only) */}
           <MobileMenuButton
             isOpen={isMobileMenuOpen}
             onToggle={handleToggleMobileMenu}
@@ -52,7 +61,9 @@ export default function Header() {
         </div>
       </div>
 
-      <MobileNav isOpen={isMobileMenuOpen} onClose={handleCloseMobileMenu} />
+      <div className="pointer-events-auto">
+        <MobileNav isOpen={isMobileMenuOpen} onClose={handleCloseMobileMenu} />
+      </div>
     </header>
   );
 }
