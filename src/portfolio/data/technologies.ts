@@ -1,13 +1,38 @@
 import {
-  Html5Icon, Css3Icon, JavaScriptIcon, TypeScriptIcon, JavaIcon, CSharpIcon, PythonIcon,
-  ReactIcon, NextJsIcon, TailwindIcon,
-  NodeJsIcon, NestJsIcon, DotNetIcon,
-  MongoDbIcon, PostgreSqlIcon, MySqlIcon, MsSqlServerIcon, RedisIcon,
-  AwsIcon, AzureIcon, DockerIcon, LinuxIcon, NginxIcon,
-  GitIcon, GitHubIcon, FigmaIcon, FirebaseIcon, SupabaseIcon
+  Html5Icon,
+  Css3Icon,
+  JavaScriptIcon,
+  TypeScriptIcon,
+  JavaIcon,
+  CSharpIcon,
+  PythonIcon,
+  ReactIcon,
+  NextJsIcon,
+  TailwindIcon,
+  NodeJsIcon,
+  NestJsIcon,
+  DotNetIcon,
+  MongoDbIcon,
+  PostgreSqlIcon,
+  MySqlIcon,
+  MsSqlServerIcon,
+  RedisIcon,
+  AwsIcon,
+  AzureIcon,
+  DockerIcon,
+  LinuxIcon,
+  NginxIcon,
+  GitIcon,
+  GitHubIcon,
+  FigmaIcon,
+  FirebaseIcon,
+  SupabaseIcon,
 } from "@/portfolio/assets/icons";
 
-import type { TechnologyCategoryData, SectionHeaderConfig } from "@/portfolio/types";
+import type {
+  TechnologyCategoryData,
+  SectionHeaderConfig,
+} from "@/portfolio/types";
 
 export const TECHNOLOGIES_HEADER: SectionHeaderConfig = {
   badge: "Technologies",

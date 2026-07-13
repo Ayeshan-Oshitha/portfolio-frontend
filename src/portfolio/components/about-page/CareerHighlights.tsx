@@ -1,4 +1,7 @@
-import { HIGHLIGHTS_HEADER, HIGHLIGHTS_DATA } from "@/portfolio/data/about-page";
+import {
+  HIGHLIGHTS_HEADER,
+  HIGHLIGHTS_DATA,
+} from "@/portfolio/data/about-page";
 import SectionHeader from "@/portfolio/components/ui/SectionHeader";
 
 export default function CareerHighlights() {

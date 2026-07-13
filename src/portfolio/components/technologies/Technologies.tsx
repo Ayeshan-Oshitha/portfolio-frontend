@@ -17,10 +17,7 @@ export default function Technologies() {
 
         <div className="space-y-10">
           {TECHNOLOGY_CATEGORIES.map((category) => (
-            <TechnologyCategory
-              key={category.category}
-              category={category}
-            />
+            <TechnologyCategory key={category.category} category={category} />
           ))}
         </div>
       </div>

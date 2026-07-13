@@ -36,19 +36,22 @@ export default function BlogCard({ post }: BlogCardProps) {
         <h3 className="text-xl sm:text-2xl font-bold text-text-primary mb-3 leading-snug group-hover:text-primary-400 transition-colors duration-300">
           {post.title}
         </h3>
-        
+
         {/* Excerpt */}
         <p className="text-sm sm:text-base text-text-secondary line-clamp-3 mb-8 flex-1 leading-relaxed">
           {post.excerpt}
         </p>
 
         {/* Action Link */}
-        <Link 
+        <Link
           to={post.href}
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold tracking-wider uppercase text-primary-400 group-hover:text-primary-300 transition-colors duration-200 mt-auto"
         >
           Read Article
-          <ArrowRight size={14} className="transform group-hover:translate-x-1 transition-transform duration-200" />
+          <ArrowRight
+            size={14}
+            className="transform group-hover:translate-x-1 transition-transform duration-200"
+          />
         </Link>
       </div>
     </article>

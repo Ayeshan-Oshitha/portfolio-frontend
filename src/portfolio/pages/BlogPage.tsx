@@ -30,7 +30,7 @@ export default function BlogPage() {
     <div className="relative pt-32 pb-24 sm:pb-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <BlogHeader />
-        
+
         <BlogFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

@@ -9,7 +9,8 @@ export default function ServicesHero() {
         </span>
       </h1>
       <p className="text-lg sm:text-xl text-text-secondary leading-relaxed max-w-2xl relative z-10">
-        Comprehensive software development solutions tailored to solve complex business challenges and drive digital transformation.
+        Comprehensive software development solutions tailored to solve complex
+        business challenges and drive digital transformation.
       </p>
     </div>
   );

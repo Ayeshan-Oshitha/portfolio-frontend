@@ -13,7 +13,7 @@ export default function WorkPage() {
     setSelectedCategories((prev) =>
       prev.includes(category)
         ? prev.filter((c) => c !== category)
-        : [...prev, category]
+        : [...prev, category],
     );
   };
 
@@ -46,7 +46,7 @@ export default function WorkPage() {
     <div className="relative pt-32 pb-24 sm:pb-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <WorkHeader />
-        
+
         <WorkFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

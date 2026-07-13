@@ -12,14 +12,14 @@ interface ContactFormProps {
 export default function ContactForm({ data }: ContactFormProps) {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [formValues, setFormValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(data.formFields.map((field) => [field.id, ""]))
+    Object.fromEntries(data.formFields.map((field) => [field.id, ""])),
   );
 
   const handleServiceToggle = useCallback((serviceType: string) => {
     setSelectedServices((prev) =>
       prev.includes(serviceType)
         ? prev.filter((s) => s !== serviceType)
-        : [...prev, serviceType]
+        : [...prev, serviceType],
     );
   }, []);
 
@@ -33,7 +33,7 @@ export default function ContactForm({ data }: ContactFormProps) {
       // TODO: integrate with backend API
       console.log("Form submitted:", { selectedServices, formValues });
     },
-    [selectedServices, formValues]
+    [selectedServices, formValues],
   );
 
   return (

@@ -3,8 +3,10 @@ import type { FooterData } from "@/portfolio/types";
 export const FOOTER_DATA: FooterData = {
   addressLines: ["YourName Studios", "Mesa, AZ 85212"],
   email: "hello@yourdomain.com",
-  serviceArea: "Serving Mesa, Phoenix, Tempe, Scottsdale, Chandler, Gilbert, Queen Creek, AZ",
-  copyright: "© 2026 YourName Studios. Web design & e-commerce development in Mesa, AZ.",
+  serviceArea:
+    "Serving Mesa, Phoenix, Tempe, Scottsdale, Chandler, Gilbert, Queen Creek, AZ",
+  copyright:
+    "© 2026 YourName Studios. Web design & e-commerce development in Mesa, AZ.",
   linkGroups: [
     {
       title: "COMPANY",

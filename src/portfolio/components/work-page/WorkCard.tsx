@@ -23,7 +23,7 @@ export default function WorkCard({ project }: WorkCardProps) {
         <h3 className="text-2xl font-bold text-text-primary mb-2">
           {project.title}
         </h3>
-        
+
         <p className="text-sm text-text-secondary line-clamp-2 mb-6 flex-1">
           {project.tagline}
         </p>
