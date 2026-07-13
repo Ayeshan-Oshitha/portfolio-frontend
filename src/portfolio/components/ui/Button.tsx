@@ -70,7 +70,12 @@ export default function Button({
   if ("href" in props && props.href) {
     if (props.href.startsWith("http")) {
       return (
-        <a href={props.href} className={classes} target="_blank" rel="noopener noreferrer">
+        <a
+          href={props.href}
+          className={classes}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {content}
         </a>
       );

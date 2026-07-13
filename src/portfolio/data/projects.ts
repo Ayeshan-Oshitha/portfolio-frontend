@@ -28,7 +28,13 @@ export const ALL_PROJECTS: readonly Project[] = [
     index: 1,
     tags: ["Frontend Development", "Backend Development"], // Used on Home
     categories: ["Frontend Development", "Backend Development", "Web Design"], // Used on Work
-    technologies: ["Next.js", "React", "TypeScript", "Tailwind CSS", "XRP Ledger API"],
+    technologies: [
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "XRP Ledger API",
+    ],
     imagePlaceholder: "/images/projects/dropfi.webp",
     href: "#",
   },
@@ -41,7 +47,11 @@ export const ALL_PROJECTS: readonly Project[] = [
     year: 2024,
     index: 2,
     tags: ["Blockchain Development", "Web Design"],
-    categories: ["Frontend Development", "Web Design", "Blockchain Development"],
+    categories: [
+      "Frontend Development",
+      "Web Design",
+      "Blockchain Development",
+    ],
     technologies: ["React", "Solidity", "Ethers.js", "Figma", "Node.js"],
     imagePlaceholder: "/images/projects/cryptoland.webp",
     href: "#",
@@ -55,7 +65,11 @@ export const ALL_PROJECTS: readonly Project[] = [
     year: 2023,
     index: 3,
     tags: ["Web Design", "Content Management (CMS)"],
-    categories: ["Web Design", "Content Management (CMS)", "Integrations & Automation"],
+    categories: [
+      "Web Design",
+      "Content Management (CMS)",
+      "Integrations & Automation",
+    ],
     technologies: ["Vue.js", "Tailwind CSS", "Strapi", "PostgreSQL"],
     imagePlaceholder: "/images/projects/sf-ventures.webp",
     href: "#",

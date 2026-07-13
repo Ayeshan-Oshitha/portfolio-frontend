@@ -8,12 +8,7 @@ export const CONTACT_DATA: ContactData = {
   description:
     "Provide as many details as possible, and expect a response within 24 hours.",
   email: "hello@yourdomain.com",
-  serviceTypes: [
-    "Web Design",
-    "Web Development",
-    "Content & SEO",
-    "Other",
-  ],
+  serviceTypes: ["Web Design", "Web Development", "Content & SEO", "Other"],
   formFields: [
     {
       id: "firstName",

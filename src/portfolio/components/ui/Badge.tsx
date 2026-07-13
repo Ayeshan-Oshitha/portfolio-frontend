@@ -7,12 +7,9 @@ interface BadgeProps {
 }
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
-  default:
-    "bg-surface-800 text-text-secondary border border-border-subtle",
-  outline:
-    "bg-transparent text-text-secondary border border-border-default",
-  subtle:
-    "bg-primary-600/10 text-primary-400 border border-primary-600/20",
+  default: "bg-surface-800 text-text-secondary border border-border-subtle",
+  outline: "bg-transparent text-text-secondary border border-border-default",
+  subtle: "bg-primary-600/10 text-primary-400 border border-primary-600/20",
 };
 
 export default function Badge({

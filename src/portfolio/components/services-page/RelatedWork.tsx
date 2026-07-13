@@ -11,7 +11,7 @@ export default function RelatedWork() {
         <h2 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight">
           Related Work
         </h2>
-        <Link 
+        <Link
           to="/work"
           className="text-xs font-bold tracking-widest uppercase text-text-secondary hover:text-primary-400 transition-colors duration-200"
         >
@@ -21,7 +21,7 @@ export default function RelatedWork() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {relatedProjects.map((project) => (
-          <Link 
+          <Link
             key={project.id}
             to={project.href}
             className="group flex flex-col bg-[#0a0a0a] border border-border-subtle rounded-xl overflow-hidden hover:border-primary-500/30 transition-colors duration-300"
@@ -35,14 +35,12 @@ export default function RelatedWork() {
               />
               <div className="absolute inset-0 bg-surface-950/10 group-hover:bg-transparent transition-colors duration-300" />
             </div>
-            
+
             <div className="p-6">
               <h3 className="text-xl font-bold text-text-primary mb-2 group-hover:text-primary-400 transition-colors duration-300">
                 {project.title}
               </h3>
-              <p className="text-sm text-text-secondary">
-                {project.tagline}
-              </p>
+              <p className="text-sm text-text-secondary">{project.tagline}</p>
             </div>
           </Link>
         ))}

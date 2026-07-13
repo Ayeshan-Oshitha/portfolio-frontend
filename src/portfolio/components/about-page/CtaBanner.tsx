@@ -16,7 +16,8 @@ export default function CtaBanner() {
           </span>
         </h2>
         <p className="text-lg text-text-secondary mb-10 max-w-2xl mx-auto">
-          Whether you need a new website, a complex web application, or just some advice on your next move—I'm here to help.
+          Whether you need a new website, a complex web application, or just
+          some advice on your next move—I'm here to help.
         </p>
         <Button
           href="/contact"

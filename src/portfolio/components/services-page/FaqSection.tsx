@@ -22,10 +22,12 @@ export default function FaqSection() {
           const isOpen = openId === faq.id;
 
           return (
-            <div 
+            <div
               key={faq.id}
               className={`rounded-xl border transition-all duration-300 ${
-                isOpen ? "bg-[#111] border-primary-500/30" : "bg-[#0a0a0a] border-border-subtle hover:border-text-muted"
+                isOpen
+                  ? "bg-[#111] border-primary-500/30"
+                  : "bg-[#0a0a0a] border-border-subtle hover:border-text-muted"
               }`}
             >
               <button
@@ -35,12 +37,14 @@ export default function FaqSection() {
                 <span className="text-base sm:text-lg font-bold text-text-primary pr-8">
                   {faq.question}
                 </span>
-                <span className={`flex-shrink-0 transition-transform duration-300 ${isOpen ? "text-primary-400 rotate-180" : "text-primary-600"}`}>
+                <span
+                  className={`flex-shrink-0 transition-transform duration-300 ${isOpen ? "text-primary-400 rotate-180" : "text-primary-600"}`}
+                >
                   {isOpen ? <Minus size={20} /> : <Plus size={20} />}
                 </span>
               </button>
 
-              <div 
+              <div
                 className={`overflow-hidden transition-all duration-300 ease-in-out ${
                   isOpen ? "max-h-96 opacity-100 pb-6" : "max-h-0 opacity-0"
                 }`}

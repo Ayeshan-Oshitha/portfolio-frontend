@@ -40,7 +40,7 @@ export default function Footer() {
                       ? "text-primary-400 font-medium hover:text-primary-300"
                       : "text-text-secondary hover:text-text-primary"
                   }`;
-                  
+
                   if (link.href.startsWith("http") || link.href === "#") {
                     return (
                       <li key={link.label}>
@@ -50,7 +50,7 @@ export default function Footer() {
                       </li>
                     );
                   }
-                  
+
                   return (
                     <li key={link.label}>
                       <Link to={link.href} className={linkClasses}>
@@ -66,9 +66,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-6 pt-8 border-t border-border-subtle">
-          <p className="text-xs text-text-muted">
-            {FOOTER_DATA.copyright}
-          </p>
+          <p className="text-xs text-text-muted">{FOOTER_DATA.copyright}</p>
 
           <div className="flex items-center gap-4">
             {SOCIAL_LINKS.map((link) => {
