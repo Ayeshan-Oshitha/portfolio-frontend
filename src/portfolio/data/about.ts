@@ -1,4 +1,4 @@
-import type { AboutData } from "../types";
+import type { AboutData } from "@/portfolio/types";
 
 export const ABOUT_DATA: AboutData = {
   badge: "About Me",

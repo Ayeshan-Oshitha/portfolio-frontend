@@ -1,4 +1,4 @@
-import { ABOUT_DATA } from "../../data/about";
+import { ABOUT_DATA } from "@/portfolio/data/about";
 import AboutContent from "./AboutContent";
 import AboutImage from "./AboutImage";
 

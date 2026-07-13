@@ -1,7 +1,7 @@
 import {
   TECHNOLOGIES_HEADER,
   TECHNOLOGY_CATEGORIES,
-} from "../../data/technologies";
+} from "@/portfolio/data/technologies";
 import SectionHeader from "../ui/SectionHeader";
 import TechnologyCategory from "./TechnologyCategory";
 

@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
-import Button from "../ui/Button";
-import type { CtaConfig } from "../../types";
+import Button from "@/portfolio/components/ui/Button";
+import type { CtaConfig } from "@/portfolio/types";
 
 interface HeroActionsProps {
   readonly primaryCta: CtaConfig;

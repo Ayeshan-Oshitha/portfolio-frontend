@@ -1,4 +1,4 @@
-import type { BlogPost } from "../../types";
+import type { BlogPost } from "@/portfolio/types";
 import BlogCard from "./BlogCard";
 
 interface BlogGridProps {

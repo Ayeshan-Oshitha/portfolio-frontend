@@ -1,5 +1,5 @@
-import { EXPERIENCES_HEADER, EXPERIENCES_DATA } from "../../data/about-page";
-import SectionHeader from "../ui/SectionHeader";
+import { EXPERIENCES_HEADER, EXPERIENCES_DATA } from "@/portfolio/data/about-page";
+import SectionHeader from "@/portfolio/components/ui/SectionHeader";
 
 export default function Experiences() {
   return (

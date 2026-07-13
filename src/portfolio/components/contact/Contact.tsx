@@ -1,4 +1,4 @@
-import { CONTACT_DATA } from "../../data/contact";
+import { CONTACT_DATA } from "@/portfolio/data/contact";
 import ContactInfo from "./ContactInfo";
 import ContactForm from "./ContactForm";
 

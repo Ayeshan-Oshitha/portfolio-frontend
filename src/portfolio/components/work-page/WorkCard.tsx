@@ -1,4 +1,4 @@
-import type { Project } from "../../types";
+import type { Project } from "@/portfolio/types";
 
 interface WorkCardProps {
   readonly project: Project;

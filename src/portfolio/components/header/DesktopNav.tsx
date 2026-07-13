@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { NAV_ITEMS } from "../../data/navigation";
+import { NAV_ITEMS } from "@/portfolio/data/navigation";
 
 export default function DesktopNav() {
   return (

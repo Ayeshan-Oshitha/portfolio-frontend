@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { Send } from "lucide-react";
-import Button from "../ui/Button";
+import Button from "@/portfolio/components/ui/Button";
 import ServiceTypeSelector from "./ServiceTypeSelector";
 import FormField from "./FormField";
-import type { ContactData } from "../../types";
+import type { ContactData } from "@/portfolio/types";
 
 interface ContactFormProps {
   readonly data: ContactData;

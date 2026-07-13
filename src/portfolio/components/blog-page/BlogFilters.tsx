@@ -1,5 +1,5 @@
 import { Search, ChevronDown } from "lucide-react";
-import { BLOG_CATEGORIES } from "../../data/blog-page";
+import { BLOG_CATEGORIES } from "@/portfolio/data/blog-page";
 
 interface BlogFiltersProps {
   readonly searchQuery: string;

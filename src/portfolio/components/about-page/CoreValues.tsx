@@ -1,5 +1,5 @@
-import { VALUES_HEADER, VALUES_DATA } from "../../data/about-page";
-import SectionHeader from "../ui/SectionHeader";
+import { VALUES_HEADER, VALUES_DATA } from "@/portfolio/data/about-page";
+import SectionHeader from "@/portfolio/components/ui/SectionHeader";
 
 export default function CoreValues() {
   return (

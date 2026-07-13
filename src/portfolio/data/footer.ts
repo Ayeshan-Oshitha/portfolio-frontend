@@ -1,4 +1,4 @@
-import type { FooterData } from "../types";
+import type { FooterData } from "@/portfolio/types";
 
 export const FOOTER_DATA: FooterData = {
   addressLines: ["YourName Studios", "Mesa, AZ 85212"],

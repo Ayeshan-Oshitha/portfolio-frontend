@@ -1,4 +1,4 @@
-import type { SectionHeaderConfig } from "../../types";
+import type { SectionHeaderConfig } from "@/portfolio/types";
 
 interface SectionHeaderProps extends SectionHeaderConfig {
   readonly className?: string;

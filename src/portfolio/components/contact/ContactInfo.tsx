@@ -1,5 +1,5 @@
 import { Mail } from "lucide-react";
-import type { ContactData } from "../../types";
+import type { ContactData } from "@/portfolio/types";
 
 interface ContactInfoProps {
   readonly data: ContactData;

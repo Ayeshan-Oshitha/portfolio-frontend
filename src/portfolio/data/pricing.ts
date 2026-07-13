@@ -1,4 +1,4 @@
-import type { PricingTier, SectionHeaderConfig } from "../types";
+import type { PricingTier, SectionHeaderConfig } from "@/portfolio/types";
 
 export const PRICING_HEADER: SectionHeaderConfig = {
   badge: "Transparent Pricing",

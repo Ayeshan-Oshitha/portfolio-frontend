@@ -1,4 +1,4 @@
-import { SERVICES_DATA } from "../../data/services-page";
+import { SERVICES_DATA } from "@/portfolio/data/services-page";
 
 export default function ServiceOfferings() {
   return (

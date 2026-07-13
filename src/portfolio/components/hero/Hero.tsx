@@ -1,4 +1,4 @@
-import { HERO_DATA } from "../../data/hero";
+import { HERO_DATA } from "@/portfolio/data/hero";
 import HeroBadge from "./HeroBadge";
 import HeroHeadline from "./HeroHeadline";
 import HeroDescription from "./HeroDescription";

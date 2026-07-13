@@ -6,7 +6,7 @@ import {
   Code2,
   Search,
 } from "lucide-react";
-import type { Service, SectionHeaderConfig } from "../types";
+import type { Service, SectionHeaderConfig } from "@/portfolio/types";
 
 export const SERVICES_HEADER: SectionHeaderConfig = {
   badge: "What I Do",

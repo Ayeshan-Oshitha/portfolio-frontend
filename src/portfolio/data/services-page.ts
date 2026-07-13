@@ -1,5 +1,5 @@
 import { Code2, Server, BrainCircuit, Smartphone, LayoutTemplate, Database } from "lucide-react";
-import type { ServiceOffering, FAQ } from "../types";
+import type { ServiceOffering, FAQ } from "@/portfolio/types";
 
 export const SERVICES_DATA: readonly ServiceOffering[] = [
   {

@@ -1,4 +1,4 @@
-import type { HeroData } from "../types";
+import type { HeroData } from "@/portfolio/types";
 
 export const HERO_DATA: HeroData = {
   badge: "Web Design & E-Commerce Development",

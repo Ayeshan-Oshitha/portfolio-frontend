@@ -1,5 +1,5 @@
 import { Search, Filter, ChevronDown } from "lucide-react";
-import { PROJECT_CATEGORIES } from "../../data/projects";
+import { PROJECT_CATEGORIES } from "@/portfolio/data/projects";
 
 interface WorkFiltersProps {
   readonly searchQuery: string;

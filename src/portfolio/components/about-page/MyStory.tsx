@@ -1,5 +1,5 @@
-import { STORY_DATA } from "../../data/about-page";
-import Badge from "../ui/Badge";
+import { STORY_DATA } from "@/portfolio/data/about-page";
+import Badge from "@/portfolio/components/ui/Badge";
 
 export default function MyStory() {
   return (

@@ -1,7 +1,7 @@
 import { ArrowRight, Calendar } from "lucide-react";
-import Badge from "../ui/Badge";
-import Button from "../ui/Button";
-import type { Project } from "../../types";
+import Badge from "@/portfolio/components/ui/Badge";
+import Button from "@/portfolio/components/ui/Button";
+import type { Project } from "@/portfolio/types";
 
 interface ProjectCardProps {
   readonly project: Project;

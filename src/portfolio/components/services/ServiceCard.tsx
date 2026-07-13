@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import type { Service } from "../../types";
+import type { Service } from "@/portfolio/types";
 
 interface ServiceCardProps {
   readonly service: Service;
