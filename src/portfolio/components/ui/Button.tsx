@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { ButtonVariant, ButtonSize } from "../../types";
+import type { ButtonVariant, ButtonSize } from "@/portfolio/types";
 
 interface ButtonBaseProps {
   readonly variant?: ButtonVariant;

@@ -1,4 +1,4 @@
-import type { ContactData } from "../types";
+import type { ContactData } from "@/portfolio/types";
 
 export const CONTACT_DATA: ContactData = {
   badge: "Get In Touch",

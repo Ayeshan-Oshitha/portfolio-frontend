@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
-import { PRICING_HEADER, PRICING_TIERS } from "../../data/pricing";
-import SectionHeader from "../ui/SectionHeader";
-import Button from "../ui/Button";
+import { PRICING_HEADER, PRICING_TIERS } from "@/portfolio/data/pricing";
+import SectionHeader from "@/portfolio/components/ui/SectionHeader";
+import Button from "@/portfolio/components/ui/Button";
 import PricingCard from "./PricingCard";
 
 export default function Pricing() {

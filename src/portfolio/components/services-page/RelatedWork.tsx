@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ALL_PROJECTS } from "../../data/projects";
+import { ALL_PROJECTS } from "@/portfolio/data/projects";
 
 export default function RelatedWork() {
   // Take the first 3 projects for the Related Work section

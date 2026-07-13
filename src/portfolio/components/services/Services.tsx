@@ -1,5 +1,5 @@
-import { SERVICES_HEADER, SERVICES } from "../../data/services";
-import SectionHeader from "../ui/SectionHeader";
+import { SERVICES_HEADER, SERVICES } from "@/portfolio/data/services";
+import SectionHeader from "@/portfolio/components/ui/SectionHeader";
 import ServiceCard from "./ServiceCard";
 
 export default function Services() {

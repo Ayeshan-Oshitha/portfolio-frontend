@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { FOOTER_DATA } from "../../data/footer";
-import { SOCIAL_LINKS } from "../../data/navigation";
+import { FOOTER_DATA } from "@/portfolio/data/footer";
+import { SOCIAL_LINKS } from "@/portfolio/data/navigation";
 import Logo from "../header/Logo";
 
 export default function Footer() {

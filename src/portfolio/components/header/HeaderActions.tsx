@@ -1,4 +1,4 @@
-import { SOCIAL_LINKS } from "../../data/navigation";
+import { SOCIAL_LINKS } from "@/portfolio/data/navigation";
 
 export default function HeaderActions() {
   return (

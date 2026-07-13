@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BRAND } from "../../data/navigation";
+import { BRAND } from "@/portfolio/data/navigation";
 
 export default function Logo() {
   return (

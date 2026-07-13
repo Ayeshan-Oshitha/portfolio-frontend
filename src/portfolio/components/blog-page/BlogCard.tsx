@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { BlogPost } from "../../types";
+import type { BlogPost } from "@/portfolio/types";
 
 interface BlogCardProps {
   readonly post: BlogPost;

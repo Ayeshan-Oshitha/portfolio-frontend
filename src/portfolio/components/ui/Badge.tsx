@@ -1,4 +1,4 @@
-import type { BadgeVariant } from "../../types";
+import type { BadgeVariant } from "@/portfolio/types";
 
 interface BadgeProps {
   readonly children: React.ReactNode;

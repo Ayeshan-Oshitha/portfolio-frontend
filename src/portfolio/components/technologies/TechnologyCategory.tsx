@@ -1,4 +1,4 @@
-import type { TechnologyCategoryData } from "../../types";
+import type { TechnologyCategoryData } from "@/portfolio/types";
 import TechnologyBadge from "./TechnologyBadge";
 
 interface TechnologyCategoryProps {

@@ -1,4 +1,4 @@
-import type { BlogPost } from "../types";
+import type { BlogPost } from "@/portfolio/types";
 
 export const BLOG_CATEGORIES = [
   "Guides",

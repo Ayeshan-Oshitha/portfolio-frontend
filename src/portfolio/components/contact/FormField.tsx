@@ -1,4 +1,4 @@
-import type { FormFieldConfig } from "../../types";
+import type { FormFieldConfig } from "@/portfolio/types";
 
 interface FormFieldProps {
   readonly field: FormFieldConfig;

@@ -1,6 +1,6 @@
 import { Check, ArrowRight } from "lucide-react";
-import Button from "../ui/Button";
-import type { PricingTier } from "../../types";
+import Button from "@/portfolio/components/ui/Button";
+import type { PricingTier } from "@/portfolio/types";
 
 interface PricingCardProps {
   readonly tier: PricingTier;

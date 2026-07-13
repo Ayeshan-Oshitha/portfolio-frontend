@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Minus } from "lucide-react";
-import { FAQ_DATA } from "../../data/services-page";
+import { FAQ_DATA } from "@/portfolio/data/services-page";
 
 export default function FaqSection() {
   const [openId, setOpenId] = useState<string | null>(null);

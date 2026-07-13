@@ -1,4 +1,4 @@
-import type { Project, SectionHeaderConfig } from "../types";
+import type { Project, SectionHeaderConfig } from "@/portfolio/types";
 
 export const PROJECTS_HEADER: SectionHeaderConfig = {
   badge: "Portfolio",

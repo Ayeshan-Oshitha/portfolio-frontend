@@ -1,6 +1,6 @@
 import { Code2, Briefcase, Camera, Pen } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import type { NavItem, SocialLink, BrandInfo } from "../types";
+import type { NavItem, SocialLink, BrandInfo } from "@/portfolio/types";
 
 export const BRAND: BrandInfo = {
   name: "YourName",

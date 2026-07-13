@@ -1,5 +1,5 @@
 import { Lightbulb, Target, Users, Zap } from "lucide-react";
-import type { Experience, StoryData, Highlight, CoreValue, SectionHeaderConfig } from "../types";
+import type { Experience, StoryData, Highlight, CoreValue, SectionHeaderConfig } from "@/portfolio/types";
 
 export const EXPERIENCES_HEADER: SectionHeaderConfig = {
   badge: "Experience",

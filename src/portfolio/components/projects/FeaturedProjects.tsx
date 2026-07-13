@@ -1,8 +1,8 @@
 import { ArrowRight } from "lucide-react";
-import { PROJECTS_HEADER, FEATURED_PROJECTS } from "../../data/projects";
-import SectionHeader from "../ui/SectionHeader";
+import { PROJECTS_HEADER, FEATURED_PROJECTS } from "@/portfolio/data/projects";
+import SectionHeader from "@/portfolio/components/ui/SectionHeader";
 import ProjectCard from "./ProjectCard";
-import Button from "../ui/Button";
+import Button from "@/portfolio/components/ui/Button";
 
 export default function FeaturedProjects() {
   return (

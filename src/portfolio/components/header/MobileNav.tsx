@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import { NAV_ITEMS, SOCIAL_LINKS } from "../../data/navigation";
-import Button from "../ui/Button";
+import { NAV_ITEMS, SOCIAL_LINKS } from "@/portfolio/data/navigation";
+import Button from "@/portfolio/components/ui/Button";
 import Logo from "./Logo";
 
 interface MobileNavProps {
