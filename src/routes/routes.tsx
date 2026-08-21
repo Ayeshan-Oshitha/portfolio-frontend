@@ -16,12 +16,14 @@ import RegisterPage from "@/admin/pages/RegisterPage";
 import DashboardPage from "@/admin/pages/DashboardPage";
 import ChangePasswordPage from "@/admin/pages/ChangePasswordPage";
 import UsersPage from "@/admin/pages/UsersPage";
+import PendingApprovalsPage from "@/admin/pages/PendingApprovalsPage";
 import TagsPage from "@/admin/pages/TagsPage";
 import ArticlesPage from "@/admin/pages/ArticlesPage";
 import AdminServicesPage from "@/admin/pages/ServicesPage";
 import PricingPage from "@/admin/pages/PricingPage";
 import ProjectsPage from "@/admin/pages/ProjectsPage";
 import ProjectEditorPage from "@/admin/pages/ProjectEditorPage";
+import FaqsPage from "@/admin/pages/FaqsPage";
 
 export const router = createBrowserRouter([
   {
@@ -92,6 +94,10 @@ export const router = createBrowserRouter([
                 element: <UsersPage />,
               },
               {
+                path: "approvals",
+                element: <PendingApprovalsPage />,
+              },
+              {
                 path: "projects",
                 element: <ProjectsPage />,
               },
@@ -120,6 +126,10 @@ export const router = createBrowserRouter([
               {
                 path: "pricing",
                 element: <PricingPage />,
+              },
+              {
+                path: "faqs",
+                element: <FaqsPage />,
               },
               {
                 path: "change-password",

@@ -17,7 +17,16 @@ export interface AdminUser {
   readonly status: UserStatus;
   /** Omitted entirely by the API when the user has never signed in. */
   readonly lastLoginAt?: string;
+  /** Set once the account is approved; the API omits it otherwise. */
+  readonly approvedAt?: string;
+  /** Only set when `status` is `rejected`. */
+  readonly rejectionReason?: string;
   readonly createdAt: string;
+}
+
+/** `DTOs/Admin/RejectUserRequest.cs` */
+export interface RejectUserRequest {
+  readonly reason: string;
 }
 
 /**
@@ -120,7 +129,10 @@ export type ApiErrorCode =
   | "site_required"
   | "slug_taken"
   | "tag_in_use"
-  | "not_found";
+  | "not_found"
+  | "cannot_modify_self"
+  | "cannot_modify_super_admin"
+  | "forbidden";
 
 /** `Common/ProblemResults.cs` */
 export interface ApiProblem {
@@ -474,4 +486,44 @@ export interface ProjectWriteRequest {
  */
 export interface SetPublishedRequest {
   readonly isPublished: boolean;
+}
+
+/**
+ * `DTOs/Admin/AdminFaqResponse.cs` — no `publishedAt` stamp and no dedicated
+ * publish-toggle endpoint; `isPublished` only flips via a full update.
+ */
+export interface AdminFaq {
+  readonly id: string;
+  readonly question: string;
+  /** Markdown. */
+  readonly answer: string;
+  readonly category?: string;
+  readonly sortOrder: number;
+  readonly isPublished: boolean;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreateFaqRequest.cs`; `UpdateFaqRequest` extends it unchanged.
+ * PUT is a full replacement, so an edit has to send every field.
+ */
+export interface FaqWriteRequest {
+  readonly question: string;
+  readonly answer: string;
+  readonly category?: string;
+  readonly sortOrder: number;
+  readonly isPublished: boolean;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
 }
