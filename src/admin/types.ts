@@ -1,0 +1,477 @@
+/**
+ * Mirrors the DTOs exposed by Portfolio.API (Azure Functions).
+ * JSON is camelCase; enums are serialised as snake_case strings.
+ */
+
+export type UserRole = "super_admin" | "admin";
+
+export type UserStatus = "pending" | "approved" | "rejected" | "disabled";
+
+/** `DTOs/Admin/AdminUserResponse.cs` */
+export interface AdminUser {
+  readonly id: string;
+  readonly email: string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly role: UserRole;
+  readonly status: UserStatus;
+  /** Omitted entirely by the API when the user has never signed in. */
+  readonly lastLoginAt?: string;
+  readonly createdAt: string;
+}
+
+/**
+ * `DTOs/Admin/AuthResponse.cs` — access token only, there is no refresh
+ * token yet. `expiresAt` is an absolute ISO-8601 timestamp with offset.
+ */
+export interface AuthResponse {
+  readonly accessToken: string;
+  readonly expiresAt: string;
+  readonly user: AdminUser;
+}
+
+export interface RegisterRequest {
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly email: string;
+  readonly password: string;
+  readonly confirmPassword: string;
+}
+
+export interface LoginRequest {
+  readonly email: string;
+  readonly password: string;
+}
+
+export interface ChangePasswordRequest {
+  readonly currentPassword: string;
+  readonly newPassword: string;
+  readonly confirmNewPassword: string;
+}
+
+/** `Enums/TechCategory.cs` — serialised as its snake_case name. */
+export type TechCategory =
+  | "frontend"
+  | "backend"
+  | "language"
+  | "database"
+  | "tool_or_platform"
+  | "cloud_devops"
+  | "ai_ml_dl"
+  | "agentic_ai"
+  | "design"
+  | "other";
+
+/**
+ * `DTOs/Admin/AdminTagResponse.cs` — one table backs both project categories
+ * and technologies, told apart by `isTechnology`. The API omits null members
+ * entirely, hence the optional fields.
+ */
+export interface AdminTag {
+  readonly id: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly isTechnology: boolean;
+  /** Required by the API when `isTechnology`, absent otherwise. */
+  readonly technologyCategory?: TechCategory;
+  readonly iconCloudinaryId?: string;
+  readonly iconUrl?: string;
+  /** `#rrggbb`, lowercased by the API. */
+  readonly colorHex?: string;
+  readonly sortOrder: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreateTagRequest.cs` and `UpdateTagRequest.cs` share this shape.
+ * PUT is a full replacement, so an edit has to send every field.
+ */
+export interface TagWriteRequest {
+  readonly name: string;
+  /** Generated from the name by the API when omitted. */
+  readonly slug?: string;
+  readonly isTechnology: boolean;
+  readonly technologyCategory?: TechCategory;
+  readonly iconCloudinaryId?: string;
+  readonly iconUrl?: string;
+  readonly colorHex?: string;
+  readonly sortOrder: number;
+}
+
+/** `Common/PagedResult.cs` — pageSize is clamped 1..100 server-side. */
+export interface PagedResult<T> {
+  readonly items: readonly T[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly total: number;
+}
+
+/** Stable `code` extension member on the API's RFC 7807 responses. */
+export type ApiErrorCode =
+  | "validation_failed"
+  | "invalid_credentials"
+  | "unauthenticated"
+  | "invalid_token"
+  | "account_disabled"
+  | "email_taken"
+  | "cannot_delete_self"
+  | "user_not_found"
+  | "site_required"
+  | "slug_taken"
+  | "tag_in_use"
+  | "not_found";
+
+/** `Common/ProblemResults.cs` */
+export interface ApiProblem {
+  readonly status?: number;
+  readonly title?: string;
+  readonly detail?: string;
+  readonly code?: ApiErrorCode | string;
+}
+
+export interface StoredToken {
+  readonly accessToken: string;
+  readonly expiresAt: string;
+}
+
+export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+
+/** `Enums/Site.cs` — the two public frontends, serialised lowercase. */
+export type Site = "agency" | "personal";
+
+/**
+ * `DTOs/Admin/AdminArticleResponse.cs` — articles are link-outs to Medium, so
+ * there is no body field. Visibility is a pair of flags per site rather than a
+ * status enum. Null members are omitted by the API, hence the optionals.
+ */
+export interface AdminArticle {
+  readonly id: string;
+  readonly title: string;
+  readonly excerpt: string;
+  readonly slug?: string;
+  /** `YYYY-MM-DD` — a `DateOnly`, not a timestamp. */
+  readonly publishedDate: string;
+  readonly mediumUrl: string;
+  /** Cloudinary `public_id`; there is no upload endpoint yet. */
+  readonly coverImageId?: string;
+  readonly isPublished: boolean;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  readonly tags: readonly AdminTag[];
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreateArticleRequest.cs`; `UpdateArticleRequest` extends it
+ * unchanged. PUT is a full replacement — omitted booleans land as `false` and
+ * an omitted `tagIds` wipes every tag, so an edit must send the whole shape.
+ */
+export interface ArticleWriteRequest {
+  readonly title: string;
+  readonly excerpt: string;
+  /** Generated from the title by the API when omitted. */
+  readonly slug?: string;
+  readonly publishedDate: string;
+  readonly mediumUrl: string;
+  readonly coverImageId?: string;
+  readonly isPublished: boolean;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  /** Always the full set — this replaces the article's tags outright. */
+  readonly tagIds: readonly string[];
+}
+
+/** `Enums/PriceType.cs` — serialised as its snake_case name. */
+export type PriceType =
+  "fixed" | "starting_from" | "hourly" | "monthly" | "custom";
+
+/** `DTOs/Public/PricingPlanFeatureResponse.cs` — shared by both views. */
+export interface PricingPlanFeature {
+  readonly id: string;
+  readonly text: string;
+  /** `false` renders as a struck-through "not included" bullet. */
+  readonly isIncluded: boolean;
+  readonly sortOrder: number;
+}
+
+/**
+ * `DTOs/Admin/AdminPricingPlanResponse.cs` — one table backs both per-service
+ * tiers and combo packs, told apart by `serviceId`: null means a combo pack.
+ * A null `priceAmount` is the "Custom / Contact us" case. The API omits null
+ * members entirely, hence the optional fields.
+ */
+export interface AdminPricingPlan {
+  readonly id: string;
+  /** Absent for a combo pack. */
+  readonly serviceId?: string;
+  readonly name: string;
+  readonly tagline?: string;
+  readonly priceAmount?: number;
+  /** ISO 4217, upper-cased by the API. */
+  readonly currency: string;
+  readonly priceType: PriceType;
+  readonly deliveryDays?: number;
+  readonly deliveryText?: string;
+  readonly description: string;
+  readonly isPopular: boolean;
+  readonly ctaLabel?: string;
+  readonly ctaUrl?: string;
+  readonly isPublished: boolean;
+  /** Tier order within a service, applied after the per-site order. */
+  readonly sortOrder: number;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  readonly features: readonly PricingPlanFeature[];
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreatePricingPlanRequest.cs`; `UpdatePricingPlanRequest` extends
+ * it unchanged. PUT is a full replacement — an omitted boolean lands as
+ * `false` and an omitted number as `0`, so an edit must send the whole shape.
+ * Features are a separate sub-resource and are not part of this body.
+ */
+export interface PricingPlanWriteRequest {
+  /** Omit for a combo pack. */
+  readonly serviceId?: string;
+  readonly name: string;
+  readonly tagline?: string;
+  /** Must be omitted when `priceType` is `custom`. */
+  readonly priceAmount?: number;
+  readonly currency: string;
+  readonly priceType: PriceType;
+  readonly deliveryDays?: number;
+  readonly deliveryText?: string;
+  readonly description: string;
+  readonly isPopular: boolean;
+  readonly ctaLabel?: string;
+  readonly ctaUrl?: string;
+  readonly isPublished: boolean;
+  readonly sortOrder: number;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+}
+
+/**
+ * `DTOs/Admin/AddPricingPlanFeatureRequest.cs`; the update request extends it
+ * unchanged. Features hang off a saved plan, so they need its id.
+ */
+export interface PricingFeatureWriteRequest {
+  readonly text: string;
+  readonly isIncluded: boolean;
+  readonly sortOrder: number;
+}
+
+/** `DTOs/Admin/ReorderRequest.cs` — one entry per row being renumbered. */
+export interface ReorderItem {
+  readonly id: string;
+  readonly sortOrder: number;
+}
+
+/** Sort order is kept per site, so the caller has to name the site. */
+export interface ReorderRequest {
+  readonly site: Site;
+  readonly items: readonly ReorderItem[];
+}
+
+/** Features carry a single order, so their reorder body has no site. */
+export interface FeatureReorderRequest {
+  readonly items: readonly ReorderItem[];
+}
+
+/** `DTOs/Public/ServiceFeatureResponse.cs` — shared by both views. */
+export interface ServiceFeature {
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  /** A Lucide icon key, not a URL. */
+  readonly iconName?: string;
+  readonly sortOrder: number;
+}
+
+/**
+ * `DTOs/Admin/AdminServiceResponse.cs` — the offering a pricing plan hangs
+ * off. Visibility is a pair of flags per site rather than a status enum, and
+ * `isPublished` is the separate draft switch on top. The API omits null
+ * members entirely, hence the optional fields.
+ */
+export interface AdminService {
+  readonly id: string;
+  readonly slug: string;
+  readonly name: string;
+  /** Card text. */
+  readonly shortDescription: string;
+  /** Markdown, the service page body. */
+  readonly description: string;
+  /** A Lucide icon key. */
+  readonly iconName?: string;
+  /** Cloudinary `public_id` for an uploaded SVG/PNG icon. */
+  readonly iconCloudinaryId?: string;
+  readonly heroImageId?: string;
+  readonly isPublished: boolean;
+  /** Stamped the first time the service goes live; unpublishing never clears it. */
+  readonly publishedAt?: string;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  readonly features: readonly ServiceFeature[];
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreateServiceRequest.cs`; `UpdateServiceRequest` extends it
+ * unchanged. PUT is a full replacement — an omitted boolean lands as `false`
+ * and an omitted number as `0`, so an edit must send the whole shape.
+ * Features are a separate sub-resource and are not part of this body.
+ */
+export interface ServiceWriteRequest {
+  readonly name: string;
+  /** Generated from the name by the API when omitted. */
+  readonly slug?: string;
+  readonly shortDescription: string;
+  readonly description: string;
+  readonly iconName?: string;
+  readonly iconCloudinaryId?: string;
+  readonly heroImageId?: string;
+  readonly isPublished: boolean;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+}
+
+/**
+ * `DTOs/Admin/AddServiceFeatureRequest.cs`; the update request extends it
+ * unchanged. Features hang off a saved service, so they need its id.
+ */
+export interface ServiceFeatureWriteRequest {
+  readonly title: string;
+  readonly description?: string;
+  readonly iconName?: string;
+  readonly sortOrder: number;
+}
+
+/**
+ * `DTOs/Public/ProjectImageResponse.cs` — Cloudinary metadata only; the API
+ * never stores bytes and never returns per-size URLs. Read-only on the admin
+ * surface for now: there is no upload or signature endpoint yet, so the editor
+ * leaves a project's gallery exactly as it found it.
+ */
+export interface ProjectImage {
+  readonly id: string;
+  /** Cloudinary `public_id`. */
+  readonly cloudinaryId: string;
+  readonly url: string;
+  readonly altText: string;
+  readonly width: number;
+  readonly height: number;
+  /** Exactly one per project — the card / hero image. */
+  readonly isPrimary: boolean;
+  readonly sortOrder: number;
+}
+
+/**
+ * `DTOs/Admin/AdminProjectResponse.cs` — the case-study record. Visibility is a
+ * pair of flags per site rather than a status enum, and `isPublished` is the
+ * separate draft switch on top. The API omits null members entirely, hence the
+ * optional fields.
+ */
+export interface AdminProject {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly year: number;
+  /** Card / list blurb. */
+  readonly shortDescription: string;
+  /** Markdown, long form. */
+  readonly description: string;
+  readonly websiteUrl?: string;
+  readonly problem?: string;
+  readonly solution?: string;
+  readonly whatWeDelivered?: string;
+  readonly proof?: string;
+  readonly clientName?: string;
+  readonly isPublished: boolean;
+  /** Stamped the first time the project goes live; unpublishing never clears it. */
+  readonly publishedAt?: string;
+  readonly seoTitle?: string;
+  readonly seoDescription?: string;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  readonly tags: readonly AdminTag[];
+  readonly images: readonly ProjectImage[];
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreateProjectRequest.cs`; `UpdateProjectRequest` extends it
+ * unchanged. PUT is a full replacement — an omitted boolean lands as `false`,
+ * an omitted number as `0` and an omitted `tagIds` wipes every tag, so an edit
+ * must send the whole shape. Images are a separate sub-resource and are not
+ * part of this body.
+ */
+export interface ProjectWriteRequest {
+  readonly title: string;
+  /** Generated from the title by the API when omitted. */
+  readonly slug?: string;
+  /** Bounded 1990..currentYear + 1 by the API. */
+  readonly year: number;
+  readonly shortDescription: string;
+  readonly description: string;
+  /** Must be an absolute http(s) URL when given. */
+  readonly websiteUrl?: string;
+  readonly problem?: string;
+  readonly solution?: string;
+  readonly whatWeDelivered?: string;
+  readonly proof?: string;
+  readonly clientName?: string;
+  readonly isPublished: boolean;
+  readonly seoTitle?: string;
+  readonly seoDescription?: string;
+  readonly showOnAgency: boolean;
+  readonly featuredOnAgency: boolean;
+  readonly agencySortOrder: number;
+  readonly showOnPersonal: boolean;
+  readonly featuredOnPersonal: boolean;
+  readonly personalSortOrder: number;
+  /** Always the full set — this replaces the project's tags outright. */
+  readonly tagIds: readonly string[];
+}
+
+/**
+ * `DTOs/Admin/SetPublishedRequest.cs` — flips the draft flag on its own so the
+ * list can take a project live without resubmitting the whole form.
+ */
+export interface SetPublishedRequest {
+  readonly isPublished: boolean;
+}

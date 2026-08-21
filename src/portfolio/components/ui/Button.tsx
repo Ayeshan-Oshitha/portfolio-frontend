@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Spinner from "@/portfolio/components/ui/Spinner";
 import type { ButtonVariant, ButtonSize } from "@/portfolio/types";
 
 interface ButtonBaseProps {
@@ -14,12 +15,17 @@ interface ButtonAsButton extends ButtonBaseProps {
   readonly href?: never;
   readonly onClick?: () => void;
   readonly type?: "button" | "submit" | "reset";
+  readonly disabled?: boolean;
+  /** Shows a spinner and blocks interaction while an action is in flight. */
+  readonly loading?: boolean;
 }
 
 interface ButtonAsLink extends ButtonBaseProps {
   readonly href: string;
   readonly onClick?: never;
   readonly type?: never;
+  readonly disabled?: never;
+  readonly loading?: never;
 }
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
@@ -53,11 +59,19 @@ export default function Button({
   const baseClasses =
     "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950";
 
-  const classes = `${baseClasses} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`;
+  const { disabled = false, loading = false } = props as ButtonAsButton;
+  const isDisabled = disabled || loading;
+
+  const stateClasses = isDisabled
+    ? "opacity-60 pointer-events-none"
+    : "";
+
+  const classes = `${baseClasses} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${stateClasses} ${className}`;
 
   const content = (
     <>
-      {icon && iconPosition === "left" && (
+      {loading && <Spinner className="h-4 w-4 shrink-0" />}
+      {!loading && icon && iconPosition === "left" && (
         <span className="shrink-0">{icon}</span>
       )}
       <span>{children}</span>
@@ -90,7 +104,13 @@ export default function Button({
   const { onClick, type = "button" } = props as ButtonAsButton;
 
   return (
-    <button type={type} onClick={onClick} className={classes}>
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      className={classes}
+    >
       {content}
     </button>
   );

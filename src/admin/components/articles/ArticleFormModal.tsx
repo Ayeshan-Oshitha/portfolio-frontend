@@ -1,0 +1,304 @@
+import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Button from "@/portfolio/components/ui/Button";
+import Alert from "@/admin/components/ui/Alert";
+import Checkbox from "@/admin/components/ui/Checkbox";
+import Input from "@/admin/components/ui/Input";
+import Modal from "@/admin/components/ui/Modal";
+import TagPicker from "@/admin/components/ui/TagPicker";
+import Textarea from "@/admin/components/ui/Textarea";
+import { createArticle, updateArticle } from "@/admin/api/articles";
+import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import { slugify, todayDateOnly } from "@/admin/utils/format";
+import type { AdminArticle, ArticleWriteRequest } from "@/admin/types";
+import {
+  articleSchema,
+  type ArticleFormValues,
+} from "@/admin/validation/articleSchemas";
+
+interface ArticleFormModalProps {
+  /** `null` opens the dialog in create mode. */
+  readonly article: AdminArticle | null;
+  readonly onClose: () => void;
+  readonly onSaved: () => void;
+}
+
+/** Built fresh per mount so a new article defaults to today, not to load time. */
+function blankValues(): ArticleFormValues {
+  return {
+    title: "",
+    excerpt: "",
+    slug: "",
+    publishedDate: todayDateOnly(),
+    mediumUrl: "",
+    coverImageId: "",
+    isPublished: false,
+    showOnAgency: false,
+    featuredOnAgency: false,
+    agencySortOrder: 0,
+    showOnPersonal: false,
+    featuredOnPersonal: false,
+    personalSortOrder: 0,
+    tagIds: [],
+  };
+}
+
+/**
+ * The response carries whole tags while the request wants bare ids, so the
+ * relation is flattened on the way into the form.
+ */
+function toFormValues(article: AdminArticle | null): ArticleFormValues {
+  if (!article) return blankValues();
+
+  return {
+    title: article.title,
+    excerpt: article.excerpt,
+    slug: article.slug ?? "",
+    publishedDate: article.publishedDate,
+    mediumUrl: article.mediumUrl,
+    coverImageId: article.coverImageId ?? "",
+    isPublished: article.isPublished,
+    showOnAgency: article.showOnAgency,
+    featuredOnAgency: article.featuredOnAgency,
+    agencySortOrder: article.agencySortOrder,
+    showOnPersonal: article.showOnPersonal,
+    featuredOnPersonal: article.featuredOnPersonal,
+    personalSortOrder: article.personalSortOrder,
+    tagIds: article.tags.map((tag) => tag.id),
+  };
+}
+
+/** `""` is how an untouched optional field reaches us; the API wants it gone. */
+function blank(value?: string): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+/**
+ * Mounted only while the dialog is open, and keyed on the article by
+ * `ArticlesPage`, so the form state starts fresh for every row.
+ */
+export default function ArticleFormModal({
+  article,
+  onClose,
+  onSaved,
+}: ArticleFormModalProps) {
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<ArticleFormValues>({
+    resolver: zodResolver(articleSchema),
+    defaultValues: toFormValues(article),
+  });
+
+  // "Featured" is meaningless without "show" on the same site, so each box is
+  // disabled until its partner is on. The slug placeholder previews what the
+  // API would generate from the title.
+  const title = useWatch({ control, name: "title" });
+  const showOnAgency = useWatch({ control, name: "showOnAgency" });
+  const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
+
+  async function onSubmit(values: ArticleFormValues) {
+    setFormError(null);
+
+    // Built explicitly rather than spread: PUT replaces the whole record, so an
+    // omitted boolean would land as false and an omitted tagIds would wipe
+    // every tag.
+    const body: ArticleWriteRequest = {
+      title: values.title.trim(),
+      excerpt: values.excerpt.trim(),
+      slug: blank(values.slug),
+      publishedDate: values.publishedDate,
+      mediumUrl: values.mediumUrl.trim(),
+      coverImageId: blank(values.coverImageId),
+      isPublished: values.isPublished,
+      showOnAgency: values.showOnAgency,
+      // A disabled checkbox keeps its last value, so the pairing is enforced
+      // here too rather than trusting the field.
+      featuredOnAgency: values.showOnAgency && values.featuredOnAgency,
+      agencySortOrder: values.agencySortOrder,
+      showOnPersonal: values.showOnPersonal,
+      featuredOnPersonal: values.showOnPersonal && values.featuredOnPersonal,
+      personalSortOrder: values.personalSortOrder,
+      tagIds: values.tagIds,
+    };
+
+    try {
+      if (article) {
+        await updateArticle(article.id, body);
+      } else {
+        await createArticle(body);
+      }
+      onSaved();
+      onClose();
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "slug_taken") {
+        setError("slug", { type: "server", message: error.message });
+        return;
+      }
+      setFormError(toErrorMessage(error));
+    }
+  }
+
+  const slugPreview = slugify(title ?? "");
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      size="lg"
+      title={article ? "Edit article" : "New article"}
+      description={
+        article
+          ? "Every field is sent on save — the API replaces the whole article."
+          : "Articles link out to Medium, so there is no body to write here."
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        {formError && <Alert>{formError}</Alert>}
+
+        <Input
+          label="Title"
+          required
+          autoFocus
+          error={errors.title?.message}
+          {...register("title")}
+        />
+
+        <Textarea
+          label="Excerpt"
+          required
+          rows={3}
+          error={errors.excerpt?.message}
+          {...register("excerpt")}
+        />
+
+        <Input
+          label="Slug"
+          placeholder={slugPreview || "generated-from-the-title"}
+          error={errors.slug?.message}
+          {...register("slug")}
+        />
+
+        <div className="flex gap-4">
+          <Input
+            label="Published date"
+            type="date"
+            required
+            containerClassName="w-48"
+            error={errors.publishedDate?.message}
+            {...register("publishedDate")}
+          />
+
+          <Input
+            label="Medium URL"
+            required
+            placeholder="https://medium.com/@you/a-post"
+            containerClassName="flex-1"
+            error={errors.mediumUrl?.message}
+            {...register("mediumUrl")}
+          />
+        </div>
+
+        <Input
+          label="Cover image id"
+          placeholder="portfolio/articles/my-post"
+          error={errors.coverImageId?.message}
+          {...register("coverImageId")}
+        />
+
+        <Checkbox
+          label="Published"
+          hint="Drafts stay off both public sites regardless of the visibility flags below."
+          {...register("isPublished")}
+        />
+
+        <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
+          <legend className="px-2 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+            Agency site
+          </legend>
+
+          <Checkbox label="Show on agency" {...register("showOnAgency")} />
+
+          <Checkbox
+            label="Featured on agency"
+            disabled={!showOnAgency}
+            error={errors.featuredOnAgency?.message}
+            {...register("featuredOnAgency")}
+          />
+
+          <Input
+            label="Sort order"
+            type="number"
+            step={1}
+            containerClassName="w-32"
+            error={errors.agencySortOrder?.message}
+            {...register("agencySortOrder", { valueAsNumber: true })}
+          />
+        </fieldset>
+
+        <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
+          <legend className="px-2 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+            Personal site
+          </legend>
+
+          <Checkbox label="Show on personal" {...register("showOnPersonal")} />
+
+          <Checkbox
+            label="Featured on personal"
+            disabled={!showOnPersonal}
+            error={errors.featuredOnPersonal?.message}
+            {...register("featuredOnPersonal")}
+          />
+
+          <Input
+            label="Sort order"
+            type="number"
+            step={1}
+            containerClassName="w-32"
+            error={errors.personalSortOrder?.message}
+            {...register("personalSortOrder", { valueAsNumber: true })}
+          />
+        </fieldset>
+
+        <Controller
+          control={control}
+          name="tagIds"
+          render={({ field, fieldState }) => (
+            <TagPicker
+              label="Tags"
+              value={field.value}
+              onChange={field.onChange}
+              hint="Saved as a complete set — removing a chip drops the tag on save."
+              error={fieldState.error?.message}
+            />
+          )}
+        />
+
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" size="sm" loading={isSubmitting}>
+            {isSubmitting
+              ? "Saving…"
+              : article
+                ? "Save changes"
+                : "Create article"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
