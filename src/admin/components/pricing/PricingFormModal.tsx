@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
 import Checkbox from "@/admin/components/ui/Checkbox";
@@ -8,6 +8,7 @@ import Modal from "@/admin/components/ui/Modal";
 import Select from "@/admin/components/ui/Select";
 import Textarea from "@/admin/components/ui/Textarea";
 import PricingFeaturesEditor from "@/admin/components/pricing/PricingFeaturesEditor";
+import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import {
   useAddPricingPlanFeature,
   useCreatePricingPlan,
@@ -192,8 +193,10 @@ export default function PricingFormModal({
     handleSubmit,
     control,
     setValue,
+    reset,
+    clearPersisted,
     formState: { errors, isSubmitting },
-  } = useForm<PricingPlanFormValues>({
+  } = usePersistedForm<PricingPlanFormValues>(`pricing-form:${plan?.id ?? "new"}`, {
     resolver: zodResolver(pricingPlanSchema),
     defaultValues: toFormValues(plan),
   });
@@ -256,6 +259,7 @@ export default function PricingFormModal({
       });
 
       toast.success(plan ? "Pricing plan updated." : "Pricing plan created.");
+      clearPersisted();
       onSaved();
       onClose();
     } catch (error) {
@@ -481,6 +485,17 @@ export default function PricingFormModal({
         </fieldset>
 
         <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              reset(toFormValues(plan));
+              clearPersisted();
+            }}
+            disabled={isSubmitting || isSaving}
+          >
+            Reset
+          </Button>
           <Button
             variant="ghost"
             size="sm"

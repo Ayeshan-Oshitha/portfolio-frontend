@@ -1,10 +1,11 @@
-import { useForm, useWatch } from "react-hook-form";
+import { useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import Textarea from "@/admin/components/ui/Textarea";
+import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import { useCreateFaq, useUpdateFaq } from "@/admin/hooks/useFaqs";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
@@ -74,8 +75,10 @@ export default function FaqFormModal({
     register,
     handleSubmit,
     control,
+    reset,
+    clearPersisted,
     formState: { errors, isSubmitting },
-  } = useForm<FaqFormValues>({
+  } = usePersistedForm<FaqFormValues>(`faq-form:${faq?.id ?? "new"}`, {
     resolver: zodResolver(faqSchema),
     defaultValues: toFormValues(faq),
   });
@@ -107,6 +110,7 @@ export default function FaqFormModal({
         await createFaqMutation.mutateAsync(body);
         toast.success("FAQ created.");
       }
+      clearPersisted();
       onSaved();
       onClose();
     } catch (error) {
@@ -224,6 +228,17 @@ export default function FaqFormModal({
         </fieldset>
 
         <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              reset(toFormValues(faq));
+              clearPersisted();
+            }}
+            disabled={isSubmitting || isSaving}
+          >
+            Reset
+          </Button>
           <Button
             variant="ghost"
             size="sm"

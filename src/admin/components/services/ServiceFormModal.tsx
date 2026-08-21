@@ -1,4 +1,4 @@
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
 import Checkbox from "@/admin/components/ui/Checkbox";
@@ -6,6 +6,7 @@ import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import Textarea from "@/admin/components/ui/Textarea";
 import ServiceFeaturesEditor from "@/admin/components/services/ServiceFeaturesEditor";
+import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import {
   useAddServiceFeature,
   useCreateService,
@@ -157,11 +158,16 @@ export default function ServiceFormModal({
     handleSubmit,
     control,
     setError,
+    reset,
+    clearPersisted,
     formState: { errors, isSubmitting },
-  } = useForm<ServiceFormValues>({
-    resolver: zodResolver(serviceSchema),
-    defaultValues: toFormValues(service),
-  });
+  } = usePersistedForm<ServiceFormValues>(
+    `service-form:${service?.id ?? "new"}`,
+    {
+      resolver: zodResolver(serviceSchema),
+      defaultValues: toFormValues(service),
+    },
+  );
 
   const name = useWatch({ control, name: "name" });
   const showOnAgency = useWatch({ control, name: "showOnAgency" });
@@ -201,6 +207,7 @@ export default function ServiceFormModal({
       });
 
       toast.success(service ? "Service updated." : "Service created.");
+      clearPersisted();
       onSaved();
       onClose();
     } catch (error) {
@@ -360,6 +367,17 @@ export default function ServiceFormModal({
         </fieldset>
 
         <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              reset(toFormValues(service));
+              clearPersisted();
+            }}
+            disabled={isSubmitting || isSaving}
+          >
+            Reset
+          </Button>
           <Button
             variant="ghost"
             size="sm"

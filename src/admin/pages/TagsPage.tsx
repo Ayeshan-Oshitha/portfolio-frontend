@@ -19,6 +19,7 @@ import {
   techCategoryLabel,
 } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 
 const PAGE_SIZE = 20;
 
@@ -44,11 +45,19 @@ function toIsTechnology(kind: KindFilter): boolean | undefined {
 
 export default function TagsPage() {
   const toast = useToast();
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [kind, setKind] = useState<KindFilter>("");
-  const [category, setCategory] = useState<TechCategory | "">("");
-  const [page, setPage] = useState(1);
+  const [kind, setKind] = useSearchParamState<KindFilter>("kind", "");
+  const [category, setCategory] = useSearchParamState<TechCategory | "">(
+    "category",
+    "",
+  );
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminTag | null>(null);

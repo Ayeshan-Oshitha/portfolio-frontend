@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
@@ -34,10 +35,15 @@ function sortOrderFor(faq: AdminFaq, site: Site): number {
 
 export default function FaqsPage() {
   const toast = useToast();
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [site, setSite] = useState<SiteFilter>("");
-  const [page, setPage] = useState(1);
+  const [site, setSite] = useSearchParamState<SiteFilter>("site", "");
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminFaq | null>(null);

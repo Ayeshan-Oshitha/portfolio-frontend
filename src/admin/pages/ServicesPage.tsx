@@ -28,6 +28,7 @@ import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import type { AdminService, Site } from "@/admin/types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 
 const PAGE_SIZE = 20;
 
@@ -63,11 +64,16 @@ function siteSortOrder(service: AdminService, site: Site): number {
 }
 
 export default function ServicesPage() {
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [site, setSite] = useState<Site | "">("");
-  const [published, setPublished] = useState("");
-  const [page, setPage] = useState(1);
+  const [site, setSite] = useSearchParamState<Site | "">("site", "");
+  const [published, setPublished] = useSearchParamState<string>("published", "");
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
 
   const toast = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);

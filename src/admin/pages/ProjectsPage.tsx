@@ -27,6 +27,7 @@ import useToast from "@/admin/context/useToast";
 import type { AdminProject, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 
 const PAGE_SIZE = 20;
 
@@ -89,11 +90,16 @@ export default function ProjectsPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [site, setSite] = useState<SiteFilter>("");
-  const [status, setStatus] = useState<StatusFilter>("");
-  const [page, setPage] = useState(1);
+  const [site, setSite] = useSearchParamState<SiteFilter>("site", "");
+  const [status, setStatus] = useSearchParamState<StatusFilter>("status", "");
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
 
   const [deleteTarget, setDeleteTarget] = useState<AdminProject | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);

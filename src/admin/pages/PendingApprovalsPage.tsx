@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
@@ -16,7 +17,12 @@ const PAGE_SIZE = 20;
 
 export default function PendingApprovalsPage() {
   const toast = useToast();
-  const [page, setPage] = useState(1);
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminUser | null>(null);
 
