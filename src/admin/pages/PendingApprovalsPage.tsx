@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
-import Badge from "@/portfolio/components/ui/Badge";
+import Badge from "@/client/components/ui/Badge";
 import Button from "@/admin/components/ui/Button";
-import Spinner from "@/portfolio/components/ui/Spinner";
+import Spinner from "@/client/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import RejectUserDialog from "@/admin/components/users/RejectUserDialog";

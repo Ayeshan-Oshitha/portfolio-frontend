@@ -178,7 +178,7 @@ export default function TagFormModal({
             <Input
               label="Icon Cloudinary id"
               required
-              placeholder="portfolio/tech/react"
+              placeholder="client/tech/react"
               error={errors.iconCloudinaryId?.message}
               {...register("iconCloudinaryId")}
             />

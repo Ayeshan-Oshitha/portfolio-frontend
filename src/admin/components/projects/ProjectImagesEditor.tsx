@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import axios from "axios";
 import { ArrowDown, ArrowUp, Star, Trash2, Upload } from "lucide-react";
 import Button from "@/admin/components/ui/Button";
-import Spinner from "@/portfolio/components/ui/Spinner";
+import Spinner from "@/client/components/ui/Spinner";
 import Input from "@/admin/components/ui/Input";
 import {
   useAddProjectImage,

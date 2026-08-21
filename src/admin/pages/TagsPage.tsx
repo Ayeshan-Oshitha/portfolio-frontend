@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
-import Badge from "@/portfolio/components/ui/Badge";
+import Badge from "@/client/components/ui/Badge";
 import Button from "@/admin/components/ui/Button";
-import Spinner from "@/portfolio/components/ui/Spinner";
+import Spinner from "@/client/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";

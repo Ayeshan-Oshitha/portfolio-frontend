@@ -18,7 +18,7 @@ const BASE_URL = (
  * possible or also failed. The auth context listens for this so a dead
  * session drops the user back to the login screen from anywhere.
  */
-export const AUTH_EXPIRED_EVENT = "portfolio-admin:auth-expired";
+export const AUTH_EXPIRED_EVENT = "client-admin:auth-expired";
 
 declare module "axios" {
   export interface AxiosRequestConfig {

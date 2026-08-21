@@ -210,7 +210,7 @@ export default function ArticleFormModal({
 
         <Input
           label="Cover image key"
-          placeholder="portfolio/articles/my-post"
+          placeholder="client/articles/my-post"
           error={errors.coverImageKey?.message}
           {...register("coverImageKey")}
         />

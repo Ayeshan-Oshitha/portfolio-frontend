@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { X } from "lucide-react";
-import Spinner from "@/portfolio/components/ui/Spinner";
+import Spinner from "@/client/components/ui/Spinner";
 import Select from "@/admin/components/ui/Select";
 import { useTags } from "@/admin/hooks/useTags";
 import { toErrorMessage } from "@/admin/api/ApiError";

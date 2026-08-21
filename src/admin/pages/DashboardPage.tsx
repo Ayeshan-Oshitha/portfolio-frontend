@@ -6,7 +6,7 @@ import {
   Tags,
   Wrench,
 } from "lucide-react";
-import Badge from "@/portfolio/components/ui/Badge";
+import Badge from "@/client/components/ui/Badge";
 import Card from "@/admin/components/ui/Card";
 import StatCard from "@/admin/components/ui/StatCard";
 import useAuth from "@/admin/context/useAuth";
@@ -54,7 +54,7 @@ export default function DashboardPage() {
         Welcome back, {user.firstName}.
       </h1>
       <p className="text-sm text-text-muted mb-8">
-        You are signed in to the portfolio CMS.
+        You are signed in to the FrostWoodTech Web CMS.
       </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">

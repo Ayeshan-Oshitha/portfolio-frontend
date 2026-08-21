@@ -1,6 +1,6 @@
 import type { StoredToken } from "@/admin/types";
 
-const STORAGE_KEY = "portfolio_admin_auth";
+const STORAGE_KEY = "client_admin_auth";
 
 /**
  * The API validates lifetimes with ClockSkew = Zero, so a token that is
