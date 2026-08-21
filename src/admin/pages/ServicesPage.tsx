@@ -26,7 +26,7 @@ import {
 } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import type { AdminService, Site } from "@/admin/types";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 

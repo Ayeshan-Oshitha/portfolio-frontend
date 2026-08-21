@@ -27,7 +27,7 @@ import {
 import { useServices } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import { formatDelivery, formatPrice } from "@/admin/utils/format";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import type { AdminPricingPlan, Site } from "@/admin/types";
 
 const PAGE_SIZE = 20;

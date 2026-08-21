@@ -17,7 +17,7 @@ import {
   formatDate,
   techCategoryLabel,
 } from "@/admin/utils/format";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 

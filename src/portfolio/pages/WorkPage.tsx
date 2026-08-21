@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { ALL_PROJECTS } from "../data/projects";
 import WorkHeader from "../components/work-page/WorkHeader";
 import WorkFilters from "../components/work-page/WorkFilters";
