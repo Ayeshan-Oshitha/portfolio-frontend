@@ -1,36 +1,47 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Ban, Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
-import { useDeleteUser, useUsers } from "@/admin/hooks/useUsers";
+import Select from "@/admin/components/ui/Select";
+import { useDeleteUser, useDisableUser, useUsers } from "@/admin/hooks/useUsers";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useAuth from "@/admin/context/useAuth";
-import type { AdminUser } from "@/admin/types";
+import type { AdminUser, UserStatus } from "@/admin/types";
 import { formatDate, roleLabel, statusLabel } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 
+const STATUS_OPTIONS: readonly { value: UserStatus; label: string }[] = [
+  { value: "pending", label: statusLabel("pending") },
+  { value: "approved", label: statusLabel("approved") },
+  { value: "rejected", label: statusLabel("rejected") },
+  { value: "disabled", label: statusLabel("disabled") },
+];
+
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
+  const [status, setStatus] = useState<UserStatus | "">("");
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [disablingId, setDisablingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: result,
     isPending: isLoading,
     error: queryError,
-  } = useUsers({ search, page, pageSize: PAGE_SIZE });
+  } = useUsers({ search, status: status || undefined, page, pageSize: PAGE_SIZE });
   const deleteUserMutation = useDeleteUser();
+  const disableUserMutation = useDisableUser();
 
-  const error = deleteError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = actionError ?? (queryError ? toErrorMessage(queryError) : null);
 
   async function handleDelete(target: AdminUser) {
     const confirmed = window.confirm(
@@ -39,14 +50,31 @@ export default function UsersPage() {
     if (!confirmed) return;
 
     setDeletingId(target.id);
-    setDeleteError(null);
+    setActionError(null);
     try {
       await deleteUserMutation.mutateAsync(target.id);
     } catch (cause) {
       // Includes the API's `cannot_delete_self` message.
-      setDeleteError(toErrorMessage(cause));
+      setActionError(toErrorMessage(cause));
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleDisable(target: AdminUser) {
+    const confirmed = window.confirm(
+      `Disable ${target.firstName} ${target.lastName} (${target.email})? They will not be able to sign in.`,
+    );
+    if (!confirmed) return;
+
+    setDisablingId(target.id);
+    setActionError(null);
+    try {
+      await disableUserMutation.mutateAsync(target.id);
+    } catch (cause) {
+      setActionError(toErrorMessage(cause));
+    } finally {
+      setDisablingId(null);
     }
   }
 
@@ -70,6 +98,18 @@ export default function UsersPage() {
             setSearchInput(event.target.value);
           }}
           containerClassName="flex-1 max-w-sm"
+        />
+
+        <Select
+          label="Status"
+          placeholder="All statuses"
+          options={STATUS_OPTIONS}
+          value={status}
+          onChange={(event) => {
+            setPage(1);
+            setStatus(event.target.value as UserStatus | "");
+          }}
+          containerClassName="w-44"
         />
       </div>
 
@@ -121,18 +161,33 @@ export default function UsersPage() {
                     <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
                       {formatDate(item.lastLoginAt)}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(item)}
-                        loading={deletingId === item.id}
-                        disabled={item.id === currentUser?.id}
-                        icon={<Trash2 className="h-4 w-4" />}
-                        iconPosition="left"
-                      >
-                        Delete
-                      </Button>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-1">
+                        {item.status === "approved" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDisable(item)}
+                            loading={disablingId === item.id}
+                            disabled={item.id === currentUser?.id}
+                            icon={<Ban className="h-4 w-4" />}
+                            iconPosition="left"
+                          >
+                            Disable
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(item)}
+                          loading={deletingId === item.id}
+                          disabled={item.id === currentUser?.id}
+                          icon={<Trash2 className="h-4 w-4" />}
+                          iconPosition="left"
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

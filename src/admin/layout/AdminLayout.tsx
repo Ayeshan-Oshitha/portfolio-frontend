@@ -2,11 +2,13 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   CreditCard,
   FolderKanban,
+  HelpCircle,
   KeyRound,
   LayoutDashboard,
   LogOut,
   Newspaper,
   Tags,
+  UserCheck,
   Users,
   Wrench,
 } from "lucide-react";
@@ -16,11 +18,18 @@ import useAuth from "@/admin/context/useAuth";
 const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/users", label: "Users", icon: Users, end: false },
+  {
+    to: "/admin/approvals",
+    label: "Approvals",
+    icon: UserCheck,
+    end: false,
+  },
   { to: "/admin/projects", label: "Projects", icon: FolderKanban, end: false },
   { to: "/admin/articles", label: "Articles", icon: Newspaper, end: false },
   { to: "/admin/tags", label: "Tags", icon: Tags, end: false },
   { to: "/admin/services", label: "Services", icon: Wrench, end: false },
   { to: "/admin/pricing", label: "Pricing", icon: CreditCard, end: false },
+  { to: "/admin/faqs", label: "FAQs", icon: HelpCircle, end: false },
   {
     to: "/admin/change-password",
     label: "Change password",

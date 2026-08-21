@@ -4,6 +4,7 @@ import type { GetServicesParams } from "@/admin/services/servicesService";
 import type { GetPricingPlansParams } from "@/admin/services/pricingService";
 import type { GetTagsParams } from "@/admin/services/tagsService";
 import type { GetUsersParams } from "@/admin/services/usersService";
+import type { GetFaqsParams } from "@/admin/services/faqsService";
 
 export const authKeys = {
   all: ["auth"] as const,
@@ -48,4 +49,10 @@ export const userKeys = {
   all: ["users"] as const,
   lists: () => [...userKeys.all, "list"] as const,
   list: (params: GetUsersParams) => [...userKeys.lists(), params] as const,
+};
+
+export const faqKeys = {
+  all: ["faqs"] as const,
+  lists: () => [...faqKeys.all, "list"] as const,
+  list: (params: GetFaqsParams) => [...faqKeys.lists(), params] as const,
 };
