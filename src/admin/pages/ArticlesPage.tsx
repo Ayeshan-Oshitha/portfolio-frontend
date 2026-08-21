@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { ALL_POSTS } from "../data/blog-page";
 import BlogHeader from "../components/blog-page/BlogHeader";
 import BlogFilters from "../components/blog-page/BlogFilters";

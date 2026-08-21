@@ -11,7 +11,7 @@ import { toErrorMessage } from "@/admin/api/ApiError";
 import useAuth from "@/admin/context/useAuth";
 import type { AdminUser } from "@/admin/types";
 import { formatDate, roleLabel, statusLabel } from "@/admin/utils/format";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 
