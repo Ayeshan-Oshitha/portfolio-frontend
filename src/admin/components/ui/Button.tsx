@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import Spinner from "@/portfolio/components/ui/Spinner";
-import type { ButtonVariant, ButtonSize } from "@/portfolio/types";
+import Spinner from "@/client/components/ui/Spinner";
+import type { ButtonVariant, ButtonSize } from "@/client/types";
 
 interface ButtonBaseProps {
   readonly variant?: ButtonVariant;
@@ -47,7 +47,7 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 };
 
 /**
- * The admin panel's button. Mirrors the portfolio `Button` API so call sites are
+ * The admin panel's button. Mirrors the client `Button` API so call sites are
  * interchangeable, but stays flat — no coloured shadows or glow — to suit the
  * light admin theme.
  */

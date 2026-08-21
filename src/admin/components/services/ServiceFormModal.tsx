@@ -277,7 +277,7 @@ export default function ServiceFormModal({
 
           <Input
             label="Icon Cloudinary id"
-            placeholder="portfolio/services/…"
+            placeholder="client/services/…"
             containerClassName="flex-1"
             error={errors.iconCloudinaryId?.message}
             {...register("iconCloudinaryId")}
@@ -286,7 +286,7 @@ export default function ServiceFormModal({
 
         <Input
           label="Hero image id"
-          placeholder="Cloudinary public_id, e.g. portfolio/services/…"
+          placeholder="S3 object key, e.g. client/services/…"
           error={errors.heroImageId?.message}
           {...register("heroImageId")}
         />

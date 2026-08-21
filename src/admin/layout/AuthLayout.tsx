@@ -6,7 +6,7 @@ export default function AuthLayout() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <p className="text-[10px] font-semibold tracking-widest uppercase text-primary-400">
-            Portfolio CMS
+            FrostWoodTech Web CMS
           </p>
           <h1 className="mt-2 text-2xl font-bold text-text-primary">
             Admin access

@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import Spinner from "@/portfolio/components/ui/Spinner";
+import Spinner from "@/client/components/ui/Spinner";
 import useAuth from "@/admin/context/useAuth";
 
 export default function RequireAuth() {

@@ -1,5 +1,5 @@
 /**
- * Mirrors the DTOs exposed by Portfolio.API (Azure Functions).
+ * Mirrors the DTOs exposed by FrostWoodTech Web.API (Azure Functions).
  * JSON is camelCase; enums are serialised as snake_case strings.
  */
 

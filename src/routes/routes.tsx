@@ -1,11 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
-import PortfolioLayout from "@/portfolio/layout/PortfolioLayout";
-import Home from "@/portfolio/pages/Home";
-import ContactPage from "@/portfolio/pages/ContactPage";
-import AboutPage from "@/portfolio/pages/AboutPage";
-import WorkPage from "@/portfolio/pages/WorkPage";
-import BlogPage from "@/portfolio/pages/BlogPage";
-import ServicesPage from "@/portfolio/pages/ServicesPage";
+import ClientLayout from "@/client/layout/ClientLayout";
+import Home from "@/client/pages/Home";
+import ContactPage from "@/client/pages/ContactPage";
+import AboutPage from "@/client/pages/AboutPage";
+import WorkPage from "@/client/pages/WorkPage";
+import BlogPage from "@/client/pages/BlogPage";
+import ServicesPage from "@/client/pages/ServicesPage";
 import AdminRoot from "@/admin/layout/AdminRoot";
 import RequireAuth from "@/admin/components/RequireAuth";
 import RequireSuperAdmin from "@/admin/components/RequireSuperAdmin";
@@ -30,7 +30,7 @@ import ReviewsPage from "@/admin/pages/ReviewsPage";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <PortfolioLayout />,
+    element: <ClientLayout />,
     children: [
       {
         index: true,

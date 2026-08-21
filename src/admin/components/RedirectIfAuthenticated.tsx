@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import Spinner from "@/portfolio/components/ui/Spinner";
+import Spinner from "@/client/components/ui/Spinner";
 import useAuth from "@/admin/context/useAuth";
 
 /** Keeps signed-in users off the login and register screens. */

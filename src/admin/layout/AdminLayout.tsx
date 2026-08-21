@@ -95,7 +95,7 @@ export default function AdminLayout() {
             P
           </span>
           <p className="text-[10px] font-semibold tracking-widest uppercase text-text-primary">
-            Portfolio CMS
+            FrostWoodTech Web CMS
           </p>
         </div>
 
