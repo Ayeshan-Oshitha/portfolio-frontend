@@ -16,6 +16,7 @@ import {
   useReorderArticles,
 } from "@/admin/hooks/useArticles";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminArticle, Site } from "@/admin/types";
 import { formatDate, formatDateOnly } from "@/admin/utils/format";
 
@@ -83,10 +84,10 @@ export default function ArticlesPage() {
   const [status, setStatus] = useState<StatusFilter>("");
   const [page, setPage] = useState(1);
 
+  const toast = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminArticle | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminArticle | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -102,9 +103,7 @@ export default function ArticlesPage() {
   const deleteArticleMutation = useDeleteArticle();
   const reorderArticlesMutation = useReorderArticles();
 
-  const [actionError, setActionError] = useState<string | null>(null);
-  const error =
-    actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   /**
    * Reordering renumbers the whole visible page, so the rows have to be in the
@@ -132,7 +131,6 @@ export default function ArticlesPage() {
     const next = [...rows];
     [next[index], next[target]] = [next[target], next[index]];
 
-    setActionError(null);
     try {
       await reorderArticlesMutation.mutateAsync({
         site,
@@ -142,8 +140,9 @@ export default function ArticlesPage() {
           sortOrder: (page - 1) * PAGE_SIZE + at,
         })),
       });
+      toast.success("Order updated.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -163,18 +162,17 @@ export default function ArticlesPage() {
 
   function askDelete(target: AdminArticle) {
     setDeleteTarget(target);
-    setDeleteError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setDeleteError(null);
     try {
       await deleteArticleMutation.mutateAsync(deleteTarget.id);
+      toast.success("Article deleted.");
       setDeleteTarget(null);
     } catch (cause) {
-      setDeleteError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -440,7 +438,6 @@ export default function ArticlesPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteArticleMutation.isPending}
-        error={deleteError}
       />
     </div>
   );

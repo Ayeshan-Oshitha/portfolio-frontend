@@ -1,20 +1,18 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
 import { useChangePassword } from "@/admin/hooks/useAuthApi";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import {
   changePasswordSchema,
   type ChangePasswordFormValues,
 } from "@/admin/validation/authSchemas";
 
 export default function ChangePasswordPage() {
-  const [formError, setFormError] = useState<string | null>(null);
-  const [succeeded, setSucceeded] = useState(false);
+  const toast = useToast();
   const changePasswordMutation = useChangePassword();
 
   const {
@@ -33,19 +31,17 @@ export default function ChangePasswordPage() {
   });
 
   async function onSubmit(values: ChangePasswordFormValues) {
-    setFormError(null);
-    setSucceeded(false);
     try {
       // Answers 204 with no body — nothing to read back.
       await changePasswordMutation.mutateAsync(values);
       reset();
-      setSucceeded(true);
+      toast.success("Password updated.");
     } catch (error) {
       if (error instanceof ApiError && error.code === "invalid_credentials") {
         setError("currentPassword", { type: "server", message: error.message });
         return;
       }
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -64,14 +60,6 @@ export default function ChangePasswordPage() {
           noValidate
           className="space-y-5"
         >
-          {formError && <Alert>{formError}</Alert>}
-          {succeeded && (
-            <Alert variant="success">
-              Your password has been updated. Your current session stays signed
-              in — use the new password next time you sign in.
-            </Alert>
-          )}
-
           <Input
             label="Current password"
             type="password"

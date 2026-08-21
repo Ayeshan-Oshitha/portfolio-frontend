@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import axios from "axios";
 import { ArrowDown, ArrowUp, Star, Trash2, Upload } from "lucide-react";
-import Alert from "@/admin/components/ui/Alert";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
 import Input from "@/admin/components/ui/Input";
@@ -13,6 +12,7 @@ import {
 } from "@/admin/hooks/useProjects";
 import { createUploadSignature } from "@/admin/services/mediaService";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { ProjectImage } from "@/admin/types";
 
 interface ProjectImagesEditorProps {
@@ -39,9 +39,9 @@ export default function ProjectImagesEditor({
   projectSlug,
   images,
 }: ProjectImagesEditorProps) {
+  const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const addImageMutation = useAddProjectImage();
@@ -52,13 +52,11 @@ export default function ProjectImagesEditor({
   const rows = [...images].sort((a, b) => a.sortOrder - b.sortOrder);
 
   async function handleFileChosen(file: File) {
-    setError(null);
-
     const altText = window.prompt(
       "Alt text for this image (required for accessibility)",
     );
     if (!altText || !altText.trim()) {
-      setError("An image needs alt text before it can be uploaded.");
+      toast.error("An image needs alt text before it can be uploaded.");
       return;
     }
 
@@ -95,8 +93,9 @@ export default function ProjectImagesEditor({
           sortOrder: rows.length,
         },
       });
+      toast.success("Image uploaded.");
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -108,7 +107,6 @@ export default function ProjectImagesEditor({
     if (next === null || !next.trim() || next.trim() === image.altText) return;
 
     setBusyId(image.id);
-    setError(null);
     try {
       await updateImageMutation.mutateAsync({
         projectId,
@@ -123,8 +121,9 @@ export default function ProjectImagesEditor({
           sortOrder: image.sortOrder,
         },
       });
+      toast.success("Alt text updated.");
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setBusyId(null);
     }
@@ -134,7 +133,6 @@ export default function ProjectImagesEditor({
     if (image.isPrimary) return;
 
     setBusyId(image.id);
-    setError(null);
     try {
       await updateImageMutation.mutateAsync({
         projectId,
@@ -149,8 +147,9 @@ export default function ProjectImagesEditor({
           sortOrder: image.sortOrder,
         },
       });
+      toast.success("Primary image updated.");
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setBusyId(null);
     }
@@ -161,11 +160,11 @@ export default function ProjectImagesEditor({
     if (!confirmed) return;
 
     setBusyId(image.id);
-    setError(null);
     try {
       await deleteImageMutation.mutateAsync({ projectId, imageId: image.id });
+      toast.success("Image deleted.");
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setBusyId(null);
     }
@@ -179,7 +178,6 @@ export default function ProjectImagesEditor({
     const next = [...rows];
     [next[index], next[target]] = [next[target], next[index]];
 
-    setError(null);
     try {
       await reorderImagesMutation.mutateAsync({
         projectId,
@@ -187,8 +185,9 @@ export default function ProjectImagesEditor({
           items: next.map((image, at) => ({ id: image.id, sortOrder: at })),
         },
       });
+      toast.success("Order updated.");
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -196,8 +195,6 @@ export default function ProjectImagesEditor({
 
   return (
     <div className="space-y-5">
-      {error && <Alert>{error}</Alert>}
-
       <div>
         <Input
           ref={fileInputRef}

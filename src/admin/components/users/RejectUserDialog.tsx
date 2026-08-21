@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Modal from "@/admin/components/ui/Modal";
 import Textarea from "@/admin/components/ui/Textarea";
 import type { AdminUser } from "@/admin/types";
@@ -10,7 +9,6 @@ interface RejectUserDialogProps {
   readonly onConfirm: (reason: string) => void;
   readonly onCancel: () => void;
   readonly loading?: boolean;
-  readonly error?: string | null;
 }
 
 /** A reason is required by the API, so this replaces `ConfirmDialog` for rejection. */
@@ -19,7 +17,6 @@ export default function RejectUserDialog({
   onConfirm,
   onCancel,
   loading = false,
-  error,
 }: RejectUserDialogProps) {
   const [reason, setReason] = useState("");
   const [touched, setTouched] = useState(false);
@@ -79,8 +76,6 @@ export default function RejectUserDialog({
         onChange={(event) => setReason(event.target.value)}
         error={touched && !trimmed ? "A reason is required." : undefined}
       />
-
-      {error && <Alert className="mt-5">{error}</Alert>}
     </Modal>
   );
 }

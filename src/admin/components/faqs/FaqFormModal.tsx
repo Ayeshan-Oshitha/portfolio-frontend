@@ -1,14 +1,13 @@
-import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import Textarea from "@/admin/components/ui/Textarea";
 import { useCreateFaq, useUpdateFaq } from "@/admin/hooks/useFaqs";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminFaq, FaqWriteRequest } from "@/admin/types";
 import { faqSchema, type FaqFormValues } from "@/admin/validation/faqSchemas";
 
@@ -66,7 +65,7 @@ export default function FaqFormModal({
   onClose,
   onSaved,
 }: FaqFormModalProps) {
-  const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
   const createFaqMutation = useCreateFaq();
   const updateFaqMutation = useUpdateFaq();
   const isSaving = createFaqMutation.isPending || updateFaqMutation.isPending;
@@ -85,8 +84,6 @@ export default function FaqFormModal({
   const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
 
   async function onSubmit(values: FaqFormValues) {
-    setFormError(null);
-
     // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: FaqWriteRequest = {
       question: values.question.trim(),
@@ -105,13 +102,15 @@ export default function FaqFormModal({
     try {
       if (faq) {
         await updateFaqMutation.mutateAsync({ id: faq.id, body });
+        toast.success("FAQ updated.");
       } else {
         await createFaqMutation.mutateAsync(body);
+        toast.success("FAQ created.");
       }
       onSaved();
       onClose();
     } catch (error) {
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -128,8 +127,6 @@ export default function FaqFormModal({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        {formError && <Alert>{formError}</Alert>}
-
         <Textarea
           label="Question"
           required

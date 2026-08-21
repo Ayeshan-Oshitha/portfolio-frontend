@@ -8,16 +8,17 @@ import Card from "@/admin/components/ui/Card";
 import RejectUserDialog from "@/admin/components/users/RejectUserDialog";
 import { useApproveUser, useRejectUser, useUsers } from "@/admin/hooks/useUsers";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminUser } from "@/admin/types";
 import { formatDate, roleLabel } from "@/admin/utils/format";
 
 const PAGE_SIZE = 20;
 
 export default function PendingApprovalsPage() {
+  const toast = useToast();
   const [page, setPage] = useState(1);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AdminUser | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -27,15 +28,15 @@ export default function PendingApprovalsPage() {
   const approveUserMutation = useApproveUser();
   const rejectUserMutation = useRejectUser();
 
-  const error = actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   async function handleApprove(target: AdminUser) {
     setApprovingId(target.id);
-    setActionError(null);
     try {
       await approveUserMutation.mutateAsync(target.id);
+      toast.success("User approved.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setApprovingId(null);
     }
@@ -44,15 +45,15 @@ export default function PendingApprovalsPage() {
   async function handleReject(reason: string) {
     if (!rejectTarget) return;
 
-    setActionError(null);
     try {
       await rejectUserMutation.mutateAsync({
         id: rejectTarget.id,
         body: { reason },
       });
+      toast.success("User rejected.");
       setRejectTarget(null);
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -125,10 +126,7 @@ export default function PendingApprovalsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
-                            setActionError(null);
-                            setRejectTarget(item);
-                          }}
+                          onClick={() => setRejectTarget(item)}
                           icon={<X className="h-4 w-4" />}
                           iconPosition="left"
                         >
@@ -173,7 +171,6 @@ export default function PendingApprovalsPage() {
         onConfirm={handleReject}
         onCancel={() => setRejectTarget(null)}
         loading={rejectUserMutation.isPending}
-        error={actionError}
       />
     </div>
   );

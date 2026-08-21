@@ -11,6 +11,7 @@ import Select from "@/admin/components/ui/Select";
 import FaqFormModal from "@/admin/components/faqs/FaqFormModal";
 import { useDeleteFaq, useFaqs, useReorderFaqs } from "@/admin/hooks/useFaqs";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminFaq, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
@@ -32,6 +33,7 @@ function sortOrderFor(faq: AdminFaq, site: Site): number {
 }
 
 export default function FaqsPage() {
+  const toast = useToast();
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
   const [site, setSite] = useState<SiteFilter>("");
@@ -40,8 +42,6 @@ export default function FaqsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminFaq | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminFaq | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -51,8 +51,7 @@ export default function FaqsPage() {
   const deleteFaqMutation = useDeleteFaq();
   const reorderFaqsMutation = useReorderFaqs();
 
-  const error =
-    deleteError ?? actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   /**
    * Reordering renumbers the whole visible page, so the rows have to be in the
@@ -79,7 +78,6 @@ export default function FaqsPage() {
     const next = [...rows];
     [next[index], next[target]] = [next[target], next[index]];
 
-    setActionError(null);
     try {
       await reorderFaqsMutation.mutateAsync({
         site,
@@ -89,8 +87,9 @@ export default function FaqsPage() {
           sortOrder: (page - 1) * PAGE_SIZE + at,
         })),
       });
+      toast.success("Order updated.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -106,18 +105,17 @@ export default function FaqsPage() {
 
   function askDelete(target: AdminFaq) {
     setDeleteTarget(target);
-    setDeleteError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setDeleteError(null);
     try {
       await deleteFaqMutation.mutateAsync(deleteTarget.id);
+      toast.success("FAQ deleted.");
       setDeleteTarget(null);
     } catch (cause) {
-      setDeleteError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -325,7 +323,6 @@ export default function FaqsPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteFaqMutation.isPending}
-        error={deleteError}
       />
     </div>
   );

@@ -1,5 +1,4 @@
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Modal from "@/admin/components/ui/Modal";
 
 interface ConfirmDialogProps {
@@ -10,8 +9,6 @@ interface ConfirmDialogProps {
   readonly onConfirm: () => void;
   readonly onCancel: () => void;
   readonly loading?: boolean;
-  /** Shown inside the dialog so a refused action keeps its context. */
-  readonly error?: string | null;
 }
 
 /** Replaces `window.confirm` for destructive admin actions. */
@@ -23,7 +20,6 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
   loading = false,
-  error,
 }: ConfirmDialogProps) {
   return (
     <Modal
@@ -53,7 +49,6 @@ export default function ConfirmDialog({
       }
     >
       <p className="text-sm text-text-secondary">{message}</p>
-      {error && <Alert className="mt-5">{error}</Alert>}
     </Modal>
   );
 }

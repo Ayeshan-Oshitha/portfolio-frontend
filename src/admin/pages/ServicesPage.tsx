@@ -25,6 +25,7 @@ import {
   useSetServicePublished,
 } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminService, Site } from "@/admin/types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
@@ -68,12 +69,11 @@ export default function ServicesPage() {
   const [published, setPublished] = useState("");
   const [page, setPage] = useState(1);
 
+  const toast = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminService | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminService | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const [isReordering, setIsReordering] = useState(false);
   const [orderOverride, setOrderOverride] = useState<string[] | null>(null);
@@ -93,8 +93,7 @@ export default function ServicesPage() {
   const setPublishedMutation = useSetServicePublished();
   const reorderServicesMutation = useReorderServices();
 
-  const error =
-    actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   /**
    * The API returns services in name order, so the reorder list has to be
@@ -147,31 +146,30 @@ export default function ServicesPage() {
 
   function askDelete(target: AdminService) {
     setDeleteTarget(target);
-    setDeleteError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setDeleteError(null);
     try {
       await deleteServiceMutation.mutateAsync(deleteTarget.id);
+      toast.success("Service deleted.");
       setDeleteTarget(null);
     } catch (cause) {
-      setDeleteError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
   async function togglePublished(target: AdminService) {
     setPublishingId(target.id);
-    setActionError(null);
     try {
       await setPublishedMutation.mutateAsync({
         id: target.id,
         isPublished: !target.isPublished,
       });
+      toast.success(target.isPublished ? "Unpublished." : "Published.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setPublishingId(null);
     }
@@ -200,7 +198,6 @@ export default function ServicesPage() {
   async function saveOrder() {
     if (!site) return;
 
-    setActionError(null);
     try {
       await reorderServicesMutation.mutateAsync({
         site,
@@ -209,10 +206,11 @@ export default function ServicesPage() {
           sortOrder: index,
         })),
       });
+      toast.success("Order updated.");
       setOrderOverride(null);
       setIsReordering(false);
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -521,7 +519,6 @@ export default function ServicesPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteServiceMutation.isPending}
-        error={deleteError}
       />
     </div>
   );

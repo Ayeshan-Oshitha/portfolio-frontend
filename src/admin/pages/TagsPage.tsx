@@ -11,6 +11,7 @@ import Select from "@/admin/components/ui/Select";
 import TagFormModal from "@/admin/components/tags/TagFormModal";
 import { useDeleteTag, useTags } from "@/admin/hooks/useTags";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminTag, TechCategory } from "@/admin/types";
 import {
   TECH_CATEGORIES,
@@ -42,6 +43,7 @@ function toIsTechnology(kind: KindFilter): boolean | undefined {
 }
 
 export default function TagsPage() {
+  const toast = useToast();
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
   const [kind, setKind] = useState<KindFilter>("");
@@ -51,7 +53,6 @@ export default function TagsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminTag | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminTag | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -87,19 +88,18 @@ export default function TagsPage() {
 
   function askDelete(target: AdminTag) {
     setDeleteTarget(target);
-    setDeleteError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setDeleteError(null);
     try {
       await deleteTagMutation.mutateAsync(deleteTarget.id);
+      toast.success("Tag deleted.");
       setDeleteTarget(null);
     } catch (cause) {
       // Surfaces the API's `tag_in_use` message, which names the content still holding the tag.
-      setDeleteError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -308,7 +308,6 @@ export default function TagsPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteTagMutation.isPending}
-        error={deleteError}
       />
     </div>
   );

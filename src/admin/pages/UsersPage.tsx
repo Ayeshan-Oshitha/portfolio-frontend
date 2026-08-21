@@ -11,6 +11,7 @@ import Select from "@/admin/components/ui/Select";
 import { useDeleteUser, useDisableUser, useUsers } from "@/admin/hooks/useUsers";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useAuth from "@/admin/context/useAuth";
+import useToast from "@/admin/context/useToast";
 import type { AdminUser, UserStatus } from "@/admin/types";
 import { formatDate, roleLabel, statusLabel } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
@@ -26,13 +27,13 @@ const STATUS_OPTIONS: readonly { value: UserStatus; label: string }[] = [
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
+  const toast = useToast();
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
   const [status, setStatus] = useState<UserStatus | "">("");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [disableTarget, setDisableTarget] = useState<AdminUser | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -46,36 +47,34 @@ export default function UsersPage() {
 
   function askDelete(target: AdminUser) {
     setDeleteTarget(target);
-    setActionError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setActionError(null);
     try {
       await deleteUserMutation.mutateAsync(deleteTarget.id);
+      toast.success("User deleted.");
       setDeleteTarget(null);
     } catch (cause) {
       // Includes the API's `cannot_delete_self` message.
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
   function askDisable(target: AdminUser) {
     setDisableTarget(target);
-    setActionError(null);
   }
 
   async function confirmDisable() {
     if (!disableTarget) return;
 
-    setActionError(null);
     try {
       await disableUserMutation.mutateAsync(disableTarget.id);
+      toast.success("User disabled.");
       setDisableTarget(null);
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -231,7 +230,6 @@ export default function UsersPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteUserMutation.isPending}
-        error={actionError}
       />
 
       <ConfirmDialog
@@ -246,7 +244,6 @@ export default function UsersPage() {
         onConfirm={confirmDisable}
         onCancel={() => setDisableTarget(null)}
         loading={disableUserMutation.isPending}
-        error={actionError}
       />
     </div>
   );

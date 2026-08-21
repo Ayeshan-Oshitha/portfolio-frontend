@@ -10,6 +10,7 @@ import GoogleSignInButton from "@/admin/components/GoogleSignInButton";
 import useAuth from "@/admin/context/useAuth";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import ApiError from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import {
   loginSchema,
   type LoginFormValues,
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -41,9 +43,15 @@ export default function LoginPage() {
       navigate(from, { replace: true });
     } catch (error) {
       // The API's `detail` is already user-facing for invalid_credentials and account_disabled.
-      setFormError(
-        error instanceof ApiError ? error.message : toErrorMessage(error),
-      );
+      const isCuratedAuthError =
+        error instanceof ApiError &&
+        (error.code === "invalid_credentials" ||
+          error.code === "account_disabled");
+      if (isCuratedAuthError) {
+        setFormError((error as ApiError).message);
+        return;
+      }
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -82,7 +90,7 @@ export default function LoginPage() {
         </Button>
       </form>
 
-      <GoogleSignInButton onError={setFormError} />
+      <GoogleSignInButton onError={toast.error} />
 
       <p className="mt-6 text-center text-sm text-text-muted">
         Need an account?{" "}
