@@ -162,9 +162,9 @@ export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 export type Site = "agency" | "personal";
 
 /**
- * `DTOs/Admin/AdminArticleResponse.cs` — articles are link-outs to Medium, so
- * there is no body field. Visibility is a pair of flags per site rather than a
- * status enum. Null members are omitted by the API, hence the optionals.
+ * `DTOs/Admin/AdminArticleResponse.cs` — visibility is a pair of flags per
+ * site rather than a status enum. Null members are omitted by the API, hence
+ * the optionals.
  */
 export interface AdminArticle {
   readonly id: string;
@@ -173,9 +173,11 @@ export interface AdminArticle {
   readonly slug?: string;
   /** `YYYY-MM-DD` — a `DateOnly`, not a timestamp. */
   readonly publishedDate: string;
-  readonly mediumUrl: string;
-  /** Cloudinary `public_id`; there is no upload endpoint yet. */
-  readonly coverImageId?: string;
+  /** Optional cross-post link. Must be an absolute URL when present. */
+  readonly mediumUrl?: string;
+  readonly coverImageKey?: string;
+  /** Raw Markdown, `media://articles/...` tokens unresolved — this is what the editor edits. */
+  readonly contentMarkdown?: string;
   readonly isPublished: boolean;
   readonly showOnAgency: boolean;
   readonly featuredOnAgency: boolean;
@@ -199,8 +201,11 @@ export interface ArticleWriteRequest {
   /** Generated from the title by the API when omitted. */
   readonly slug?: string;
   readonly publishedDate: string;
-  readonly mediumUrl: string;
-  readonly coverImageId?: string;
+  /** Optional cross-post link. Must be an absolute URL when present. */
+  readonly mediumUrl?: string;
+  readonly coverImageKey?: string;
+  /** Raw Markdown, with embedded media as `media://articles/...` references. */
+  readonly contentMarkdown?: string;
   readonly isPublished: boolean;
   readonly showOnAgency: boolean;
   readonly featuredOnAgency: boolean;
@@ -574,4 +579,49 @@ export interface FaqWriteRequest {
   readonly showOnPersonal: boolean;
   readonly featuredOnPersonal: boolean;
   readonly personalSortOrder: number;
+}
+
+/**
+ * `DTOs/Admin/AdminReviewResponse.cs` — draft state, featured flag, sort
+ * order, and the submitter's IP for spam moderation. Reviews aren't split per
+ * site, unlike articles/services/projects/FAQs.
+ */
+export interface AdminReview {
+  readonly id: string;
+  readonly name: string;
+  readonly country: string;
+  /** ISO 3166-1 alpha-2, e.g. `US`. */
+  readonly countryCode: string;
+  readonly position?: string;
+  readonly rating: number;
+  readonly reviewText: string;
+  readonly isPublished: boolean;
+  readonly isFeatured: boolean;
+  readonly sortOrder: number;
+  /** Set for a public submission; omitted for a review an admin added by hand. */
+  readonly submitterIp?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * `DTOs/Admin/CreateReviewRequest.cs`; `UpdateReviewRequest` extends it
+ * unchanged. PUT is a full replacement, so an edit has to send every field —
+ * this is also how publish/unpublish and featuring both happen.
+ */
+export interface ReviewWriteRequest {
+  readonly name: string;
+  readonly country: string;
+  readonly countryCode: string;
+  readonly position?: string;
+  readonly rating: number;
+  readonly reviewText: string;
+  readonly isPublished: boolean;
+  readonly isFeatured: boolean;
+  readonly sortOrder: number;
+}
+
+/** `DTOs/Admin/ReviewReorderRequest.cs` — reviews carry a single order, no site. */
+export interface ReviewReorderRequest {
+  readonly items: readonly ReorderItem[];
 }

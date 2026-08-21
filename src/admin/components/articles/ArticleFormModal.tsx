@@ -1,5 +1,6 @@
 import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import MDEditor from "@uiw/react-md-editor";
 import Button from "@/admin/components/ui/Button";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
@@ -32,7 +33,8 @@ function blankValues(): ArticleFormValues {
     slug: "",
     publishedDate: todayDateOnly(),
     mediumUrl: "",
-    coverImageId: "",
+    coverImageKey: "",
+    contentMarkdown: "",
     isPublished: false,
     showOnAgency: false,
     featuredOnAgency: false,
@@ -56,8 +58,9 @@ function toFormValues(article: AdminArticle | null): ArticleFormValues {
     excerpt: article.excerpt,
     slug: article.slug ?? "",
     publishedDate: article.publishedDate,
-    mediumUrl: article.mediumUrl,
-    coverImageId: article.coverImageId ?? "",
+    mediumUrl: article.mediumUrl ?? "",
+    coverImageKey: article.coverImageKey ?? "",
+    contentMarkdown: article.contentMarkdown ?? "",
     isPublished: article.isPublished,
     showOnAgency: article.showOnAgency,
     featuredOnAgency: article.featuredOnAgency,
@@ -118,8 +121,9 @@ export default function ArticleFormModal({
       excerpt: values.excerpt.trim(),
       slug: blank(values.slug),
       publishedDate: values.publishedDate,
-      mediumUrl: values.mediumUrl.trim(),
-      coverImageId: blank(values.coverImageId),
+      mediumUrl: blank(values.mediumUrl),
+      coverImageKey: blank(values.coverImageKey),
+      contentMarkdown: blank(values.contentMarkdown),
       isPublished: values.isPublished,
       showOnAgency: values.showOnAgency,
       // Re-enforced here since a disabled checkbox keeps its last submitted value.
@@ -159,11 +163,7 @@ export default function ArticleFormModal({
       onClose={onClose}
       size="lg"
       title={article ? "Edit article" : "New article"}
-      description={
-        article
-          ? "Every field is sent on save — the API replaces the whole article."
-          : "Articles link out to Medium, so there is no body to write here."
-      }
+      description="Every field is sent on save — the API replaces the whole article."
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         <Input
@@ -201,8 +201,7 @@ export default function ArticleFormModal({
 
           <Input
             label="Medium URL"
-            required
-            placeholder="https://medium.com/@you/a-post"
+            placeholder="https://medium.com/@you/a-post (optional cross-post link)"
             containerClassName="flex-1"
             error={errors.mediumUrl?.message}
             {...register("mediumUrl")}
@@ -210,10 +209,33 @@ export default function ArticleFormModal({
         </div>
 
         <Input
-          label="Cover image id"
+          label="Cover image key"
           placeholder="portfolio/articles/my-post"
-          error={errors.coverImageId?.message}
-          {...register("coverImageId")}
+          error={errors.coverImageKey?.message}
+          {...register("coverImageKey")}
+        />
+
+        <Controller
+          control={control}
+          name="contentMarkdown"
+          render={({ field }) => (
+            <div data-color-mode="dark">
+              <label className="block text-[10px] font-semibold tracking-widest uppercase text-text-muted mb-2">
+                Content
+              </label>
+              <MDEditor
+                value={field.value ?? ""}
+                onChange={(value) => field.onChange(value ?? "")}
+                height={360}
+                preview="live"
+              />
+              {errors.contentMarkdown?.message && (
+                <p className="mt-2 text-xs text-danger-400">
+                  {errors.contentMarkdown.message}
+                </p>
+              )}
+            </div>
+          )}
         />
 
         <Checkbox

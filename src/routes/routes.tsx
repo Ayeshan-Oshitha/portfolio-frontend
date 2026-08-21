@@ -25,6 +25,7 @@ import PricingPage from "@/admin/pages/PricingPage";
 import ProjectsPage from "@/admin/pages/ProjectsPage";
 import ProjectEditorPage from "@/admin/pages/ProjectEditorPage";
 import FaqsPage from "@/admin/pages/FaqsPage";
+import ReviewsPage from "@/admin/pages/ReviewsPage";
 
 export const router = createBrowserRouter([
   {
@@ -136,6 +137,10 @@ export const router = createBrowserRouter([
               {
                 path: "faqs",
                 element: <FaqsPage />,
+              },
+              {
+                path: "reviews",
+                element: <ReviewsPage />,
               },
               {
                 path: "change-password",
