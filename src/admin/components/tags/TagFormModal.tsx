@@ -7,7 +7,7 @@ import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import Select from "@/admin/components/ui/Select";
-import { createTag, updateTag } from "@/admin/api/tags";
+import { useCreateTag, useUpdateTag } from "@/admin/hooks/useTags";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import {
   TECH_CATEGORIES,
@@ -71,6 +71,9 @@ export default function TagFormModal({
   onSaved,
 }: TagFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const createTagMutation = useCreateTag();
+  const updateTagMutation = useUpdateTag();
+  const isSaving = createTagMutation.isPending || updateTagMutation.isPending;
 
   const {
     register,
@@ -110,9 +113,9 @@ export default function TagFormModal({
 
     try {
       if (tag) {
-        await updateTag(tag.id, body);
+        await updateTagMutation.mutateAsync({ id: tag.id, body });
       } else {
-        await createTag(body);
+        await createTagMutation.mutateAsync(body);
       }
       onSaved();
       onClose();
@@ -214,12 +217,16 @@ export default function TagFormModal({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSaving}
           >
             Cancel
           </Button>
-          <Button type="submit" size="sm" loading={isSubmitting}>
-            {isSubmitting ? "Saving…" : tag ? "Save changes" : "Create tag"}
+          <Button type="submit" size="sm" loading={isSubmitting || isSaving}>
+            {isSubmitting || isSaving
+              ? "Saving…"
+              : tag
+                ? "Save changes"
+                : "Create tag"}
           </Button>
         </div>
       </form>

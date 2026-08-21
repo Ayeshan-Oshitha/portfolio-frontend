@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
@@ -6,10 +6,10 @@ import Spinner from "@/portfolio/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
-import { deleteUser, getUsers } from "@/admin/api/users";
+import { useDeleteUser, useUsers } from "@/admin/hooks/useUsers";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useAuth from "@/admin/context/useAuth";
-import type { AdminUser, PagedResult } from "@/admin/types";
+import type { AdminUser } from "@/admin/types";
 import { formatDate, roleLabel, statusLabel } from "@/admin/utils/format";
 
 const PAGE_SIZE = 20;
@@ -19,54 +19,25 @@ export default function UsersPage() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PagedResult<AdminUser> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    getUsers({ search, page, pageSize: PAGE_SIZE }, controller.signal)
-      .then((data) => {
-        setResult(data);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError")
-          return;
-        setError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
+  const {
+    data: result,
+    isPending: isLoading,
+    error: queryError,
+  } = useUsers({ search, page, pageSize: PAGE_SIZE });
+  const deleteUserMutation = useDeleteUser();
 
-    return () => controller.abort();
-  }, [search, page, reloadToken]);
-
-  /**
-   * The spinner is raised by whatever triggers a refetch rather than inside
-   * the effect, so the effect only ever setStates from an async callback.
-   */
-  const startLoading = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-  }, []);
+  const error = deleteError ?? (queryError ? toErrorMessage(queryError) : null);
 
   const handleSearch = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
-      startLoading();
       setPage(1);
       setSearch(searchInput.trim());
     },
-    [searchInput, startLoading],
-  );
-
-  const goToPage = useCallback(
-    (next: number) => {
-      startLoading();
-      setPage(next);
-    },
-    [startLoading],
+    [searchInput],
   );
 
   async function handleDelete(target: AdminUser) {
@@ -76,14 +47,12 @@ export default function UsersPage() {
     if (!confirmed) return;
 
     setDeletingId(target.id);
-    setError(null);
+    setDeleteError(null);
     try {
-      await deleteUser(target.id);
-      startLoading();
-      setReloadToken((token) => token + 1);
+      await deleteUserMutation.mutateAsync(target.id);
     } catch (cause) {
       // Includes the API's `cannot_delete_self` message.
-      setError(toErrorMessage(cause));
+      setDeleteError(toErrorMessage(cause));
     } finally {
       setDeletingId(null);
     }
@@ -186,7 +155,7 @@ export default function UsersPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.max(1, page - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
           >
             Previous
@@ -197,7 +166,7 @@ export default function UsersPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
           >
             Next

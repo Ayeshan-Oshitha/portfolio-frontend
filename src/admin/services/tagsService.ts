@@ -4,7 +4,7 @@ import type {
   TagWriteRequest,
   TechCategory,
 } from "@/admin/types";
-import { request } from "@/admin/api/client";
+import { httpClient } from "@/admin/services/httpClient";
 
 export interface GetTagsParams {
   /** Case-insensitive match against the name. */
@@ -17,29 +17,32 @@ export interface GetTagsParams {
 }
 
 /** Ordered by `sortOrder`, then name. */
-export function getTags(
+export async function getTags(
   { search, isTechnology, category, page, pageSize }: GetTagsParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminTag>> {
-  return request<PagedResult<AdminTag>>("/admin/tags", {
-    query: { search, isTechnology, category, page, pageSize },
+  const { data } = await httpClient.get<PagedResult<AdminTag>>("/admin/tags", {
+    params: { search, isTechnology, category, page, pageSize },
     signal,
   });
+  return data;
 }
 
-export function createTag(body: TagWriteRequest): Promise<AdminTag> {
-  return request<AdminTag>("/admin/tags", { method: "POST", body });
+export async function createTag(body: TagWriteRequest): Promise<AdminTag> {
+  const { data } = await httpClient.post<AdminTag>("/admin/tags", body);
+  return data;
 }
 
 /** Full replacement — `body` must carry every field, not just the changed ones. */
-export function updateTag(
+export async function updateTag(
   id: string,
   body: TagWriteRequest,
 ): Promise<AdminTag> {
-  return request<AdminTag>(`/admin/tags/${id}`, { method: "PUT", body });
+  const { data } = await httpClient.put<AdminTag>(`/admin/tags/${id}`, body);
+  return data;
 }
 
 /** Soft delete. The API refuses with 409 `tag_in_use` while content still carries it. */
-export function deleteTag(id: string): Promise<void> {
-  return request<void>(`/admin/tags/${id}`, { method: "DELETE" });
+export async function deleteTag(id: string): Promise<void> {
+  await httpClient.delete(`/admin/tags/${id}`);
 }

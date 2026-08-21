@@ -1,0 +1,51 @@
+import type { GetArticlesParams } from "@/admin/services/articlesService";
+import type { GetProjectsParams } from "@/admin/services/projectsService";
+import type { GetServicesParams } from "@/admin/services/servicesService";
+import type { GetPricingPlansParams } from "@/admin/services/pricingService";
+import type { GetTagsParams } from "@/admin/services/tagsService";
+import type { GetUsersParams } from "@/admin/services/usersService";
+
+export const authKeys = {
+  all: ["auth"] as const,
+  me: () => [...authKeys.all, "me"] as const,
+};
+
+export const articleKeys = {
+  all: ["articles"] as const,
+  lists: () => [...articleKeys.all, "list"] as const,
+  list: (params: GetArticlesParams) => [...articleKeys.lists(), params] as const,
+};
+
+export const projectKeys = {
+  all: ["projects"] as const,
+  lists: () => [...projectKeys.all, "list"] as const,
+  list: (params: GetProjectsParams) => [...projectKeys.lists(), params] as const,
+  detail: (id: string) => [...projectKeys.all, "detail", id] as const,
+};
+
+export const serviceKeys = {
+  all: ["services"] as const,
+  lists: () => [...serviceKeys.all, "list"] as const,
+  list: (params: GetServicesParams) => [...serviceKeys.lists(), params] as const,
+  detail: (id: string) => [...serviceKeys.all, "detail", id] as const,
+};
+
+export const pricingKeys = {
+  all: ["pricingPlans"] as const,
+  lists: () => [...pricingKeys.all, "list"] as const,
+  list: (params: GetPricingPlansParams) =>
+    [...pricingKeys.lists(), params] as const,
+  detail: (id: string) => [...pricingKeys.all, "detail", id] as const,
+};
+
+export const tagKeys = {
+  all: ["tags"] as const,
+  lists: () => [...tagKeys.all, "list"] as const,
+  list: (params: GetTagsParams) => [...tagKeys.lists(), params] as const,
+};
+
+export const userKeys = {
+  all: ["users"] as const,
+  lists: () => [...userKeys.all, "list"] as const,
+  list: (params: GetUsersParams) => [...userKeys.lists(), params] as const,
+};

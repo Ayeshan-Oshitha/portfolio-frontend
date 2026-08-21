@@ -9,12 +9,12 @@ import Modal from "@/admin/components/ui/Modal";
 import Textarea from "@/admin/components/ui/Textarea";
 import ServiceFeaturesEditor from "@/admin/components/services/ServiceFeaturesEditor";
 import {
-  addServiceFeature,
-  createService,
-  deleteServiceFeature,
-  updateService,
-  updateServiceFeature,
-} from "@/admin/api/services";
+  useAddServiceFeature,
+  useCreateService,
+  useDeleteServiceFeature,
+  useUpdateService,
+  useUpdateServiceFeature,
+} from "@/admin/hooks/useServices";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import { slugify } from "@/admin/utils/format";
 import type {
@@ -93,10 +93,21 @@ function blank(value?: string): string | undefined {
  * no longer has, then write every remaining row with its index as `sortOrder`
  * (which is why the dedicated features-reorder endpoint is not needed here).
  */
+interface SyncFeaturesDeps {
+  readonly addFeature: ReturnType<typeof useAddServiceFeature>["mutateAsync"];
+  readonly updateFeature: ReturnType<
+    typeof useUpdateServiceFeature
+  >["mutateAsync"];
+  readonly deleteFeature: ReturnType<
+    typeof useDeleteServiceFeature
+  >["mutateAsync"];
+}
+
 async function syncFeatures(
   serviceId: string,
   next: readonly ServiceFeatureValues[],
   previous: readonly ServiceFeature[],
+  { addFeature, updateFeature, deleteFeature }: SyncFeaturesDeps,
 ): Promise<void> {
   const kept = new Set(
     next.map((feature) => feature.id).filter((id): id is string => Boolean(id)),
@@ -104,7 +115,7 @@ async function syncFeatures(
 
   for (const stale of previous) {
     if (!kept.has(stale.id)) {
-      await deleteServiceFeature(serviceId, stale.id);
+      await deleteFeature({ serviceId, featureId: stale.id });
     }
   }
 
@@ -117,9 +128,9 @@ async function syncFeatures(
     };
 
     if (feature.id) {
-      await updateServiceFeature(serviceId, feature.id, body);
+      await updateFeature({ serviceId, featureId: feature.id, body });
     } else {
-      await addServiceFeature(serviceId, body);
+      await addFeature({ serviceId, body });
     }
   }
 }
@@ -134,6 +145,13 @@ export default function ServiceFormModal({
   onSaved,
 }: ServiceFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const createServiceMutation = useCreateService();
+  const updateServiceMutation = useUpdateService();
+  const addFeatureMutation = useAddServiceFeature();
+  const updateFeatureMutation = useUpdateServiceFeature();
+  const deleteFeatureMutation = useDeleteServiceFeature();
+  const isSaving =
+    createServiceMutation.isPending || updateServiceMutation.isPending;
 
   const {
     register,
@@ -177,10 +195,14 @@ export default function ServiceFormModal({
 
     try {
       const saved = service
-        ? await updateService(service.id, body)
-        : await createService(body);
+        ? await updateServiceMutation.mutateAsync({ id: service.id, body })
+        : await createServiceMutation.mutateAsync(body);
 
-      await syncFeatures(saved.id, values.features, service?.features ?? []);
+      await syncFeatures(saved.id, values.features, service?.features ?? [], {
+        addFeature: addFeatureMutation.mutateAsync,
+        updateFeature: updateFeatureMutation.mutateAsync,
+        deleteFeature: deleteFeatureMutation.mutateAsync,
+      });
 
       onSaved();
       onClose();
@@ -348,12 +370,12 @@ export default function ServiceFormModal({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSaving}
           >
             Cancel
           </Button>
-          <Button type="submit" size="sm" loading={isSubmitting}>
-            {isSubmitting
+          <Button type="submit" size="sm" loading={isSubmitting || isSaving}>
+            {isSubmitting || isSaving
               ? "Saving…"
               : service
                 ? "Save changes"
