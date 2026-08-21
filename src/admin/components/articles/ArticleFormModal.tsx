@@ -8,7 +8,7 @@ import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import TagPicker from "@/admin/components/ui/TagPicker";
 import Textarea from "@/admin/components/ui/Textarea";
-import { createArticle, updateArticle } from "@/admin/api/articles";
+import { useCreateArticle, useUpdateArticle } from "@/admin/hooks/useArticles";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import { slugify, todayDateOnly } from "@/admin/utils/format";
 import type { AdminArticle, ArticleWriteRequest } from "@/admin/types";
@@ -85,6 +85,10 @@ export default function ArticleFormModal({
   onSaved,
 }: ArticleFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const createArticleMutation = useCreateArticle();
+  const updateArticleMutation = useUpdateArticle();
+  const isSaving =
+    createArticleMutation.isPending || updateArticleMutation.isPending;
 
   const {
     register,
@@ -131,9 +135,9 @@ export default function ArticleFormModal({
 
     try {
       if (article) {
-        await updateArticle(article.id, body);
+        await updateArticleMutation.mutateAsync({ id: article.id, body });
       } else {
-        await createArticle(body);
+        await createArticleMutation.mutateAsync(body);
       }
       onSaved();
       onClose();
@@ -286,12 +290,12 @@ export default function ArticleFormModal({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSaving}
           >
             Cancel
           </Button>
-          <Button type="submit" size="sm" loading={isSubmitting}>
-            {isSubmitting
+          <Button type="submit" size="sm" loading={isSubmitting || isSaving}>
+            {isSubmitting || isSaving
               ? "Saving…"
               : article
                 ? "Save changes"

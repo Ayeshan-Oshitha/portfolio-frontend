@@ -5,7 +5,7 @@ import Button from "@/portfolio/components/ui/Button";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
-import { changePassword } from "@/admin/api/auth";
+import { useChangePassword } from "@/admin/hooks/useAuthApi";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import {
   changePasswordSchema,
@@ -15,6 +15,7 @@ import {
 export default function ChangePasswordPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [succeeded, setSucceeded] = useState(false);
+  const changePasswordMutation = useChangePassword();
 
   const {
     register,
@@ -36,7 +37,7 @@ export default function ChangePasswordPage() {
     setSucceeded(false);
     try {
       // Answers 204 with no body — nothing to read back.
-      await changePassword(values);
+      await changePasswordMutation.mutateAsync(values);
       reset();
       setSucceeded(true);
     } catch (error) {

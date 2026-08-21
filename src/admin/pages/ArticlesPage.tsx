@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
@@ -9,9 +9,9 @@ import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
 import Input from "@/admin/components/ui/Input";
 import Select from "@/admin/components/ui/Select";
 import ArticleFormModal from "@/admin/components/articles/ArticleFormModal";
-import { deleteArticle, getArticles } from "@/admin/api/articles";
+import { useArticles, useDeleteArticle } from "@/admin/hooks/useArticles";
 import { toErrorMessage } from "@/admin/api/ApiError";
-import type { AdminArticle, PagedResult, Site } from "@/admin/types";
+import type { AdminArticle, Site } from "@/admin/types";
 import { formatDate, formatDateOnly } from "@/admin/utils/format";
 
 const PAGE_SIZE = 20;
@@ -72,92 +72,39 @@ export default function ArticlesPage() {
   const [site, setSite] = useState<SiteFilter>("");
   const [status, setStatus] = useState<StatusFilter>("");
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PagedResult<AdminArticle> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminArticle | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminArticle | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    getArticles(
-      {
-        search,
-        site: site || undefined,
-        isPublished: toIsPublished(status),
-        page,
-        pageSize: PAGE_SIZE,
-      },
-      controller.signal,
-    )
-      .then((data) => {
-        setResult(data);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError")
-          return;
-        setError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
+  const {
+    data: result,
+    isPending: isLoading,
+    error: queryError,
+  } = useArticles({
+    search,
+    site: site || undefined,
+    isPublished: toIsPublished(status),
+    page,
+    pageSize: PAGE_SIZE,
+  });
+  const deleteArticleMutation = useDeleteArticle();
 
-    return () => controller.abort();
-  }, [search, site, status, page, reloadToken]);
-
-  /**
-   * The spinner is raised by whatever triggers a refetch rather than inside
-   * the effect, so the effect only ever setStates from an async callback.
-   */
-  const startLoading = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-  }, []);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   const handleSearch = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
-      startLoading();
       setPage(1);
       setSearch(searchInput.trim());
     },
-    [searchInput, startLoading],
+    [searchInput],
   );
 
-  const handleSiteChange = useCallback(
-    (next: SiteFilter) => {
-      startLoading();
-      setPage(1);
-      setSite(next);
-    },
-    [startLoading],
-  );
-
-  const handleStatusChange = useCallback(
-    (next: StatusFilter) => {
-      startLoading();
-      setPage(1);
-      setStatus(next);
-    },
-    [startLoading],
-  );
-
-  const goToPage = useCallback(
-    (next: number) => {
-      startLoading();
-      setPage(next);
-    },
-    [startLoading],
-  );
-
-  const handleSaved = useCallback(() => {
-    startLoading();
-    setReloadToken((token) => token + 1);
-  }, [startLoading]);
+  function handleSaved() {
+    // Query invalidation on the mutation already refreshes the list.
+  }
 
   function openCreate() {
     setEditing(null);
@@ -177,16 +124,12 @@ export default function ArticlesPage() {
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setIsDeleting(true);
     setDeleteError(null);
     try {
-      await deleteArticle(deleteTarget.id);
+      await deleteArticleMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
-      handleSaved();
     } catch (cause) {
       setDeleteError(toErrorMessage(cause));
-    } finally {
-      setIsDeleting(false);
     }
   }
 
@@ -226,9 +169,10 @@ export default function ArticlesPage() {
           label="Site"
           options={SITE_OPTIONS}
           value={site}
-          onChange={(event) =>
-            handleSiteChange(event.target.value as SiteFilter)
-          }
+          onChange={(event) => {
+            setPage(1);
+            setSite(event.target.value as SiteFilter);
+          }}
           containerClassName="w-40"
         />
 
@@ -236,9 +180,10 @@ export default function ArticlesPage() {
           label="Status"
           options={STATUS_OPTIONS}
           value={status}
-          onChange={(event) =>
-            handleStatusChange(event.target.value as StatusFilter)
-          }
+          onChange={(event) => {
+            setPage(1);
+            setStatus(event.target.value as StatusFilter);
+          }}
           containerClassName="w-44"
         />
 
@@ -373,7 +318,7 @@ export default function ArticlesPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.max(1, page - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
           >
             Previous
@@ -384,7 +329,7 @@ export default function ArticlesPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
           >
             Next
@@ -412,7 +357,7 @@ export default function ArticlesPage() {
         }
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        loading={isDeleting}
+        loading={deleteArticleMutation.isPending}
         error={deleteError}
       />
     </div>

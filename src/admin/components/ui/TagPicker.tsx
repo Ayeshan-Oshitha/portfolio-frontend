@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import Spinner from "@/portfolio/components/ui/Spinner";
 import Select from "@/admin/components/ui/Select";
-import { getTags } from "@/admin/api/tags";
+import { useTags } from "@/admin/hooks/useTags";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import type { AdminTag } from "@/admin/types";
 
@@ -37,25 +37,13 @@ export default function TagPicker({
   error,
   containerClassName = "",
 }: TagPickerProps) {
-  const [tags, setTags] = useState<readonly AdminTag[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    getTags({ pageSize: TAG_PAGE_SIZE }, controller.signal)
-      .then((data) => {
-        setTags(data.items);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError") return;
-        setLoadError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
-
-    return () => controller.abort();
-  }, []);
+  const {
+    data: result,
+    isPending: isLoading,
+    error: queryError,
+  } = useTags({ pageSize: TAG_PAGE_SIZE });
+  const tags: readonly AdminTag[] = useMemo(() => result?.items ?? [], [result]);
+  const loadError = queryError ? toErrorMessage(queryError) : null;
 
   // Selected chips follow the saved order of `value`; an id with no matching
   // tag is dropped from the display but deliberately left in the form value.

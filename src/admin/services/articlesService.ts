@@ -4,7 +4,7 @@ import type {
   PagedResult,
   Site,
 } from "@/admin/types";
-import { request } from "@/admin/api/client";
+import { httpClient } from "@/admin/services/httpClient";
 
 export interface GetArticlesParams {
   /** Optional on the admin surface, unlike the public one which demands it. */
@@ -18,31 +18,40 @@ export interface GetArticlesParams {
 }
 
 /** Ordered by `publishedDate` descending, then title. */
-export function getArticles(
+export async function getArticles(
   { site, isPublished, search, page, pageSize }: GetArticlesParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminArticle>> {
-  return request<PagedResult<AdminArticle>>("/admin/articles", {
-    query: { site, isPublished, search, page, pageSize },
-    signal,
-  });
+  const { data } = await httpClient.get<PagedResult<AdminArticle>>(
+    "/admin/articles",
+    { params: { site, isPublished, search, page, pageSize }, signal },
+  );
+  return data;
 }
 
-export function createArticle(
+export async function createArticle(
   body: ArticleWriteRequest,
 ): Promise<AdminArticle> {
-  return request<AdminArticle>("/admin/articles", { method: "POST", body });
+  const { data } = await httpClient.post<AdminArticle>(
+    "/admin/articles",
+    body,
+  );
+  return data;
 }
 
 /** Full replacement — `body` must carry every field, not just the changed ones. */
-export function updateArticle(
+export async function updateArticle(
   id: string,
   body: ArticleWriteRequest,
 ): Promise<AdminArticle> {
-  return request<AdminArticle>(`/admin/articles/${id}`, { method: "PUT", body });
+  const { data } = await httpClient.put<AdminArticle>(
+    `/admin/articles/${id}`,
+    body,
+  );
+  return data;
 }
 
 /** Soft delete. The API answers 204 with no body. */
-export function deleteArticle(id: string): Promise<void> {
-  return request<void>(`/admin/articles/${id}`, { method: "DELETE" });
+export async function deleteArticle(id: string): Promise<void> {
+  await httpClient.delete(`/admin/articles/${id}`);
 }

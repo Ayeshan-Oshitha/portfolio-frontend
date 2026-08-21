@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowDown,
@@ -17,13 +17,13 @@ import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
 import Input from "@/admin/components/ui/Input";
 import Select from "@/admin/components/ui/Select";
 import {
-  deleteProject,
-  getProjects,
-  reorderProjects,
-  setProjectPublished,
-} from "@/admin/api/projects";
+  useDeleteProject,
+  useProjects,
+  useReorderProjects,
+  useSetProjectPublished,
+} from "@/admin/hooks/useProjects";
 import { toErrorMessage } from "@/admin/api/ApiError";
-import type { AdminProject, PagedResult, Site } from "@/admin/types";
+import type { AdminProject, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
 
 const PAGE_SIZE = 20;
@@ -91,92 +91,38 @@ export default function ProjectsPage() {
   const [site, setSite] = useState<SiteFilter>("");
   const [status, setStatus] = useState<StatusFilter>("");
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PagedResult<AdminProject> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
 
-  const [publishingId, setPublishingId] = useState<string | null>(null);
-  const [isReordering, setIsReordering] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminProject | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    getProjects(
-      {
-        search,
-        site: site || undefined,
-        isPublished: toIsPublished(status),
-        page,
-        pageSize: PAGE_SIZE,
-      },
-      controller.signal,
-    )
-      .then((data) => {
-        setResult(data);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError")
-          return;
-        setError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
+  const {
+    data: result,
+    isPending: isLoading,
+    error: queryError,
+  } = useProjects({
+    search,
+    site: site || undefined,
+    isPublished: toIsPublished(status),
+    page,
+    pageSize: PAGE_SIZE,
+  });
+  const deleteProjectMutation = useDeleteProject();
+  const setPublishedMutation = useSetProjectPublished();
+  const reorderProjectsMutation = useReorderProjects();
 
-    return () => controller.abort();
-  }, [search, site, status, page, reloadToken]);
-
-  /**
-   * The spinner is raised by whatever triggers a refetch rather than inside
-   * the effect, so the effect only ever setStates from an async callback.
-   */
-  const startLoading = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-  }, []);
+  const error =
+    actionError ?? (queryError ? toErrorMessage(queryError) : null);
 
   const handleSearch = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
-      startLoading();
       setPage(1);
       setSearch(searchInput.trim());
     },
-    [searchInput, startLoading],
+    [searchInput],
   );
-
-  const handleSiteChange = useCallback(
-    (next: SiteFilter) => {
-      startLoading();
-      setPage(1);
-      setSite(next);
-    },
-    [startLoading],
-  );
-
-  const handleStatusChange = useCallback(
-    (next: StatusFilter) => {
-      startLoading();
-      setPage(1);
-      setStatus(next);
-    },
-    [startLoading],
-  );
-
-  const goToPage = useCallback(
-    (next: number) => {
-      startLoading();
-      setPage(next);
-    },
-    [startLoading],
-  );
-
-  const reload = useCallback(() => {
-    startLoading();
-    setReloadToken((token) => token + 1);
-  }, [startLoading]);
 
   /**
    * Reordering renumbers the whole visible page, so the rows have to be in the
@@ -193,12 +139,14 @@ export default function ProjectsPage() {
 
   async function togglePublished(target: AdminProject) {
     setPublishingId(target.id);
-    setError(null);
+    setActionError(null);
     try {
-      await setProjectPublished(target.id, !target.isPublished);
-      reload();
+      await setPublishedMutation.mutateAsync({
+        id: target.id,
+        isPublished: !target.isPublished,
+      });
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      setActionError(toErrorMessage(cause));
     } finally {
       setPublishingId(null);
     }
@@ -217,10 +165,9 @@ export default function ProjectsPage() {
     const next = [...rows];
     [next[index], next[target]] = [next[target], next[index]];
 
-    setIsReordering(true);
-    setError(null);
+    setActionError(null);
     try {
-      await reorderProjects({
+      await reorderProjectsMutation.mutateAsync({
         site,
         items: next.map((project, at) => ({
           id: project.id,
@@ -228,11 +175,8 @@ export default function ProjectsPage() {
           sortOrder: (page - 1) * PAGE_SIZE + at,
         })),
       });
-      reload();
     } catch (cause) {
-      setError(toErrorMessage(cause));
-    } finally {
-      setIsReordering(false);
+      setActionError(toErrorMessage(cause));
     }
   }
 
@@ -244,21 +188,18 @@ export default function ProjectsPage() {
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setIsDeleting(true);
     setDeleteError(null);
     try {
-      await deleteProject(deleteTarget.id);
+      await deleteProjectMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
-      reload();
     } catch (cause) {
       setDeleteError(toErrorMessage(cause));
-    } finally {
-      setIsDeleting(false);
     }
   }
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const isReordering = reorderProjectsMutation.isPending;
 
   return (
     <div className="max-w-6xl">
@@ -294,9 +235,10 @@ export default function ProjectsPage() {
           label="Site"
           options={SITE_OPTIONS}
           value={site}
-          onChange={(event) =>
-            handleSiteChange(event.target.value as SiteFilter)
-          }
+          onChange={(event) => {
+            setPage(1);
+            setSite(event.target.value as SiteFilter);
+          }}
           containerClassName="w-40"
         />
 
@@ -304,9 +246,10 @@ export default function ProjectsPage() {
           label="Status"
           options={STATUS_OPTIONS}
           value={status}
-          onChange={(event) =>
-            handleStatusChange(event.target.value as StatusFilter)
-          }
+          onChange={(event) => {
+            setPage(1);
+            setStatus(event.target.value as StatusFilter);
+          }}
           containerClassName="w-44"
         />
 
@@ -484,7 +427,7 @@ export default function ProjectsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.max(1, page - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
           >
             Previous
@@ -495,7 +438,7 @@ export default function ProjectsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
           >
             Next
@@ -513,7 +456,7 @@ export default function ProjectsPage() {
         }
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        loading={isDeleting}
+        loading={deleteProjectMutation.isPending}
         error={deleteError}
       />
     </div>

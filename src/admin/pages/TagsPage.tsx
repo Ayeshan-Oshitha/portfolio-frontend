@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
@@ -9,9 +9,9 @@ import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
 import Input from "@/admin/components/ui/Input";
 import Select from "@/admin/components/ui/Select";
 import TagFormModal from "@/admin/components/tags/TagFormModal";
-import { deleteTag, getTags } from "@/admin/api/tags";
+import { useDeleteTag, useTags } from "@/admin/hooks/useTags";
 import { toErrorMessage } from "@/admin/api/ApiError";
-import type { AdminTag, PagedResult, TechCategory } from "@/admin/types";
+import type { AdminTag, TechCategory } from "@/admin/types";
 import {
   TECH_CATEGORIES,
   formatDate,
@@ -46,94 +46,42 @@ export default function TagsPage() {
   const [kind, setKind] = useState<KindFilter>("");
   const [category, setCategory] = useState<TechCategory | "">("");
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PagedResult<AdminTag> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminTag | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminTag | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    getTags(
-      {
-        search,
-        isTechnology: toIsTechnology(kind),
-        category: category || undefined,
-        page,
-        pageSize: PAGE_SIZE,
-      },
-      controller.signal,
-    )
-      .then((data) => {
-        setResult(data);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError")
-          return;
-        setError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
+  const {
+    data: result,
+    isPending: isLoading,
+    error: queryError,
+  } = useTags({
+    search,
+    isTechnology: toIsTechnology(kind),
+    category: category || undefined,
+    page,
+    pageSize: PAGE_SIZE,
+  });
+  const deleteTagMutation = useDeleteTag();
 
-    return () => controller.abort();
-  }, [search, kind, category, page, reloadToken]);
-
-  /**
-   * The spinner is raised by whatever triggers a refetch rather than inside
-   * the effect, so the effect only ever setStates from an async callback.
-   */
-  const startLoading = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-  }, []);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   const handleSearch = useCallback(
     (event: React.FormEvent) => {
       event.preventDefault();
-      startLoading();
       setPage(1);
       setSearch(searchInput.trim());
     },
-    [searchInput, startLoading],
+    [searchInput],
   );
 
-  const handleKindChange = useCallback(
-    (next: KindFilter) => {
-      startLoading();
-      setPage(1);
-      setKind(next);
-      // A category only narrows technologies, so it cannot outlive the filter.
-      if (next !== "technology") setCategory("");
-    },
-    [startLoading],
-  );
-
-  const handleCategoryChange = useCallback(
-    (next: TechCategory | "") => {
-      startLoading();
-      setPage(1);
-      setCategory(next);
-    },
-    [startLoading],
-  );
-
-  const goToPage = useCallback(
-    (next: number) => {
-      startLoading();
-      setPage(next);
-    },
-    [startLoading],
-  );
-
-  const handleSaved = useCallback(() => {
-    startLoading();
-    setReloadToken((token) => token + 1);
-  }, [startLoading]);
+  function handleKindChange(next: KindFilter) {
+    setPage(1);
+    setKind(next);
+    // A category only narrows technologies, so it cannot outlive the filter.
+    if (next !== "technology") setCategory("");
+  }
 
   function openCreate() {
     setEditing(null);
@@ -153,18 +101,14 @@ export default function TagsPage() {
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setIsDeleting(true);
     setDeleteError(null);
     try {
-      await deleteTag(deleteTarget.id);
+      await deleteTagMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
-      handleSaved();
     } catch (cause) {
       // Includes the API's `tag_in_use` message, which names the content
       // still holding the tag — worth keeping in front of the user.
       setDeleteError(toErrorMessage(cause));
-    } finally {
-      setIsDeleting(false);
     }
   }
 
@@ -217,9 +161,10 @@ export default function TagsPage() {
           options={CATEGORY_OPTIONS}
           value={category}
           disabled={kind !== "technology"}
-          onChange={(event) =>
-            handleCategoryChange(event.target.value as TechCategory | "")
-          }
+          onChange={(event) => {
+            setPage(1);
+            setCategory(event.target.value as TechCategory | "");
+          }}
           containerClassName="w-44"
         />
 
@@ -333,7 +278,7 @@ export default function TagsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.max(1, page - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
           >
             Previous
@@ -344,7 +289,7 @@ export default function TagsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
           >
             Next
@@ -358,7 +303,7 @@ export default function TagsPage() {
           key={editing?.id ?? "new"}
           tag={editing}
           onClose={() => setIsFormOpen(false)}
-          onSaved={handleSaved}
+          onSaved={() => {}}
         />
       )}
 
@@ -372,7 +317,7 @@ export default function TagsPage() {
         }
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        loading={isDeleting}
+        loading={deleteTagMutation.isPending}
         error={deleteError}
       />
     </div>

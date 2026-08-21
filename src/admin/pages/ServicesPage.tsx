@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -19,13 +19,13 @@ import Input from "@/admin/components/ui/Input";
 import Select from "@/admin/components/ui/Select";
 import ServiceFormModal from "@/admin/components/services/ServiceFormModal";
 import {
-  deleteService,
-  getServices,
-  reorderServices,
-  setServicePublished,
-} from "@/admin/api/services";
+  useDeleteService,
+  useReorderServices,
+  useServices,
+  useSetServicePublished,
+} from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
-import type { AdminService, PagedResult, Site } from "@/admin/types";
+import type { AdminService, Site } from "@/admin/types";
 
 const PAGE_SIZE = 20;
 
@@ -66,47 +66,34 @@ export default function ServicesPage() {
   const [site, setSite] = useState<Site | "">("");
   const [published, setPublished] = useState("");
   const [page, setPage] = useState(1);
-  const [result, setResult] = useState<PagedResult<AdminService> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState(0);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminService | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminService | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const [isReordering, setIsReordering] = useState(false);
   const [orderOverride, setOrderOverride] = useState<string[] | null>(null);
-  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    getServices(
-      {
-        site: site || undefined,
-        isPublished: toIsPublished(published),
-        search,
-        page: isReordering ? 1 : page,
-        pageSize: isReordering ? REORDER_PAGE_SIZE : PAGE_SIZE,
-      },
-      controller.signal,
-    )
-      .then((data) => {
-        setResult(data);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError")
-          return;
-        setError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
+  const {
+    data: result,
+    isPending: isLoading,
+    error: queryError,
+  } = useServices({
+    site: site || undefined,
+    isPublished: toIsPublished(published),
+    search,
+    page: isReordering ? 1 : page,
+    pageSize: isReordering ? REORDER_PAGE_SIZE : PAGE_SIZE,
+  });
+  const deleteServiceMutation = useDeleteService();
+  const setPublishedMutation = useSetServicePublished();
+  const reorderServicesMutation = useReorderServices();
 
-    return () => controller.abort();
-  }, [search, site, published, page, isReordering, reloadToken]);
+  const error =
+    actionError ?? (queryError ? toErrorMessage(queryError) : null);
 
   /**
    * The API returns services in name order, so the reorder list has to be
@@ -139,58 +126,19 @@ export default function ServicesPage() {
     return picked.length === sortedForSite.length ? picked : sortedForSite;
   }, [orderOverride, sortedForSite]);
 
-  /**
-   * The spinner is raised by whatever triggers a refetch rather than inside
-   * the effect, so the effect only ever setStates from an async callback.
-   */
-  const startLoading = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-  }, []);
+  function handleSearch(event: React.FormEvent) {
+    event.preventDefault();
+    setPage(1);
+    setSearch(searchInput.trim());
+  }
 
-  const handleSearch = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      startLoading();
-      setPage(1);
-      setSearch(searchInput.trim());
-    },
-    [searchInput, startLoading],
-  );
-
-  const handleSiteChange = useCallback(
-    (next: Site | "") => {
-      startLoading();
-      setPage(1);
-      setSite(next);
-      // Sort order is per site, so a pending reorder cannot outlive the filter.
-      setOrderOverride(null);
-      if (!next) setIsReordering(false);
-    },
-    [startLoading],
-  );
-
-  const handlePublishedChange = useCallback(
-    (next: string) => {
-      startLoading();
-      setPage(1);
-      setPublished(next);
-    },
-    [startLoading],
-  );
-
-  const goToPage = useCallback(
-    (next: number) => {
-      startLoading();
-      setPage(next);
-    },
-    [startLoading],
-  );
-
-  const handleSaved = useCallback(() => {
-    startLoading();
-    setReloadToken((token) => token + 1);
-  }, [startLoading]);
+  function handleSiteChange(next: Site | "") {
+    setPage(1);
+    setSite(next);
+    // Sort order is per site, so a pending reorder cannot outlive the filter.
+    setOrderOverride(null);
+    if (!next) setIsReordering(false);
+  }
 
   function openCreate() {
     setEditing(null);
@@ -210,27 +158,25 @@ export default function ServicesPage() {
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setIsDeleting(true);
     setDeleteError(null);
     try {
-      await deleteService(deleteTarget.id);
+      await deleteServiceMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
-      handleSaved();
     } catch (cause) {
       setDeleteError(toErrorMessage(cause));
-    } finally {
-      setIsDeleting(false);
     }
   }
 
   async function togglePublished(target: AdminService) {
     setPublishingId(target.id);
-    setError(null);
+    setActionError(null);
     try {
-      await setServicePublished(target.id, !target.isPublished);
-      handleSaved();
+      await setPublishedMutation.mutateAsync({
+        id: target.id,
+        isPublished: !target.isPublished,
+      });
     } catch (cause) {
-      setError(toErrorMessage(cause));
+      setActionError(toErrorMessage(cause));
     } finally {
       setPublishingId(null);
     }
@@ -238,13 +184,11 @@ export default function ServicesPage() {
 
   function startReorder() {
     if (!site) return;
-    startLoading();
     setOrderOverride(null);
     setIsReordering(true);
   }
 
   function cancelReorder() {
-    startLoading();
     setOrderOverride(null);
     setIsReordering(false);
   }
@@ -261,10 +205,9 @@ export default function ServicesPage() {
   async function saveOrder() {
     if (!site) return;
 
-    setIsSavingOrder(true);
-    setError(null);
+    setActionError(null);
     try {
-      await reorderServices({
+      await reorderServicesMutation.mutateAsync({
         site,
         items: orderedRows.map((service, index) => ({
           id: service.id,
@@ -273,17 +216,15 @@ export default function ServicesPage() {
       });
       setOrderOverride(null);
       setIsReordering(false);
-      handleSaved();
     } catch (cause) {
-      setError(toErrorMessage(cause));
-    } finally {
-      setIsSavingOrder(false);
+      setActionError(toErrorMessage(cause));
     }
   }
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const rows = isReordering ? orderedRows : (result?.items ?? []);
+  const isSavingOrder = reorderServicesMutation.isPending;
 
   return (
     <div className="max-w-6xl">
@@ -361,7 +302,10 @@ export default function ServicesPage() {
           label="Status"
           options={PUBLISHED_OPTIONS}
           value={published}
-          onChange={(event) => handlePublishedChange(event.target.value)}
+          onChange={(event) => {
+            setPage(1);
+            setPublished(event.target.value);
+          }}
           containerClassName="w-36"
         />
 
@@ -543,7 +487,7 @@ export default function ServicesPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.max(1, page - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
           >
             Previous
@@ -554,7 +498,7 @@ export default function ServicesPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(Math.min(totalPages, page + 1))}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
           >
             Next
@@ -568,7 +512,7 @@ export default function ServicesPage() {
           key={editing?.id ?? "new"}
           service={editing}
           onClose={() => setIsFormOpen(false)}
-          onSaved={handleSaved}
+          onSaved={() => {}}
         />
       )}
 
@@ -582,7 +526,7 @@ export default function ServicesPage() {
         }
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
-        loading={isDeleting}
+        loading={deleteServiceMutation.isPending}
         error={deleteError}
       />
     </div>

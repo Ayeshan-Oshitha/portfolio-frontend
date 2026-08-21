@@ -10,12 +10,12 @@ import Select from "@/admin/components/ui/Select";
 import Textarea from "@/admin/components/ui/Textarea";
 import PricingFeaturesEditor from "@/admin/components/pricing/PricingFeaturesEditor";
 import {
-  addPricingPlanFeature,
-  createPricingPlan,
-  deletePricingPlanFeature,
-  updatePricingPlan,
-  updatePricingPlanFeature,
-} from "@/admin/api/pricing";
+  useAddPricingPlanFeature,
+  useCreatePricingPlan,
+  useDeletePricingPlanFeature,
+  useUpdatePricingPlan,
+  useUpdatePricingPlanFeature,
+} from "@/admin/hooks/usePricing";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import { priceTypeLabel } from "@/admin/utils/format";
 import type {
@@ -128,10 +128,21 @@ function toOptionalNumber(raw: unknown): number | undefined {
  * longer has, then write every remaining row with its index as `sortOrder`
  * (which is why the dedicated features-reorder endpoint is not needed here).
  */
+interface SyncFeaturesDeps {
+  readonly addFeature: ReturnType<typeof useAddPricingPlanFeature>["mutateAsync"];
+  readonly updateFeature: ReturnType<
+    typeof useUpdatePricingPlanFeature
+  >["mutateAsync"];
+  readonly deleteFeature: ReturnType<
+    typeof useDeletePricingPlanFeature
+  >["mutateAsync"];
+}
+
 async function syncFeatures(
   planId: string,
   next: readonly PricingFeatureValues[],
   previous: readonly PricingPlanFeature[],
+  { addFeature, updateFeature, deleteFeature }: SyncFeaturesDeps,
 ): Promise<void> {
   const kept = new Set(
     next.map((feature) => feature.id).filter((id): id is string => Boolean(id)),
@@ -139,7 +150,7 @@ async function syncFeatures(
 
   for (const stale of previous) {
     if (!kept.has(stale.id)) {
-      await deletePricingPlanFeature(planId, stale.id);
+      await deleteFeature({ planId, featureId: stale.id });
     }
   }
 
@@ -151,9 +162,9 @@ async function syncFeatures(
     };
 
     if (feature.id) {
-      await updatePricingPlanFeature(planId, feature.id, body);
+      await updateFeature({ planId, featureId: feature.id, body });
     } else {
-      await addPricingPlanFeature(planId, body);
+      await addFeature({ planId, body });
     }
   }
 }
@@ -169,6 +180,12 @@ export default function PricingFormModal({
   onSaved,
 }: PricingFormModalProps) {
   const [formError, setFormError] = useState<string | null>(null);
+  const createPlanMutation = useCreatePricingPlan();
+  const updatePlanMutation = useUpdatePricingPlan();
+  const addFeatureMutation = useAddPricingPlanFeature();
+  const updateFeatureMutation = useUpdatePricingPlanFeature();
+  const deleteFeatureMutation = useDeletePricingPlanFeature();
+  const isSaving = createPlanMutation.isPending || updatePlanMutation.isPending;
 
   const {
     register,
@@ -233,10 +250,14 @@ export default function PricingFormModal({
 
     try {
       const saved = plan
-        ? await updatePricingPlan(plan.id, body)
-        : await createPricingPlan(body);
+        ? await updatePlanMutation.mutateAsync({ id: plan.id, body })
+        : await createPlanMutation.mutateAsync(body);
 
-      await syncFeatures(saved.id, values.features, plan?.features ?? []);
+      await syncFeatures(saved.id, values.features, plan?.features ?? [], {
+        addFeature: addFeatureMutation.mutateAsync,
+        updateFeature: updateFeatureMutation.mutateAsync,
+        deleteFeature: deleteFeatureMutation.mutateAsync,
+      });
 
       onSaved();
       onClose();
@@ -470,12 +491,16 @@ export default function PricingFormModal({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSaving}
           >
             Cancel
           </Button>
-          <Button type="submit" size="sm" loading={isSubmitting}>
-            {isSubmitting ? "Saving…" : plan ? "Save changes" : "Create plan"}
+          <Button type="submit" size="sm" loading={isSubmitting || isSaving}>
+            {isSubmitting || isSaving
+              ? "Saving…"
+              : plan
+                ? "Save changes"
+                : "Create plan"}
           </Button>
         </div>
       </form>

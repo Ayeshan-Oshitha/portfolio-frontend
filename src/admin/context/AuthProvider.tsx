@@ -5,8 +5,9 @@ import type {
   LoginRequest,
   RegisterRequest,
 } from "@/admin/types";
-import * as authApi from "@/admin/api/auth";
-import { AUTH_EXPIRED_EVENT } from "@/admin/api/client";
+import * as authService from "@/admin/services/authService";
+import { AUTH_EXPIRED_EVENT } from "@/admin/services/httpClient";
+import { useLogin, useRegister } from "@/admin/hooks/useAuthApi";
 import {
   clearStoredToken,
   getStoredToken,
@@ -35,6 +36,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     return "loading";
   });
 
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
+
   const logout = useCallback(() => {
     // No logout endpoint exists — dropping the token is the whole operation.
     clearStoredToken();
@@ -48,7 +52,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
     const controller = new AbortController();
 
-    authApi
+    authService
       .getMe(controller.signal)
       .then((me) => {
         setUser(me);
@@ -73,27 +77,33 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     return () => window.removeEventListener(AUTH_EXPIRED_EVENT, logout);
   }, [logout]);
 
-  const login = useCallback(async (payload: LoginRequest) => {
-    const response = await authApi.login(payload);
-    setStoredToken({
-      accessToken: response.accessToken,
-      expiresAt: response.expiresAt,
-    });
-    setUser(response.user);
-    setStatus("authenticated");
-    return response.user;
-  }, []);
+  const login = useCallback(
+    async (payload: LoginRequest) => {
+      const response = await loginMutation.mutateAsync(payload);
+      setStoredToken({
+        accessToken: response.accessToken,
+        expiresAt: response.expiresAt,
+      });
+      setUser(response.user);
+      setStatus("authenticated");
+      return response.user;
+    },
+    [loginMutation],
+  );
 
-  const register = useCallback(async (payload: RegisterRequest) => {
-    const response = await authApi.register(payload);
-    setStoredToken({
-      accessToken: response.accessToken,
-      expiresAt: response.expiresAt,
-    });
-    setUser(response.user);
-    setStatus("authenticated");
-    return response.user;
-  }, []);
+  const register = useCallback(
+    async (payload: RegisterRequest) => {
+      const response = await registerMutation.mutateAsync(payload);
+      setStoredToken({
+        accessToken: response.accessToken,
+        expiresAt: response.expiresAt,
+      });
+      setUser(response.user);
+      setStatus("authenticated");
+      return response.user;
+    },
+    [registerMutation],
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({ user, status, login, register, logout }),

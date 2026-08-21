@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,11 @@ import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import TagPicker from "@/admin/components/ui/TagPicker";
 import Textarea from "@/admin/components/ui/Textarea";
-import { createProject, getProject, updateProject } from "@/admin/api/projects";
+import {
+  useCreateProject,
+  useProject,
+  useUpdateProject,
+} from "@/admin/hooks/useProjects";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import { slugify } from "@/admin/utils/format";
 import type { AdminProject, ProjectWriteRequest } from "@/admin/types";
@@ -134,32 +138,16 @@ function blank(value?: string): string | undefined {
  */
 export default function ProjectEditorPage() {
   const { id } = useParams<{ id: string }>();
-  const isEdit = id !== undefined;
   const navigate = useNavigate();
 
-  const [project, setProject] = useState<AdminProject | null>(null);
-  const [isLoading, setIsLoading] = useState(isEdit);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const {
+    data: project,
+    isPending: isLoading,
+    error: queryError,
+  } = useProject(id);
+  const loadError = queryError ? toErrorMessage(queryError) : null;
 
-  useEffect(() => {
-    if (!id) return;
-
-    const controller = new AbortController();
-    getProject(id, controller.signal)
-      .then((data) => {
-        setProject(data);
-        setIsLoading(false);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError") return;
-        setLoadError(toErrorMessage(cause));
-        setIsLoading(false);
-      });
-
-    return () => controller.abort();
-  }, [id]);
-
-  if (isLoading) {
+  if (id && isLoading) {
     return (
       <div className="flex items-center justify-center py-24 text-primary-400">
         <Spinner className="h-6 w-6" label="Loading project" />
@@ -183,7 +171,7 @@ export default function ProjectEditorPage() {
   return (
     <ProjectForm
       key={project?.id ?? "new"}
-      project={project}
+      project={project ?? null}
       onDone={() => navigate("/admin/projects")}
     />
   );
@@ -198,6 +186,10 @@ interface ProjectFormProps {
 function ProjectForm({ project, onDone }: ProjectFormProps) {
   const [tab, setTab] = useState<TabId>("details");
   const [formError, setFormError] = useState<string | null>(null);
+  const createProjectMutation = useCreateProject();
+  const updateProjectMutation = useUpdateProject();
+  const isSaving =
+    createProjectMutation.isPending || updateProjectMutation.isPending;
 
   const {
     register,
@@ -259,9 +251,9 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
 
     try {
       if (project) {
-        await updateProject(project.id, body);
+        await updateProjectMutation.mutateAsync({ id: project.id, body });
       } else {
-        await createProject(body);
+        await createProjectMutation.mutateAsync(body);
       }
       onDone();
     } catch (error) {
@@ -532,12 +524,12 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
               variant="ghost"
               size="sm"
               onClick={onDone}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSaving}
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" loading={isSubmitting}>
-              {isSubmitting
+            <Button type="submit" size="sm" loading={isSubmitting || isSaving}>
+              {isSubmitting || isSaving
                 ? "Saving…"
                 : project
                   ? "Save changes"
