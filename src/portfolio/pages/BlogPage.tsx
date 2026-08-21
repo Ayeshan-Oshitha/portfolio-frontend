@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { ALL_POSTS } from "../data/blog-page";
 import BlogHeader from "../components/blog-page/BlogHeader";
 import BlogFilters from "../components/blog-page/BlogFilters";
@@ -6,12 +7,13 @@ import BlogGrid from "../components/blog-page/BlogGrid";
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const filteredPosts = useMemo(() => {
     return ALL_POSTS.filter((post) => {
       // 1. Search Filter
-      const query = searchQuery.toLowerCase();
+      const query = debouncedSearchQuery.toLowerCase();
       const matchesSearch =
         !query ||
         post.title.toLowerCase().includes(query) ||
@@ -24,7 +26,7 @@ export default function BlogPage() {
 
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [debouncedSearchQuery, selectedCategory]);
 
   return (
     <div className="relative pt-32 pb-24 sm:pb-32">

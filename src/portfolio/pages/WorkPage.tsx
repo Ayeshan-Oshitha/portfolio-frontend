@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 import { ALL_PROJECTS } from "../data/projects";
 import WorkHeader from "../components/work-page/WorkHeader";
 import WorkFilters from "../components/work-page/WorkFilters";
@@ -6,6 +7,7 @@ import WorkGrid from "../components/work-page/WorkGrid";
 
 export default function WorkPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
@@ -20,7 +22,7 @@ export default function WorkPage() {
   const filteredProjects = useMemo(() => {
     return ALL_PROJECTS.filter((project) => {
       // 1. Search Filter
-      const query = searchQuery.toLowerCase();
+      const query = debouncedSearchQuery.toLowerCase();
       const matchesSearch =
         !query ||
         project.title.toLowerCase().includes(query) ||
@@ -40,7 +42,7 @@ export default function WorkPage() {
       }
       return a.year - b.year;
     });
-  }, [searchQuery, selectedCategories, sortOrder]);
+  }, [debouncedSearchQuery, selectedCategories, sortOrder]);
 
   return (
     <div className="relative pt-32 pb-24 sm:pb-32">

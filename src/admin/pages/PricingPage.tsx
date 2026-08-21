@@ -27,6 +27,7 @@ import {
 import { useServices } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import { formatDelivery, formatPrice } from "@/admin/utils/format";
+import { useDebounce } from "@/hooks/useDebounce";
 import type { AdminPricingPlan, Site } from "@/admin/types";
 
 const PAGE_SIZE = 20;
@@ -71,7 +72,7 @@ function siteSortOrder(plan: AdminPricingPlan, site: Site): number {
 
 export default function PricingPage() {
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const search = useDebounce(searchInput);
   const [site, setSite] = useState<Site | "">("");
   const [kind, setKind] = useState<KindFilter>("");
   const [serviceId, setServiceId] = useState("");
@@ -147,12 +148,6 @@ export default function PricingPage() {
 
     return picked.length === sortedForSite.length ? picked : sortedForSite;
   }, [orderOverride, sortedForSite]);
-
-  function handleSearch(event: React.FormEvent) {
-    event.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  }
 
   function handleSiteChange(next: Site | "") {
     setPage(1);
@@ -318,12 +313,15 @@ export default function PricingPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSearch} className="flex items-end gap-3 mb-6">
+      <div className="flex items-end gap-3 mb-6">
         <Input
           label="Search"
           placeholder="Plan name"
           value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
+          onChange={(event) => {
+            setPage(1);
+            setSearchInput(event.target.value);
+          }}
           containerClassName="flex-1 max-w-xs"
         />
 
@@ -370,11 +368,7 @@ export default function PricingPage() {
           }}
           containerClassName="w-36"
         />
-
-        <Button type="submit" variant="secondary">
-          Search
-        </Button>
-      </form>
+      </div>
 
       {error && <Alert className="mb-6">{error}</Alert>}
 

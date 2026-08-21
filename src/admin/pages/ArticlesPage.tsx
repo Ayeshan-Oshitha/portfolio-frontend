@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { useDebounce } from "@/hooks/useDebounce";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
@@ -68,7 +69,7 @@ function visibilityBadges(article: AdminArticle) {
 
 export default function ArticlesPage() {
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const search = useDebounce(searchInput);
   const [site, setSite] = useState<SiteFilter>("");
   const [status, setStatus] = useState<StatusFilter>("");
   const [page, setPage] = useState(1);
@@ -92,15 +93,6 @@ export default function ArticlesPage() {
   const deleteArticleMutation = useDeleteArticle();
 
   const error = queryError ? toErrorMessage(queryError) : null;
-
-  const handleSearch = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      setPage(1);
-      setSearch(searchInput.trim());
-    },
-    [searchInput],
-  );
 
   function handleSaved() {
     // Query invalidation on the mutation already refreshes the list.
@@ -156,12 +148,15 @@ export default function ArticlesPage() {
         </Button>
       </div>
 
-      <form onSubmit={handleSearch} className="flex items-end gap-3 mb-6">
+      <div className="flex items-end gap-3 mb-6">
         <Input
           label="Search"
           placeholder="Article title"
           value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
+          onChange={(event) => {
+            setPage(1);
+            setSearchInput(event.target.value);
+          }}
           containerClassName="flex-1 max-w-xs"
         />
 
@@ -186,11 +181,7 @@ export default function ArticlesPage() {
           }}
           containerClassName="w-44"
         />
-
-        <Button type="submit" variant="secondary">
-          Search
-        </Button>
-      </form>
+      </div>
 
       {error && <Alert className="mb-6">{error}</Alert>}
 

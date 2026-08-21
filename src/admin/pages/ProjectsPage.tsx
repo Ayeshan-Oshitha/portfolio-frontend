@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowDown,
@@ -25,6 +25,7 @@ import {
 import { toErrorMessage } from "@/admin/api/ApiError";
 import type { AdminProject, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 
@@ -87,7 +88,7 @@ export default function ProjectsPage() {
   const navigate = useNavigate();
 
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const search = useDebounce(searchInput);
   const [site, setSite] = useState<SiteFilter>("");
   const [status, setStatus] = useState<StatusFilter>("");
   const [page, setPage] = useState(1);
@@ -114,15 +115,6 @@ export default function ProjectsPage() {
 
   const error =
     actionError ?? (queryError ? toErrorMessage(queryError) : null);
-
-  const handleSearch = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      setPage(1);
-      setSearch(searchInput.trim());
-    },
-    [searchInput],
-  );
 
   /**
    * Reordering renumbers the whole visible page, so the rows have to be in the
@@ -222,12 +214,15 @@ export default function ProjectsPage() {
         </Button>
       </div>
 
-      <form onSubmit={handleSearch} className="flex items-end gap-3 mb-3">
+      <div className="flex items-end gap-3 mb-3">
         <Input
           label="Search"
           placeholder="Project title"
           value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
+          onChange={(event) => {
+            setPage(1);
+            setSearchInput(event.target.value);
+          }}
           containerClassName="flex-1 max-w-xs"
         />
 
@@ -252,11 +247,7 @@ export default function ProjectsPage() {
           }}
           containerClassName="w-44"
         />
-
-        <Button type="submit" variant="secondary">
-          Search
-        </Button>
-      </form>
+      </div>
 
       <p className="text-xs text-text-muted mb-6">
         {site
