@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
-import Button from "@/portfolio/components/ui/Button";
+import Button from "@/admin/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";

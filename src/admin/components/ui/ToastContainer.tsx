@@ -8,12 +8,16 @@ interface ToastContainerProps {
 }
 
 const VARIANT_CLASSES: Record<ToastVariant, string> = {
-  error: "bg-danger-500/10 text-danger-400 border-danger-500/30",
-  success: "bg-success-500/10 text-success-400 border-success-500/30",
-  info: "bg-primary-600/10 text-primary-400 border-primary-600/20",
+  error: "bg-surface-950 text-danger-400 border-danger-500/40",
+  success: "bg-surface-950 text-success-400 border-success-500/40",
+  info: "bg-surface-950 text-text-primary border-border-default",
 };
 
-/** Stacked toast notifications, portalled above the modal layer (`z-50`). */
+/**
+ * Stacked toast notifications, portalled above the modal layer (`z-50`).
+ * Portalling puts these outside `AdminRoot`, so the admin theme is re-declared
+ * here to keep the light token overrides cascading in.
+ */
 export default function ToastContainer({
   toasts,
   onDismiss,
@@ -21,12 +25,15 @@ export default function ToastContainer({
   if (toasts.length === 0) return null;
 
   return createPortal(
-    <div className="fixed bottom-4 right-4 z-[60] flex w-full max-w-sm flex-col gap-2">
+    <div
+      data-theme="admin-light"
+      className="fixed bottom-4 right-4 z-[60] flex w-full max-w-sm flex-col gap-2"
+    >
       {toasts.map((toast) => (
         <div
           key={toast.id}
           role={toast.variant === "error" ? "alert" : "status"}
-          className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm shadow-lg backdrop-blur-sm ${VARIANT_CLASSES[toast.variant]}`}
+          className={`flex items-start gap-3 rounded-lg border px-4 py-3 text-sm shadow-sm ${VARIANT_CLASSES[toast.variant]}`}
         >
           <p className="flex-1 min-w-0">{toast.message}</p>
           <button

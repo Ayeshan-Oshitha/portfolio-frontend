@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
-import Button from "@/portfolio/components/ui/Button";
+import Button from "@/admin/components/ui/Button";
 import type { ServiceFeatureValues } from "@/admin/validation/serviceSchemas";
 
 interface ServiceFeaturesEditorProps {

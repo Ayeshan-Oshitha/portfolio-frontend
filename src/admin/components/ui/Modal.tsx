@@ -23,7 +23,9 @@ const SIZE_CLASSES: Record<ModalSize, string> = {
 
 /**
  * The admin panel's dialog primitive. Portalled to `document.body` so it
- * escapes the layout's stacking and overflow contexts.
+ * escapes the layout's stacking and overflow contexts — which also puts it
+ * outside `AdminRoot`, so it re-declares the admin theme to keep the light
+ * token overrides cascading into the portalled subtree.
  */
 export default function Modal({
   open,
@@ -68,9 +70,11 @@ export default function Modal({
 
   if (!open) return null;
 
+  // The backdrop uses raw black rather than a surface token: every surface value
+  // is pale under the light theme, so none of them dim the page behind the dialog.
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       onMouseDown={(event) => {
         // Only dismiss if the press started on the backdrop, not a drag-select ending outside the panel.
         if (event.target === event.currentTarget) onClose();
@@ -78,12 +82,13 @@ export default function Modal({
     >
       <div
         ref={panelRef}
+        data-theme="admin-light"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`w-full ${SIZE_CLASSES[size]} max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-900 border border-border-subtle shadow-2xl focus:outline-none`}
+        className={`modal-scroll w-full ${SIZE_CLASSES[size]} max-h-[90vh] overflow-y-auto rounded-2xl bg-surface-950 border border-border-default shadow-lg focus:outline-none`}
       >
         <div className="flex items-start gap-4 px-8 pt-8">
           <div className="flex-1 min-w-0">

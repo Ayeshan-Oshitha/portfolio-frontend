@@ -7,9 +7,9 @@ interface AlertProps {
 }
 
 const VARIANT_CLASSES: Record<AlertVariant, string> = {
-  error: "bg-danger-500/10 text-danger-400 border-danger-500/30",
-  success: "bg-success-500/10 text-success-400 border-success-500/30",
-  info: "bg-primary-600/10 text-primary-400 border-primary-600/20",
+  error: "bg-danger-500/8 text-danger-400 border-danger-500/40",
+  success: "bg-success-500/8 text-success-400 border-success-500/40",
+  info: "bg-surface-800 text-text-secondary border-border-default",
 };
 
 export default function Alert({

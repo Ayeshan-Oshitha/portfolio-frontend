@@ -1,4 +1,4 @@
-import Button from "@/portfolio/components/ui/Button";
+import Button from "@/admin/components/ui/Button";
 import Modal from "@/admin/components/ui/Modal";
 
 interface ConfirmDialogProps {
