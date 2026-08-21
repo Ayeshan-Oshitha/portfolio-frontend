@@ -27,8 +27,9 @@ export const articleSchema = z
     publishedDate: z
       .string()
       .regex(DATE_ONLY, "Published date must be a calendar date."),
-    mediumUrl: z.string().trim().min(1, "mediumUrl is required."),
-    coverImageId: optionalText,
+    mediumUrl: optionalText,
+    coverImageKey: optionalText,
+    contentMarkdown: optionalText,
     isPublished: z.boolean(),
     showOnAgency: z.boolean(),
     featuredOnAgency: z.boolean(),
@@ -39,7 +40,7 @@ export const articleSchema = z
     tagIds: z.array(z.string()),
   })
   .superRefine((values, ctx) => {
-    // Matches `Uri.TryCreate(..., UriKind.Absolute)` plus the scheme check.
+    // Optional cross-post link — only validated when present, same as the API.
     if (values.mediumUrl) {
       let isAbsoluteHttp = false;
       try {

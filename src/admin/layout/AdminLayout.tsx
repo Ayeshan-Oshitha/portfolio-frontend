@@ -6,6 +6,7 @@ import {
   KeyRound,
   LayoutDashboard,
   LogOut,
+  MessageSquareQuote,
   Newspaper,
   Tags,
   UserCheck,
@@ -50,6 +51,12 @@ const NAV_GROUPS = [
       { to: "/admin/services", label: "Services", icon: Wrench, end: false },
       { to: "/admin/pricing", label: "Pricing", icon: CreditCard, end: false },
       { to: "/admin/faqs", label: "FAQs", icon: HelpCircle, end: false },
+      {
+        to: "/admin/reviews",
+        label: "Reviews",
+        icon: MessageSquareQuote,
+        end: false,
+      },
     ],
   },
   {
