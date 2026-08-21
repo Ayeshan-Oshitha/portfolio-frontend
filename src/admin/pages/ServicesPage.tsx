@@ -26,6 +26,7 @@ import {
 } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import type { AdminService, Site } from "@/admin/types";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 
@@ -62,7 +63,7 @@ function siteSortOrder(service: AdminService, site: Site): number {
 
 export default function ServicesPage() {
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const search = useDebounce(searchInput);
   const [site, setSite] = useState<Site | "">("");
   const [published, setPublished] = useState("");
   const [page, setPage] = useState(1);
@@ -125,12 +126,6 @@ export default function ServicesPage() {
 
     return picked.length === sortedForSite.length ? picked : sortedForSite;
   }, [orderOverride, sortedForSite]);
-
-  function handleSearch(event: React.FormEvent) {
-    event.preventDefault();
-    setPage(1);
-    setSearch(searchInput.trim());
-  }
 
   function handleSiteChange(next: Site | "") {
     setPage(1);
@@ -279,12 +274,15 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSearch} className="flex items-end gap-3 mb-6">
+      <div className="flex items-end gap-3 mb-6">
         <Input
           label="Search"
           placeholder="Service name"
           value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
+          onChange={(event) => {
+            setPage(1);
+            setSearchInput(event.target.value);
+          }}
           containerClassName="flex-1 max-w-xs"
         />
 
@@ -308,11 +306,7 @@ export default function ServicesPage() {
           }}
           containerClassName="w-36"
         />
-
-        <Button type="submit" variant="secondary">
-          Search
-        </Button>
-      </form>
+      </div>
 
       {error && <Alert className="mb-6">{error}</Alert>}
 

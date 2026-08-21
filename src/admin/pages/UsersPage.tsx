@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
@@ -11,13 +11,14 @@ import { toErrorMessage } from "@/admin/api/ApiError";
 import useAuth from "@/admin/context/useAuth";
 import type { AdminUser } from "@/admin/types";
 import { formatDate, roleLabel, statusLabel } from "@/admin/utils/format";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const search = useDebounce(searchInput);
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -30,15 +31,6 @@ export default function UsersPage() {
   const deleteUserMutation = useDeleteUser();
 
   const error = deleteError ?? (queryError ? toErrorMessage(queryError) : null);
-
-  const handleSearch = useCallback(
-    (event: React.FormEvent) => {
-      event.preventDefault();
-      setPage(1);
-      setSearch(searchInput.trim());
-    },
-    [searchInput],
-  );
 
   async function handleDelete(target: AdminUser) {
     const confirmed = window.confirm(
@@ -68,18 +60,18 @@ export default function UsersPage() {
         {total} {total === 1 ? "account" : "accounts"} registered.
       </p>
 
-      <form onSubmit={handleSearch} className="flex items-end gap-3 mb-6">
+      <div className="flex items-end gap-3 mb-6">
         <Input
           label="Search"
           placeholder="Name or email"
           value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
+          onChange={(event) => {
+            setPage(1);
+            setSearchInput(event.target.value);
+          }}
           containerClassName="flex-1 max-w-sm"
         />
-        <Button type="submit" variant="secondary">
-          Search
-        </Button>
-      </form>
+      </div>
 
       {error && <Alert className="mb-6">{error}</Alert>}
 
