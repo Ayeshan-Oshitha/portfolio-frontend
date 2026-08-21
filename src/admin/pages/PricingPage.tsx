@@ -26,6 +26,7 @@ import {
 } from "@/admin/hooks/usePricing";
 import { useServices } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import { formatDelivery, formatPrice } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import type { AdminPricingPlan, Site } from "@/admin/types";
@@ -71,6 +72,7 @@ function siteSortOrder(plan: AdminPricingPlan, site: Site): number {
 }
 
 export default function PricingPage() {
+  const toast = useToast();
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
   const [site, setSite] = useState<Site | "">("");
@@ -84,9 +86,7 @@ export default function PricingPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminPricingPlan | null>(
     null,
   );
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const [isReordering, setIsReordering] = useState(false);
   const [orderOverride, setOrderOverride] = useState<string[] | null>(null);
@@ -113,8 +113,7 @@ export default function PricingPage() {
   const setPublishedMutation = useSetPricingPlanPublished();
   const reorderPlansMutation = useReorderPricingPlans();
 
-  const error =
-    actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   /**
    * The API returns plans in name order, so the reorder list has to be sorted
@@ -181,31 +180,30 @@ export default function PricingPage() {
 
   function askDelete(target: AdminPricingPlan) {
     setDeleteTarget(target);
-    setDeleteError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setDeleteError(null);
     try {
       await deletePricingPlanMutation.mutateAsync(deleteTarget.id);
+      toast.success("Pricing plan deleted.");
       setDeleteTarget(null);
     } catch (cause) {
-      setDeleteError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
   async function togglePublished(target: AdminPricingPlan) {
     setPublishingId(target.id);
-    setActionError(null);
     try {
       await setPublishedMutation.mutateAsync({
         id: target.id,
         isPublished: !target.isPublished,
       });
+      toast.success(target.isPublished ? "Unpublished." : "Published.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setPublishingId(null);
     }
@@ -234,7 +232,6 @@ export default function PricingPage() {
   async function saveOrder() {
     if (!site) return;
 
-    setActionError(null);
     try {
       await reorderPlansMutation.mutateAsync({
         site,
@@ -243,10 +240,11 @@ export default function PricingPage() {
           sortOrder: index,
         })),
       });
+      toast.success("Order updated.");
       setOrderOverride(null);
       setIsReordering(false);
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -573,7 +571,6 @@ export default function PricingPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deletePricingPlanMutation.isPending}
-        error={deleteError}
       />
     </div>
   );

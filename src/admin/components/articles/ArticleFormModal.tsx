@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
@@ -10,6 +8,7 @@ import TagPicker from "@/admin/components/ui/TagPicker";
 import Textarea from "@/admin/components/ui/Textarea";
 import { useCreateArticle, useUpdateArticle } from "@/admin/hooks/useArticles";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import { slugify, todayDateOnly } from "@/admin/utils/format";
 import type { AdminArticle, ArticleWriteRequest } from "@/admin/types";
 import {
@@ -84,7 +83,7 @@ export default function ArticleFormModal({
   onClose,
   onSaved,
 }: ArticleFormModalProps) {
-  const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
   const createArticleMutation = useCreateArticle();
   const updateArticleMutation = useUpdateArticle();
   const isSaving =
@@ -107,8 +106,6 @@ export default function ArticleFormModal({
   const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
 
   async function onSubmit(values: ArticleFormValues) {
-    setFormError(null);
-
     // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field would wipe out.
     const body: ArticleWriteRequest = {
       title: values.title.trim(),
@@ -131,8 +128,10 @@ export default function ArticleFormModal({
     try {
       if (article) {
         await updateArticleMutation.mutateAsync({ id: article.id, body });
+        toast.success("Article updated.");
       } else {
         await createArticleMutation.mutateAsync(body);
+        toast.success("Article created.");
       }
       onSaved();
       onClose();
@@ -141,7 +140,7 @@ export default function ArticleFormModal({
         setError("slug", { type: "server", message: error.message });
         return;
       }
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -160,8 +159,6 @@ export default function ArticleFormModal({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        {formError && <Alert>{formError}</Alert>}
-
         <Input
           label="Title"
           required

@@ -79,7 +79,7 @@ httpClient.interceptors.response.use(
     if (!cause.response) {
       throw new ApiError(
         0,
-        "Could not reach the server. Check that the API is running.",
+        "Could not reach the server. Please check your connection and try again.",
       );
     }
 

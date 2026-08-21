@@ -23,6 +23,7 @@ import {
   useSetProjectPublished,
 } from "@/admin/hooks/useProjects";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import type { AdminProject, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
@@ -86,6 +87,7 @@ function visibilityBadges(project: AdminProject) {
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
@@ -94,9 +96,7 @@ export default function ProjectsPage() {
   const [page, setPage] = useState(1);
 
   const [deleteTarget, setDeleteTarget] = useState<AdminProject | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [publishingId, setPublishingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -113,8 +113,7 @@ export default function ProjectsPage() {
   const setPublishedMutation = useSetProjectPublished();
   const reorderProjectsMutation = useReorderProjects();
 
-  const error =
-    actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
   /**
    * Reordering renumbers the whole visible page, so the rows have to be in the
@@ -131,14 +130,14 @@ export default function ProjectsPage() {
 
   async function togglePublished(target: AdminProject) {
     setPublishingId(target.id);
-    setActionError(null);
     try {
       await setPublishedMutation.mutateAsync({
         id: target.id,
         isPublished: !target.isPublished,
       });
+      toast.success(target.isPublished ? "Unpublished." : "Published.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     } finally {
       setPublishingId(null);
     }
@@ -157,7 +156,6 @@ export default function ProjectsPage() {
     const next = [...rows];
     [next[index], next[target]] = [next[target], next[index]];
 
-    setActionError(null);
     try {
       await reorderProjectsMutation.mutateAsync({
         site,
@@ -167,25 +165,25 @@ export default function ProjectsPage() {
           sortOrder: (page - 1) * PAGE_SIZE + at,
         })),
       });
+      toast.success("Order updated.");
     } catch (cause) {
-      setActionError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
   function askDelete(target: AdminProject) {
     setDeleteTarget(target);
-    setDeleteError(null);
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
 
-    setDeleteError(null);
     try {
       await deleteProjectMutation.mutateAsync(deleteTarget.id);
+      toast.success("Project deleted.");
       setDeleteTarget(null);
     } catch (cause) {
-      setDeleteError(toErrorMessage(cause));
+      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -448,7 +446,6 @@ export default function ProjectsPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteProjectMutation.isPending}
-        error={deleteError}
       />
     </div>
   );

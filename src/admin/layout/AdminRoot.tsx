@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import AuthProvider from "@/admin/context/AuthProvider";
+import ToastProvider from "@/admin/context/ToastProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,9 +19,11 @@ export default function AdminRoot() {
       className="min-h-screen bg-surface-950 text-text-primary"
     >
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Outlet />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Outlet />
+          </AuthProvider>
+        </ToastProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </div>

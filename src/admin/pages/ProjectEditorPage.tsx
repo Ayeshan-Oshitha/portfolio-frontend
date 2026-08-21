@@ -18,6 +18,7 @@ import {
   useUpdateProject,
 } from "@/admin/hooks/useProjects";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import { slugify } from "@/admin/utils/format";
 import type { AdminProject, ProjectWriteRequest } from "@/admin/types";
 import {
@@ -187,7 +188,7 @@ interface ProjectFormProps {
 
 function ProjectForm({ project, onDone }: ProjectFormProps) {
   const [tab, setTab] = useState<TabId>("details");
-  const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
   const isSaving =
@@ -218,8 +219,6 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
   }, [errors]);
 
   async function onSubmit(values: ProjectFormValues) {
-    setFormError(null);
-
     // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field would wipe out.
     const body: ProjectWriteRequest = {
       title: values.title.trim(),
@@ -249,8 +248,10 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
     try {
       if (project) {
         await updateProjectMutation.mutateAsync({ id: project.id, body });
+        toast.success("Project updated.");
       } else {
         await createProjectMutation.mutateAsync(body);
+        toast.success("Project created.");
       }
       onDone();
     } catch (error) {
@@ -259,7 +260,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
         setError("slug", { type: "server", message: error.message });
         return;
       }
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -518,9 +519,6 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
         </Card>
 
         <div className="sticky bottom-0 mt-6 -mx-6 md:-mx-10 px-6 md:px-10 py-4 bg-surface-950/90 backdrop-blur border-t border-border-subtle">
-          {/* Outside any panel so it stays visible regardless of which tab is open. */}
-          {formError && <Alert className="mb-4">{formError}</Alert>}
-
           {tabsWithErrors.size > 0 && (
             <p className="mb-4 text-xs text-danger-400">
               Some fields need attention — the dotted tabs above have errors.

@@ -1,8 +1,6 @@
-import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
@@ -16,6 +14,7 @@ import {
   useUpdateServiceFeature,
 } from "@/admin/hooks/useServices";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import { slugify } from "@/admin/utils/format";
 import type {
   AdminService,
@@ -144,7 +143,7 @@ export default function ServiceFormModal({
   onClose,
   onSaved,
 }: ServiceFormModalProps) {
-  const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
   const createServiceMutation = useCreateService();
   const updateServiceMutation = useUpdateService();
   const addFeatureMutation = useAddServiceFeature();
@@ -172,8 +171,6 @@ export default function ServiceFormModal({
   const slugPreview = slugify(name ?? "");
 
   async function onSubmit(values: ServiceFormValues) {
-    setFormError(null);
-
     // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: ServiceWriteRequest = {
       name: values.name.trim(),
@@ -203,6 +200,7 @@ export default function ServiceFormModal({
         deleteFeature: deleteFeatureMutation.mutateAsync,
       });
 
+      toast.success(service ? "Service updated." : "Service created.");
       onSaved();
       onClose();
     } catch (error) {
@@ -211,7 +209,7 @@ export default function ServiceFormModal({
         return;
       }
       // Dialog stays open so a half-applied feature sync can be retried, not lost.
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -228,8 +226,6 @@ export default function ServiceFormModal({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        {formError && <Alert>{formError}</Alert>}
-
         <Input
           label="Name"
           required

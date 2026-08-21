@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
@@ -17,6 +16,7 @@ import {
   useUpdatePricingPlanFeature,
 } from "@/admin/hooks/usePricing";
 import { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import { priceTypeLabel } from "@/admin/utils/format";
 import type {
   AdminPricingPlan,
@@ -179,7 +179,7 @@ export default function PricingFormModal({
   onClose,
   onSaved,
 }: PricingFormModalProps) {
-  const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
   const createPlanMutation = useCreatePricingPlan();
   const updatePlanMutation = useUpdatePricingPlan();
   const addFeatureMutation = useAddPricingPlanFeature();
@@ -218,8 +218,6 @@ export default function PricingFormModal({
   }));
 
   async function onSubmit(values: PricingPlanFormValues) {
-    setFormError(null);
-
     // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: PricingPlanWriteRequest = {
       serviceId:
@@ -257,11 +255,12 @@ export default function PricingFormModal({
         deleteFeature: deleteFeatureMutation.mutateAsync,
       });
 
+      toast.success(plan ? "Pricing plan updated." : "Pricing plan created.");
       onSaved();
       onClose();
     } catch (error) {
       // Dialog stays open so a half-applied feature sync can be retried, not lost.
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -278,8 +277,6 @@ export default function PricingFormModal({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        {formError && <Alert>{formError}</Alert>}
-
         <div className="flex gap-4">
           <Select
             label="Kind"

@@ -1,14 +1,13 @@
-import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
 import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import Select from "@/admin/components/ui/Select";
 import { useCreateTag, useUpdateTag } from "@/admin/hooks/useTags";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import useToast from "@/admin/context/useToast";
 import {
   TECH_CATEGORIES,
   slugify,
@@ -70,7 +69,7 @@ export default function TagFormModal({
   onClose,
   onSaved,
 }: TagFormModalProps) {
-  const [formError, setFormError] = useState<string | null>(null);
+  const toast = useToast();
   const createTagMutation = useCreateTag();
   const updateTagMutation = useUpdateTag();
   const isSaving = createTagMutation.isPending || updateTagMutation.isPending;
@@ -91,8 +90,6 @@ export default function TagFormModal({
   const name = useWatch({ control, name: "name" });
 
   async function onSubmit(values: TagFormValues) {
-    setFormError(null);
-
     // Built explicitly: the API rejects a category tag that still carries technology fields.
     const body: TagWriteRequest = {
       name: values.name.trim(),
@@ -112,8 +109,10 @@ export default function TagFormModal({
     try {
       if (tag) {
         await updateTagMutation.mutateAsync({ id: tag.id, body });
+        toast.success("Tag updated.");
       } else {
         await createTagMutation.mutateAsync(body);
+        toast.success("Tag created.");
       }
       onSaved();
       onClose();
@@ -122,7 +121,7 @@ export default function TagFormModal({
         setError("slug", { type: "server", message: error.message });
         return;
       }
-      setFormError(toErrorMessage(error));
+      toast.error(toErrorMessage(error));
     }
   }
 
@@ -140,8 +139,6 @@ export default function TagFormModal({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        {formError && <Alert>{formError}</Alert>}
-
         <Input
           label="Name"
           required
