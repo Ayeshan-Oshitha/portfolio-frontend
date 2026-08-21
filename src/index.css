@@ -1,1 +1,178 @@
+/* ─── Google Fonts ─────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+
 @import "tailwindcss";
+
+/* ─── Tailwind v4 Theme Tokens ─────────────────────────────── */
+@theme {
+  /* Typography */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Primary palette — Purple */
+  --color-primary-50: oklch(0.97 0.01 285);
+  --color-primary-100: oklch(0.93 0.03 285);
+  --color-primary-200: oklch(0.87 0.06 285);
+  --color-primary-300: oklch(0.78 0.1 285);
+  --color-primary-400: oklch(0.68 0.15 285);
+  --color-primary-500: oklch(0.58 0.2 285);
+  --color-primary-600: oklch(0.5 0.22 285);
+  --color-primary-700: oklch(0.43 0.2 285);
+  --color-primary-800: oklch(0.36 0.16 285);
+  --color-primary-900: oklch(0.3 0.12 285);
+
+  /* Accent palette — Cyan/Blue */
+  --color-accent-400: oklch(0.75 0.15 230);
+  --color-accent-500: oklch(0.65 0.18 230);
+  --color-accent-600: oklch(0.55 0.2 230);
+
+  /* Surface palette — Dark backgrounds */
+  --color-surface-950: oklch(0.1 0.01 260);
+  --color-surface-900: oklch(0.14 0.015 260);
+  --color-surface-800: oklch(0.18 0.02 260);
+  --color-surface-700: oklch(0.22 0.02 260);
+
+  /* Text */
+  --color-text-primary: oklch(0.95 0.005 260);
+  --color-text-secondary: oklch(0.7 0.01 260);
+  --color-text-muted: oklch(0.55 0.01 260);
+
+  /* Semantic — feedback states */
+  --color-success-400: oklch(0.78 0.15 155);
+  --color-success-500: oklch(0.68 0.17 155);
+  --color-danger-400: oklch(0.72 0.17 25);
+  --color-danger-500: oklch(0.62 0.2 25);
+
+  /* Border */
+  --color-border-subtle: oklch(0.25 0.02 260);
+  --color-border-default: oklch(0.3 0.02 260);
+
+  /* Animations */
+  --animate-fade-in-up: fade-in-up 0.7s ease-out both;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-slide-in-right: slide-in-right 0.4s ease-out both;
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+/* ─── Admin Panel Light Theme ──────────────────────────────── */
+[data-theme="admin-light"] {
+  --color-surface-950: oklch(1 0 0);
+  --color-surface-900: oklch(0.99 0 0);
+  --color-surface-800: oklch(0.96 0.002 260);
+  --color-surface-700: oklch(0.91 0.004 260);
+
+  --color-text-primary: oklch(0.2 0.01 260);
+  --color-text-secondary: oklch(0.42 0.01 260);
+  --color-text-muted: oklch(0.58 0.01 260);
+
+  --color-border-subtle: oklch(0.91 0.005 260);
+  --color-border-default: oklch(0.85 0.006 260);
+
+  /* Accent — black, overriding the site-wide purple for the admin panel */
+  --color-primary-50: oklch(0.97 0 0);
+  --color-primary-100: oklch(0.92 0 0);
+  --color-primary-200: oklch(0.83 0 0);
+  --color-primary-300: oklch(0.65 0 0);
+  --color-primary-400: oklch(0.45 0 0);
+  --color-primary-500: oklch(0.28 0 0);
+  --color-primary-600: oklch(0.15 0 0);
+  --color-primary-700: oklch(0.1 0 0);
+  --color-primary-800: oklch(0.07 0 0);
+  --color-primary-900: oklch(0.04 0 0);
+
+  /* Slightly deepened feedback colors for legible text on a white background */
+  --color-success-400: oklch(0.6 0.15 155);
+  --color-danger-400: oklch(0.58 0.19 25);
+
+  background-color: var(--color-surface-950);
+  color: var(--color-text-primary);
+}
+
+/* ─── Base Styles ──────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface-950);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Selection Color ──────────────────────────────────────── */
+::selection {
+  background-color: var(--color-primary-600);
+  color: white;
+}
+
+/* ─── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-950);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-700);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-600);
+}
+
+/* Scoped scrollbar for scrollable modal panels — a floating rounded pill
+   instead of the global flush track, so it doesn't square off the panel's
+   rounded corners. */
+.modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default) transparent;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary-600);
+}

@@ -1,12 +1,7 @@
+import Home from "@/client/pages/Home";
+
 function App() {
-  let user = null;
-  return (
-    <>
-      <div className="App">
-        <h1 className="font-bold text-3xl">Portfolio Frontend</h1>
-      </div>
-    </>
-  );
+  return <Home />;
 }
 
 export default App;
