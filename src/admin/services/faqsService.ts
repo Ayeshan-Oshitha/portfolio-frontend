@@ -1,4 +1,9 @@
-import type { AdminFaq, FaqWriteRequest, PagedResult } from "@/admin/types";
+import type {
+  AdminFaq,
+  FaqWriteRequest,
+  PagedResult,
+  ReorderRequest,
+} from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
 
 export interface GetFaqsParams {
@@ -36,4 +41,12 @@ export async function updateFaq(
 
 export async function deleteFaq(id: string): Promise<void> {
   await httpClient.delete(`/admin/faqs/${id}`);
+}
+
+/**
+ * Bulk sort-order update. Sort order is kept per site, so `site` is required —
+ * there is no site-agnostic ordering to renumber. Answers 204.
+ */
+export async function reorderFaqs(body: ReorderRequest): Promise<void> {
+  await httpClient.post("/admin/faqs/reorder", body);
 }

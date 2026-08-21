@@ -11,6 +11,7 @@ import Checkbox from "@/admin/components/ui/Checkbox";
 import Input from "@/admin/components/ui/Input";
 import TagPicker from "@/admin/components/ui/TagPicker";
 import Textarea from "@/admin/components/ui/Textarea";
+import ProjectImagesEditor from "@/admin/components/projects/ProjectImagesEditor";
 import {
   useCreateProject,
   useProject,
@@ -24,11 +25,12 @@ import {
   type ProjectFormValues,
 } from "@/admin/validation/projectSchemas";
 
-type TabId = "details" | "case-study" | "visibility";
+type TabId = "details" | "case-study" | "gallery" | "visibility";
 
 const TABS: readonly { id: TabId; label: string }[] = [
   { id: "details", label: "Details" },
   { id: "case-study", label: "Case study" },
+  { id: "gallery", label: "Gallery" },
   { id: "visibility", label: "Visibility & SEO" },
 ];
 
@@ -49,6 +51,7 @@ const TAB_FIELDS: Record<TabId, readonly (keyof ProjectFormValues)[]> = {
     "tagIds",
   ],
   "case-study": ["problem", "solution", "whatWeDelivered", "proof"],
+  gallery: [],
   visibility: [
     "isPublished",
     "showOnAgency",
@@ -432,6 +435,20 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
             error={errors.proof?.message}
             {...register("proof")}
           />
+        </Card>
+
+        <Card className={tab === "gallery" ? "space-y-5" : "hidden"}>
+          {project ? (
+            <ProjectImagesEditor
+              projectId={project.id}
+              projectSlug={project.slug}
+              images={project.images}
+            />
+          ) : (
+            <p className="text-sm text-text-muted">
+              Save the project first — images hang off a saved project.
+            </p>
+          )}
         </Card>
 
         <Card className={tab === "visibility" ? "space-y-5" : "hidden"}>

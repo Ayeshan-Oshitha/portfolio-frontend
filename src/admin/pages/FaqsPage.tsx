@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
@@ -7,24 +7,41 @@ import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
 import Input from "@/admin/components/ui/Input";
+import Select from "@/admin/components/ui/Select";
 import FaqFormModal from "@/admin/components/faqs/FaqFormModal";
-import { useDeleteFaq, useFaqs } from "@/admin/hooks/useFaqs";
+import { useDeleteFaq, useFaqs, useReorderFaqs } from "@/admin/hooks/useFaqs";
 import { toErrorMessage } from "@/admin/api/ApiError";
-import type { AdminFaq } from "@/admin/types";
+import type { AdminFaq, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const PAGE_SIZE = 20;
 
+/** `""` means "either site" — the API omits the filter entirely then. */
+type SiteFilter = "" | Site;
+
+const SITE_OPTIONS = [
+  { value: "", label: "All sites" },
+  { value: "agency", label: "Agency" },
+  { value: "personal", label: "Personal" },
+] as const;
+
+/** Sort order is kept per site, so which column applies depends on the filter. */
+function sortOrderFor(faq: AdminFaq, site: Site): number {
+  return site === "agency" ? faq.agencySortOrder : faq.personalSortOrder;
+}
+
 export default function FaqsPage() {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput);
+  const [site, setSite] = useState<SiteFilter>("");
   const [page, setPage] = useState(1);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<AdminFaq | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminFaq | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const {
     data: result,
@@ -32,8 +49,50 @@ export default function FaqsPage() {
     error: queryError,
   } = useFaqs({ search, page, pageSize: PAGE_SIZE });
   const deleteFaqMutation = useDeleteFaq();
+  const reorderFaqsMutation = useReorderFaqs();
 
-  const error = queryError ? toErrorMessage(queryError) : null;
+  const error =
+    deleteError ?? actionError ?? (queryError ? toErrorMessage(queryError) : null);
+
+  /**
+   * Reordering renumbers the whole visible page, so the rows have to be in the
+   * same order the arrows imply.
+   */
+  const rows = useMemo(() => {
+    const items = result?.items ?? [];
+    if (!site) return items;
+    return [...items].sort(
+      (a, b) => sortOrderFor(a, site) - sortOrderFor(b, site),
+    );
+  }, [result, site]);
+
+  /**
+   * Sends the whole page renumbered densely from the index rather than just the
+   * two swapped rows, so the numbering stays contiguous however it started.
+   */
+  async function move(index: number, delta: number) {
+    if (!site) return;
+
+    const target = index + delta;
+    if (target < 0 || target >= rows.length) return;
+
+    const next = [...rows];
+    [next[index], next[target]] = [next[target], next[index]];
+
+    setActionError(null);
+    try {
+      await reorderFaqsMutation.mutateAsync({
+        site,
+        items: next.map((faq, at) => ({
+          id: faq.id,
+          // Page 2 continues where page 1 left off, so the offset matters.
+          sortOrder: (page - 1) * PAGE_SIZE + at,
+        })),
+      });
+    } catch (cause) {
+      setActionError(toErrorMessage(cause));
+    }
+  }
 
   function openCreate() {
     setEditing(null);
@@ -64,6 +123,7 @@ export default function FaqsPage() {
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const isReordering = reorderFaqsMutation.isPending;
 
   return (
     <div className="max-w-5xl">
@@ -86,7 +146,7 @@ export default function FaqsPage() {
         </Button>
       </div>
 
-      <div className="flex items-end gap-3 mb-6">
+      <div className="flex items-end gap-3 mb-3">
         <Input
           label="Search"
           placeholder="Question"
@@ -97,7 +157,24 @@ export default function FaqsPage() {
           }}
           containerClassName="flex-1 max-w-sm"
         />
+
+        <Select
+          label="Site"
+          options={SITE_OPTIONS}
+          value={site}
+          onChange={(event) => {
+            setPage(1);
+            setSite(event.target.value as SiteFilter);
+          }}
+          containerClassName="w-40"
+        />
       </div>
+
+      <p className="text-xs text-text-muted mb-6">
+        {site
+          ? "Use the arrows to set the order FAQs appear in on the selected site."
+          : "Sort order is kept per site — pick a single site to reorder FAQs."}
+      </p>
 
       {error && <Alert className="mb-6">{error}</Alert>}
 
@@ -106,7 +183,7 @@ export default function FaqsPage() {
           <div className="flex items-center justify-center py-16 text-primary-400">
             <Spinner className="h-6 w-6" label="Loading FAQs" />
           </div>
-        ) : !result || result.items.length === 0 ? (
+        ) : rows.length === 0 ? (
           <p className="py-16 text-center text-sm text-text-muted">
             No FAQs match this search.
           </p>
@@ -118,13 +195,12 @@ export default function FaqsPage() {
                   <th className="px-6 py-4">Question</th>
                   <th className="px-6 py-4">Category</th>
                   <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Order</th>
                   <th className="px-6 py-4">Updated</th>
                   <th className="px-6 py-4 sr-only">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {result.items.map((item) => (
+                {rows.map((item, index) => (
                   <tr
                     key={item.id}
                     className="border-b border-border-subtle/60 last:border-0"
@@ -142,14 +218,42 @@ export default function FaqsPage() {
                         {item.isPublished ? "Published" : "Draft"}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-text-secondary">
-                      {item.sortOrder}
-                    </td>
                     <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
                       {formatDate(item.updatedAt)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => move(index, -1)}
+                          disabled={!site || isReordering || index === 0}
+                          aria-label={`Move “${item.question}” up`}
+                          title={
+                            site
+                              ? "Move up"
+                              : "Pick a single site to reorder FAQs"
+                          }
+                          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => move(index, 1)}
+                          disabled={
+                            !site || isReordering || index === rows.length - 1
+                          }
+                          aria-label={`Move “${item.question}” down`}
+                          title={
+                            site
+                              ? "Move down"
+                              : "Pick a single site to reorder FAQs"
+                          }
+                          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                        </button>
+
                         <Button
                           variant="ghost"
                           size="sm"

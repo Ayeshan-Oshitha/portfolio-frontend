@@ -16,6 +16,10 @@ export function useLogin() {
   return useMutation({ mutationFn: authService.login });
 }
 
+export function useGoogleSignIn() {
+  return useMutation({ mutationFn: authService.googleSignIn });
+}
+
 export function useRegister() {
   return useMutation({ mutationFn: authService.register });
 }

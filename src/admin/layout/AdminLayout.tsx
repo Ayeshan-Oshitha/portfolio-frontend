@@ -17,12 +17,19 @@ import useAuth from "@/admin/context/useAuth";
 
 const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/users", label: "Users", icon: Users, end: false },
+  {
+    to: "/admin/users",
+    label: "Users",
+    icon: Users,
+    end: false,
+    superAdminOnly: true,
+  },
   {
     to: "/admin/approvals",
     label: "Approvals",
     icon: UserCheck,
     end: false,
+    superAdminOnly: true,
   },
   { to: "/admin/projects", label: "Projects", icon: FolderKanban, end: false },
   { to: "/admin/articles", label: "Articles", icon: Newspaper, end: false },
@@ -46,7 +53,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
 
   function handleLogout() {
-    logout();
+    void logout();
     navigate("/admin/login", { replace: true });
   }
 
@@ -65,7 +72,11 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex flex-col gap-1 flex-1">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {NAV_ITEMS.filter(
+            (item) =>
+              !("superAdminOnly" in item && item.superAdminOnly) ||
+              user?.role === "super_admin",
+          ).map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}

@@ -1,9 +1,12 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
-import type { ApiProblem } from "@/admin/types";
+import type { ApiProblem, AuthResponse } from "@/admin/types";
 import ApiError from "@/admin/api/ApiError";
 import {
   clearStoredToken,
   getActiveAccessToken,
+  getStoredToken,
+  isRefreshExpired,
+  setStoredToken,
 } from "@/admin/api/tokenStorage";
 
 const BASE_URL = (
@@ -11,9 +14,9 @@ const BASE_URL = (
 ).replace(/\/$/, "");
 
 /**
- * Broadcast when the API rejects our token. The auth context listens for this
- * so an expired session drops the user back to the login screen from anywhere.
- * There is no refresh endpoint, so re-authenticating is the only recovery.
+ * Broadcast when the API rejects our token and a refresh either isn't
+ * possible or also failed. The auth context listens for this so a dead
+ * session drops the user back to the login screen from anywhere.
  */
 export const AUTH_EXPIRED_EVENT = "portfolio-admin:auth-expired";
 
@@ -21,6 +24,8 @@ declare module "axios" {
   export interface AxiosRequestConfig {
     /** Skip attaching the bearer token. Defaults to false — nearly all routes need it. */
     skipAuth?: boolean;
+    /** Marks a request that already went through one refresh-and-retry cycle. */
+    _retry?: boolean;
   }
 }
 
@@ -37,9 +42,36 @@ httpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+// Shared across concurrent 401s so a burst of requests triggers one refresh
+// call, not one per request. A bare `axios.post` (not `httpClient`) so this
+// doesn't recurse through the response interceptor below.
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  const stored = getStoredToken();
+  if (!stored || isRefreshExpired(stored)) return null;
+
+  try {
+    const { data } = await axios.post<AuthResponse>(
+      `${BASE_URL}/admin/auth/refresh`,
+      { refreshToken: stored.refreshToken },
+      { headers: { Accept: "application/json" } },
+    );
+    setStoredToken({
+      accessToken: data.accessToken,
+      expiresAt: data.expiresAt,
+      refreshToken: data.refreshToken,
+      refreshTokenExpiresAt: data.refreshTokenExpiresAt,
+    });
+    return data.accessToken;
+  } catch {
+    return null;
+  }
+}
+
 httpClient.interceptors.response.use(
   (response) => response,
-  (cause: unknown) => {
+  async (cause: unknown) => {
     if (axios.isCancel(cause)) throw cause;
 
     if (!axios.isAxiosError(cause)) throw cause;
@@ -60,6 +92,19 @@ httpClient.interceptors.response.use(
         "Request failed.",
       problem,
     );
+
+    if (error.isAuthExpired && cause.config && !cause.config._retry) {
+      refreshPromise ??= refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+      const newAccessToken = await refreshPromise;
+
+      if (newAccessToken) {
+        cause.config._retry = true;
+        cause.config.headers.set("Authorization", `Bearer ${newAccessToken}`);
+        return httpClient(cause.config);
+      }
+    }
 
     if (error.isAuthExpired) {
       clearStoredToken();

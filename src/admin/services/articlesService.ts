@@ -2,6 +2,7 @@ import type {
   AdminArticle,
   ArticleWriteRequest,
   PagedResult,
+  ReorderRequest,
   Site,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
@@ -54,4 +55,12 @@ export async function updateArticle(
 /** Soft delete. The API answers 204 with no body. */
 export async function deleteArticle(id: string): Promise<void> {
   await httpClient.delete(`/admin/articles/${id}`);
+}
+
+/**
+ * Bulk sort-order update. Sort order is kept per site, so `site` is required —
+ * there is no site-agnostic ordering to renumber. Answers 204.
+ */
+export async function reorderArticles(body: ReorderRequest): Promise<void> {
+  await httpClient.post("/admin/articles/reorder", body);
 }

@@ -5,6 +5,7 @@ import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
+import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
 import Input from "@/admin/components/ui/Input";
 import Select from "@/admin/components/ui/Select";
 import { useDeleteUser, useDisableUser, useUsers } from "@/admin/hooks/useUsers";
@@ -29,8 +30,8 @@ export default function UsersPage() {
   const search = useDebounce(searchInput);
   const [status, setStatus] = useState<UserStatus | "">("");
   const [page, setPage] = useState(1);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [disablingId, setDisablingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [disableTarget, setDisableTarget] = useState<AdminUser | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const {
@@ -41,40 +42,40 @@ export default function UsersPage() {
   const deleteUserMutation = useDeleteUser();
   const disableUserMutation = useDisableUser();
 
-  const error = actionError ?? (queryError ? toErrorMessage(queryError) : null);
+  const error = queryError ? toErrorMessage(queryError) : null;
 
-  async function handleDelete(target: AdminUser) {
-    const confirmed = window.confirm(
-      `Delete ${target.firstName} ${target.lastName} (${target.email})?`,
-    );
-    if (!confirmed) return;
+  function askDelete(target: AdminUser) {
+    setDeleteTarget(target);
+    setActionError(null);
+  }
 
-    setDeletingId(target.id);
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+
     setActionError(null);
     try {
-      await deleteUserMutation.mutateAsync(target.id);
+      await deleteUserMutation.mutateAsync(deleteTarget.id);
+      setDeleteTarget(null);
     } catch (cause) {
       // Includes the API's `cannot_delete_self` message.
       setActionError(toErrorMessage(cause));
-    } finally {
-      setDeletingId(null);
     }
   }
 
-  async function handleDisable(target: AdminUser) {
-    const confirmed = window.confirm(
-      `Disable ${target.firstName} ${target.lastName} (${target.email})? They will not be able to sign in.`,
-    );
-    if (!confirmed) return;
+  function askDisable(target: AdminUser) {
+    setDisableTarget(target);
+    setActionError(null);
+  }
 
-    setDisablingId(target.id);
+  async function confirmDisable() {
+    if (!disableTarget) return;
+
     setActionError(null);
     try {
-      await disableUserMutation.mutateAsync(target.id);
+      await disableUserMutation.mutateAsync(disableTarget.id);
+      setDisableTarget(null);
     } catch (cause) {
       setActionError(toErrorMessage(cause));
-    } finally {
-      setDisablingId(null);
     }
   }
 
@@ -167,8 +168,7 @@ export default function UsersPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDisable(item)}
-                            loading={disablingId === item.id}
+                            onClick={() => askDisable(item)}
                             disabled={item.id === currentUser?.id}
                             icon={<Ban className="h-4 w-4" />}
                             iconPosition="left"
@@ -179,8 +179,7 @@ export default function UsersPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(item)}
-                          loading={deletingId === item.id}
+                          onClick={() => askDelete(item)}
                           disabled={item.id === currentUser?.id}
                           icon={<Trash2 className="h-4 w-4" />}
                           iconPosition="left"
@@ -220,6 +219,35 @@ export default function UsersPage() {
           </Button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Delete user"
+        message={
+          deleteTarget
+            ? `Delete ${deleteTarget.firstName} ${deleteTarget.lastName} (${deleteTarget.email})?`
+            : ""
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        loading={deleteUserMutation.isPending}
+        error={actionError}
+      />
+
+      <ConfirmDialog
+        open={disableTarget !== null}
+        title="Disable user"
+        confirmLabel="Disable"
+        message={
+          disableTarget
+            ? `Disable ${disableTarget.firstName} ${disableTarget.lastName} (${disableTarget.email})? They will not be able to sign in.`
+            : ""
+        }
+        onConfirm={confirmDisable}
+        onCancel={() => setDisableTarget(null)}
+        loading={disableUserMutation.isPending}
+        error={actionError}
+      />
     </div>
   );
 }

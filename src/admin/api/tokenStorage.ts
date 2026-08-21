@@ -14,12 +14,22 @@ export function getStoredToken(): StoredToken | null {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as Partial<StoredToken>;
-    if (!parsed?.accessToken || !parsed?.expiresAt) {
+    if (
+      !parsed?.accessToken ||
+      !parsed?.expiresAt ||
+      !parsed?.refreshToken ||
+      !parsed?.refreshTokenExpiresAt
+    ) {
       clearStoredToken();
       return null;
     }
 
-    return { accessToken: parsed.accessToken, expiresAt: parsed.expiresAt };
+    return {
+      accessToken: parsed.accessToken,
+      expiresAt: parsed.expiresAt,
+      refreshToken: parsed.refreshToken,
+      refreshTokenExpiresAt: parsed.refreshTokenExpiresAt,
+    };
   } catch {
     clearStoredToken();
     return null;
@@ -36,6 +46,12 @@ export function clearStoredToken(): void {
 
 export function isExpired(token: StoredToken): boolean {
   const expiresAt = Date.parse(token.expiresAt);
+  if (Number.isNaN(expiresAt)) return true;
+  return expiresAt - EXPIRY_LEEWAY_MS <= Date.now();
+}
+
+export function isRefreshExpired(token: StoredToken): boolean {
+  const expiresAt = Date.parse(token.refreshTokenExpiresAt);
   if (Number.isNaN(expiresAt)) return true;
   return expiresAt - EXPIRY_LEEWAY_MS <= Date.now();
 }

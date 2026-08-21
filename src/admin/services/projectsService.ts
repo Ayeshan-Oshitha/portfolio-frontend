@@ -1,6 +1,9 @@
 import type {
   AdminProject,
+  ImageReorderRequest,
   PagedResult,
+  ProjectImage,
+  ProjectImageWriteRequest,
   ProjectWriteRequest,
   ReorderRequest,
   Site,
@@ -92,4 +95,43 @@ export async function setProjectPublished(
  */
 export async function reorderProjects(body: ReorderRequest): Promise<void> {
   await httpClient.post("/admin/projects/reorder", body);
+}
+
+export async function addProjectImage(
+  projectId: string,
+  body: ProjectImageWriteRequest,
+): Promise<ProjectImage> {
+  const { data } = await httpClient.post<ProjectImage>(
+    `/admin/projects/${projectId}/images`,
+    body,
+  );
+  return data;
+}
+
+/** Full replacement — `body` must carry every field, not just the changed ones. */
+export async function updateProjectImage(
+  projectId: string,
+  imageId: string,
+  body: ProjectImageWriteRequest,
+): Promise<ProjectImage> {
+  const { data } = await httpClient.put<ProjectImage>(
+    `/admin/projects/${projectId}/images/${imageId}`,
+    body,
+  );
+  return data;
+}
+
+export async function deleteProjectImage(
+  projectId: string,
+  imageId: string,
+): Promise<void> {
+  await httpClient.delete(`/admin/projects/${projectId}/images/${imageId}`);
+}
+
+/** A single global order — images have no per-site sort column. */
+export async function reorderProjectImages(
+  projectId: string,
+  body: ImageReorderRequest,
+): Promise<void> {
+  await httpClient.post(`/admin/projects/${projectId}/images/reorder`, body);
 }

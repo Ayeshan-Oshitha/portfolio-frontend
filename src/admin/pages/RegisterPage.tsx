@@ -6,6 +6,7 @@ import Button from "@/portfolio/components/ui/Button";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
+import GoogleSignInButton from "@/admin/components/GoogleSignInButton";
 import useAuth from "@/admin/context/useAuth";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import {
@@ -55,7 +56,7 @@ export default function RegisterPage() {
         Create an account
       </h2>
       <p className="text-sm text-text-muted mb-6">
-        New accounts are approved immediately and can use the CMS right away.
+        A super admin has to approve your account before you can sign in.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
@@ -114,6 +115,8 @@ export default function RegisterPage() {
           {isSubmitting ? "Creating account…" : "Create account"}
         </Button>
       </form>
+
+      <GoogleSignInButton onError={setFormError} />
 
       <p className="mt-6 text-center text-sm text-text-muted">
         Already have an account?{" "}
