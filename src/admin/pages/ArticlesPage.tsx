@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
@@ -78,11 +79,16 @@ function visibilityBadges(article: AdminArticle) {
 }
 
 export default function ArticlesPage() {
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [site, setSite] = useState<SiteFilter>("");
-  const [status, setStatus] = useState<StatusFilter>("");
-  const [page, setPage] = useState(1);
+  const [site, setSite] = useSearchParamState<SiteFilter>("site", "");
+  const [status, setStatus] = useSearchParamState<StatusFilter>("status", "");
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
 
   const toast = useToast();
   const [isFormOpen, setIsFormOpen] = useState(false);

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import Button from "@/portfolio/components/ui/Button";
@@ -12,6 +12,7 @@ import Input from "@/admin/components/ui/Input";
 import TagPicker from "@/admin/components/ui/TagPicker";
 import Textarea from "@/admin/components/ui/Textarea";
 import ProjectImagesEditor from "@/admin/components/projects/ProjectImagesEditor";
+import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import {
   useCreateProject,
   useProject,
@@ -199,11 +200,16 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
     handleSubmit,
     setError,
     control,
+    reset,
+    clearPersisted,
     formState: { errors, isSubmitting },
-  } = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: toFormValues(project),
-  });
+  } = usePersistedForm<ProjectFormValues>(
+    `project-form:${project?.id ?? "new"}`,
+    {
+      resolver: zodResolver(projectSchema),
+      defaultValues: toFormValues(project),
+    },
+  );
 
   // "Featured" requires "show" on the same site, so each checkbox is disabled until its partner is on.
   const title = useWatch({ control, name: "title" });
@@ -253,6 +259,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
         await createProjectMutation.mutateAsync(body);
         toast.success("Project created.");
       }
+      clearPersisted();
       onDone();
     } catch (error) {
       if (error instanceof ApiError && error.code === "slug_taken") {
@@ -526,6 +533,17 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
           )}
 
           <div className="flex items-center justify-end gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                reset(toFormValues(project));
+                clearPersisted();
+              }}
+              disabled={isSubmitting || isSaving}
+            >
+              Reset
+            </Button>
             <Button
               variant="ghost"
               size="sm"

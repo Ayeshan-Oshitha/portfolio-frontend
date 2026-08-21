@@ -1,4 +1,4 @@
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "@/portfolio/components/ui/Button";
 import Checkbox from "@/admin/components/ui/Checkbox";
@@ -6,6 +6,7 @@ import Input from "@/admin/components/ui/Input";
 import Modal from "@/admin/components/ui/Modal";
 import TagPicker from "@/admin/components/ui/TagPicker";
 import Textarea from "@/admin/components/ui/Textarea";
+import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import { useCreateArticle, useUpdateArticle } from "@/admin/hooks/useArticles";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
@@ -94,11 +95,16 @@ export default function ArticleFormModal({
     handleSubmit,
     setError,
     control,
+    reset,
+    clearPersisted,
     formState: { errors, isSubmitting },
-  } = useForm<ArticleFormValues>({
-    resolver: zodResolver(articleSchema),
-    defaultValues: toFormValues(article),
-  });
+  } = usePersistedForm<ArticleFormValues>(
+    `article-form:${article?.id ?? "new"}`,
+    {
+      resolver: zodResolver(articleSchema),
+      defaultValues: toFormValues(article),
+    },
+  );
 
   // "Featured" requires "show" on the same site, so each checkbox is disabled until its partner is on.
   const title = useWatch({ control, name: "title" });
@@ -133,6 +139,7 @@ export default function ArticleFormModal({
         await createArticleMutation.mutateAsync(body);
         toast.success("Article created.");
       }
+      clearPersisted();
       onSaved();
       onClose();
     } catch (error) {
@@ -278,6 +285,17 @@ export default function ArticleFormModal({
         />
 
         <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              reset(toFormValues(article));
+              clearPersisted();
+            }}
+            disabled={isSubmitting || isSaving}
+          >
+            Reset
+          </Button>
           <Button
             variant="ghost"
             size="sm"

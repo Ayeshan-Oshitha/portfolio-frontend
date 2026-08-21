@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Ban, Trash2 } from "lucide-react";
+import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
@@ -28,10 +29,18 @@ const STATUS_OPTIONS: readonly { value: UserStatus; label: string }[] = [
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const toast = useToast();
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [status, setStatus] = useState<UserStatus | "">("");
-  const [page, setPage] = useState(1);
+  const [status, setStatus] = useSearchParamState<UserStatus | "">(
+    "status",
+    "",
+  );
+  const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
+  const page = Number(pageParam) || 1;
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === "function" ? updater(page) : updater;
+    setPageParam(String(next));
+  };
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [disableTarget, setDisableTarget] = useState<AdminUser | null>(null);
 
