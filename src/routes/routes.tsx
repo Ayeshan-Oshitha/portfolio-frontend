@@ -6,7 +6,22 @@ import AboutPage from "@/portfolio/pages/AboutPage";
 import WorkPage from "@/portfolio/pages/WorkPage";
 import BlogPage from "@/portfolio/pages/BlogPage";
 import ServicesPage from "@/portfolio/pages/ServicesPage";
-import App from "@/App";
+import AdminRoot from "@/admin/layout/AdminRoot";
+import RequireAuth from "@/admin/components/RequireAuth";
+import RedirectIfAuthenticated from "@/admin/components/RedirectIfAuthenticated";
+import AdminLayout from "@/admin/layout/AdminLayout";
+import AuthLayout from "@/admin/layout/AuthLayout";
+import LoginPage from "@/admin/pages/LoginPage";
+import RegisterPage from "@/admin/pages/RegisterPage";
+import DashboardPage from "@/admin/pages/DashboardPage";
+import ChangePasswordPage from "@/admin/pages/ChangePasswordPage";
+import UsersPage from "@/admin/pages/UsersPage";
+import TagsPage from "@/admin/pages/TagsPage";
+import ArticlesPage from "@/admin/pages/ArticlesPage";
+import AdminServicesPage from "@/admin/pages/ServicesPage";
+import PricingPage from "@/admin/pages/PricingPage";
+import ProjectsPage from "@/admin/pages/ProjectsPage";
+import ProjectEditorPage from "@/admin/pages/ProjectEditorPage";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +51,83 @@ export const router = createBrowserRouter([
       {
         path: "contact",
         element: <ContactPage />,
+      },
+    ],
+  },
+  {
+    // The CMS lives outside the marketing layout and owns its own auth state.
+    path: "/admin",
+    element: <AdminRoot />,
+    children: [
+      {
+        element: <RedirectIfAuthenticated />,
+        children: [
+          {
+            element: <AuthLayout />,
+            children: [
+              {
+                path: "login",
+                element: <LoginPage />,
+              },
+              {
+                path: "register",
+                element: <RegisterPage />,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        // element: <RequireAuth />,
+        children: [
+          {
+            element: <AdminLayout />,
+            children: [
+              {
+                index: true,
+                element: <DashboardPage />,
+              },
+              {
+                path: "users",
+                element: <UsersPage />,
+              },
+              {
+                path: "projects",
+                element: <ProjectsPage />,
+              },
+              {
+                // A project has far more fields than the other content types,
+                // so it is edited on its own route rather than in a modal.
+                path: "projects/new",
+                element: <ProjectEditorPage />,
+              },
+              {
+                path: "projects/:id",
+                element: <ProjectEditorPage />,
+              },
+              {
+                path: "articles",
+                element: <ArticlesPage />,
+              },
+              {
+                path: "tags",
+                element: <TagsPage />,
+              },
+              {
+                path: "services",
+                element: <AdminServicesPage />,
+              },
+              {
+                path: "pricing",
+                element: <PricingPage />,
+              },
+              {
+                path: "change-password",
+                element: <ChangePasswordPage />,
+              },
+            ],
+          },
+        ],
       },
     ],
   },

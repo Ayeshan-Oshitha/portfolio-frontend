@@ -1,0 +1,228 @@
+import { useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Button from "@/portfolio/components/ui/Button";
+import Alert from "@/admin/components/ui/Alert";
+import Checkbox from "@/admin/components/ui/Checkbox";
+import Input from "@/admin/components/ui/Input";
+import Modal from "@/admin/components/ui/Modal";
+import Select from "@/admin/components/ui/Select";
+import { createTag, updateTag } from "@/admin/api/tags";
+import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
+import {
+  TECH_CATEGORIES,
+  slugify,
+  techCategoryLabel,
+} from "@/admin/utils/format";
+import type { AdminTag, TagWriteRequest, TechCategory } from "@/admin/types";
+import { tagSchema, type TagFormValues } from "@/admin/validation/tagSchemas";
+
+interface TagFormModalProps {
+  /** `null` opens the dialog in create mode. */
+  readonly tag: AdminTag | null;
+  readonly onClose: () => void;
+  readonly onSaved: () => void;
+}
+
+const CATEGORY_OPTIONS = TECH_CATEGORIES.map((category) => ({
+  value: category,
+  label: techCategoryLabel(category),
+}));
+
+const BLANK_VALUES: TagFormValues = {
+  name: "",
+  slug: "",
+  isTechnology: false,
+  technologyCategory: "",
+  iconCloudinaryId: "",
+  iconUrl: "",
+  colorHex: "",
+  sortOrder: 0,
+};
+
+function toFormValues(tag: AdminTag | null): TagFormValues {
+  if (!tag) return BLANK_VALUES;
+
+  return {
+    name: tag.name,
+    slug: tag.slug,
+    isTechnology: tag.isTechnology,
+    technologyCategory: tag.technologyCategory ?? "",
+    iconCloudinaryId: tag.iconCloudinaryId ?? "",
+    iconUrl: tag.iconUrl ?? "",
+    colorHex: tag.colorHex ?? "",
+    sortOrder: tag.sortOrder,
+  };
+}
+
+/** `""` is how an untouched optional field reaches us; the API wants it gone. */
+function blank(value?: string): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+/**
+ * Mounted only while the dialog is open, and keyed on the tag by `TagsPage`,
+ * so the form state starts fresh for every row instead of being reset.
+ */
+export default function TagFormModal({
+  tag,
+  onClose,
+  onSaved,
+}: TagFormModalProps) {
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<TagFormValues>({
+    resolver: zodResolver(tagSchema),
+    defaultValues: toFormValues(tag),
+  });
+
+  // The technology fields only exist while the checkbox is on, and the slug
+  // placeholder previews what the API would generate from the name.
+  const isTechnology = useWatch({ control, name: "isTechnology" });
+  const name = useWatch({ control, name: "name" });
+
+  async function onSubmit(values: TagFormValues) {
+    setFormError(null);
+
+    // Built explicitly rather than spread: the API rejects a category tag that
+    // still carries technology fields, and PUT replaces the whole record.
+    const body: TagWriteRequest = {
+      name: values.name.trim(),
+      slug: blank(values.slug),
+      isTechnology: values.isTechnology,
+      technologyCategory: values.isTechnology
+        ? (blank(values.technologyCategory) as TechCategory | undefined)
+        : undefined,
+      iconCloudinaryId: values.isTechnology
+        ? blank(values.iconCloudinaryId)
+        : undefined,
+      iconUrl: values.isTechnology ? blank(values.iconUrl) : undefined,
+      colorHex: blank(values.colorHex)?.toLowerCase(),
+      sortOrder: values.sortOrder,
+    };
+
+    try {
+      if (tag) {
+        await updateTag(tag.id, body);
+      } else {
+        await createTag(body);
+      }
+      onSaved();
+      onClose();
+    } catch (error) {
+      if (error instanceof ApiError && error.code === "slug_taken") {
+        setError("slug", { type: "server", message: error.message });
+        return;
+      }
+      setFormError(toErrorMessage(error));
+    }
+  }
+
+  const slugPreview = slugify(name ?? "");
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={tag ? "Edit tag" : "New tag"}
+      description={
+        tag
+          ? "Every field is sent on save — the API replaces the whole tag."
+          : "Tags are shared by projects and articles."
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        {formError && <Alert>{formError}</Alert>}
+
+        <Input
+          label="Name"
+          required
+          autoFocus
+          error={errors.name?.message}
+          {...register("name")}
+        />
+
+        <Input
+          label="Slug"
+          placeholder={slugPreview || "generated-from-the-name"}
+          error={errors.slug?.message}
+          {...register("slug")}
+        />
+
+        <Checkbox
+          label="Technology"
+          hint="Technology tags appear in the tech grid and need a category and icon. Leave off for a project or article category."
+          {...register("isTechnology")}
+        />
+
+        {isTechnology && (
+          <>
+            <Select
+              label="Category"
+              required
+              placeholder="Select a category"
+              options={CATEGORY_OPTIONS}
+              error={errors.technologyCategory?.message}
+              {...register("technologyCategory")}
+            />
+
+            <Input
+              label="Icon Cloudinary id"
+              required
+              placeholder="portfolio/tech/react"
+              error={errors.iconCloudinaryId?.message}
+              {...register("iconCloudinaryId")}
+            />
+
+            <Input
+              label="Icon URL"
+              placeholder="https://res.cloudinary.com/…"
+              error={errors.iconUrl?.message}
+              {...register("iconUrl")}
+            />
+          </>
+        )}
+
+        <div className="flex gap-4">
+          <Input
+            label="Colour"
+            placeholder="#38bdf8"
+            containerClassName="flex-1"
+            error={errors.colorHex?.message}
+            {...register("colorHex")}
+          />
+
+          <Input
+            label="Sort order"
+            type="number"
+            step={1}
+            containerClassName="w-32"
+            error={errors.sortOrder?.message}
+            {...register("sortOrder", { valueAsNumber: true })}
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" size="sm" loading={isSubmitting}>
+            {isSubmitting ? "Saving…" : tag ? "Save changes" : "Create tag"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}

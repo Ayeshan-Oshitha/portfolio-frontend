@@ -36,6 +36,12 @@
   --color-text-secondary: oklch(0.7 0.01 260);
   --color-text-muted: oklch(0.55 0.01 260);
 
+  /* Semantic — feedback states */
+  --color-success-400: oklch(0.78 0.15 155);
+  --color-success-500: oklch(0.68 0.17 155);
+  --color-danger-400: oklch(0.72 0.17 25);
+  --color-danger-500: oklch(0.62 0.2 25);
+
   /* Border */
   --color-border-subtle: oklch(0.25 0.02 260);
   --color-border-default: oklch(0.3 0.02 260);
@@ -75,6 +81,24 @@
       transform: translateX(0);
     }
   }
+}
+
+/* ─── Admin Panel Light Theme ──────────────────────────────── */
+[data-theme="admin-light"] {
+  --color-surface-950: oklch(1 0 0);
+  --color-surface-900: oklch(0.99 0 0);
+  --color-surface-800: oklch(0.96 0.002 260);
+  --color-surface-700: oklch(0.91 0.004 260);
+
+  --color-text-primary: oklch(0.2 0.01 260);
+  --color-text-secondary: oklch(0.42 0.01 260);
+  --color-text-muted: oklch(0.58 0.01 260);
+
+  --color-border-subtle: oklch(0.91 0.005 260);
+  --color-border-default: oklch(0.85 0.006 260);
+
+  background-color: var(--color-surface-950);
+  color: var(--color-text-primary);
 }
 
 /* ─── Base Styles ──────────────────────────────────────────── */
