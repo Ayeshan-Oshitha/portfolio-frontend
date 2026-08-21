@@ -10,7 +10,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Badge from "@/portfolio/components/ui/Badge";
-import Button from "@/portfolio/components/ui/Button";
+import Button from "@/admin/components/ui/Button";
 import Spinner from "@/portfolio/components/ui/Spinner";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
@@ -340,7 +340,7 @@ export default function ServicesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead>
-                <tr className="border-b border-border-subtle text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+                <tr className="border-b border-border-subtle bg-surface-900/40 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
                   <th className="px-6 py-4">Name</th>
                   <th className="px-6 py-4">Short description</th>
                   <th className="px-6 py-4">Sites</th>
@@ -353,7 +353,7 @@ export default function ServicesPage() {
                 {rows.map((item, index) => (
                   <tr
                     key={item.id}
-                    className="border-b border-border-subtle/60 last:border-0"
+                    className="border-b border-border-subtle/60 last:border-0 hover:bg-surface-800/60 transition-colors duration-150"
                   >
                     <td className="px-6 py-4">
                       <span className="block text-text-primary font-medium">

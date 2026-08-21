@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
-import Button from "@/portfolio/components/ui/Button";
+import Button from "@/admin/components/ui/Button";
 import type { PricingFeatureValues } from "@/admin/validation/pricingSchemas";
 
 interface PricingFeaturesEditorProps {

@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@/portfolio/components/ui/Button";
+import Button from "@/admin/components/ui/Button";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
 import { useChangePassword } from "@/admin/hooks/useAuthApi";
