@@ -203,8 +203,7 @@ export default function PricingFormModal({
   const showOnAgency = useWatch({ control, name: "showOnAgency" });
   const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
 
-  // A combo pack has no service, and "Contact us" is expressed by the absence
-  // of an amount — the API rejects a `custom` plan that still carries one.
+  // A combo pack has no service; the API rejects a `custom` priceType that still carries an amount.
   useEffect(() => {
     if (kind === "combo") setValue("serviceId", "");
   }, [kind, setValue]);
@@ -221,8 +220,7 @@ export default function PricingFormModal({
   async function onSubmit(values: PricingPlanFormValues) {
     setFormError(null);
 
-    // Built explicitly rather than spread: PUT replaces the whole record, so
-    // every field has to be present or the API resets it to its default.
+    // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: PricingPlanWriteRequest = {
       serviceId:
         values.kind === "service" ? blank(values.serviceId) : undefined,
@@ -262,8 +260,7 @@ export default function PricingFormModal({
       onSaved();
       onClose();
     } catch (error) {
-      // The dialog stays open so a half-applied feature sync stays visible
-      // and can be retried rather than being silently lost.
+      // Dialog stays open so a half-applied feature sync can be retried, not lost.
       setFormError(toErrorMessage(error));
     }
   }

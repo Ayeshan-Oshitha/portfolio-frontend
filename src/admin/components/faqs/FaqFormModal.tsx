@@ -87,8 +87,7 @@ export default function FaqFormModal({
   async function onSubmit(values: FaqFormValues) {
     setFormError(null);
 
-    // Built explicitly rather than spread: PUT replaces the whole record, so
-    // every field has to be present or the API resets it to its default.
+    // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: FaqWriteRequest = {
       question: values.question.trim(),
       answer: values.answer.trim(),

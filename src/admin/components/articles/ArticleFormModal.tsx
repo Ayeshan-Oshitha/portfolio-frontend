@@ -101,9 +101,7 @@ export default function ArticleFormModal({
     defaultValues: toFormValues(article),
   });
 
-  // "Featured" is meaningless without "show" on the same site, so each box is
-  // disabled until its partner is on. The slug placeholder previews what the
-  // API would generate from the title.
+  // "Featured" requires "show" on the same site, so each checkbox is disabled until its partner is on.
   const title = useWatch({ control, name: "title" });
   const showOnAgency = useWatch({ control, name: "showOnAgency" });
   const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
@@ -111,9 +109,7 @@ export default function ArticleFormModal({
   async function onSubmit(values: ArticleFormValues) {
     setFormError(null);
 
-    // Built explicitly rather than spread: PUT replaces the whole record, so an
-    // omitted boolean would land as false and an omitted tagIds would wipe
-    // every tag.
+    // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field would wipe out.
     const body: ArticleWriteRequest = {
       title: values.title.trim(),
       excerpt: values.excerpt.trim(),
@@ -123,8 +119,7 @@ export default function ArticleFormModal({
       coverImageId: blank(values.coverImageId),
       isPublished: values.isPublished,
       showOnAgency: values.showOnAgency,
-      // A disabled checkbox keeps its last value, so the pairing is enforced
-      // here too rather than trusting the field.
+      // Re-enforced here since a disabled checkbox keeps its last submitted value.
       featuredOnAgency: values.showOnAgency && values.featuredOnAgency,
       agencySortOrder: values.agencySortOrder,
       showOnPersonal: values.showOnPersonal,

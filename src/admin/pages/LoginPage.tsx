@@ -40,8 +40,7 @@ export default function LoginPage() {
       await login(values);
       navigate(from, { replace: true });
     } catch (error) {
-      // The API's `detail` is already user-facing for invalid_credentials
-      // and account_disabled, so surface it as-is.
+      // The API's `detail` is already user-facing for invalid_credentials and account_disabled.
       setFormError(
         error instanceof ApiError ? error.message : toErrorMessage(error),
       );

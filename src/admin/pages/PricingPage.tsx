@@ -97,8 +97,7 @@ export default function PricingPage() {
     error: queryError,
   } = usePricingPlans({
     site: site || undefined,
-    // `comboOnly` makes the API ignore `serviceId`, so the two filters are
-    // never sent together.
+    // `comboOnly` makes the API ignore `serviceId`, so the two filters are never sent together.
     comboOnly: kind === "combo" ? true : undefined,
     serviceId: kind === "combo" ? undefined : serviceId || undefined,
     isPublished: toIsPublished(published),
@@ -106,8 +105,7 @@ export default function PricingPage() {
     page: isReordering ? 1 : page,
     pageSize: isReordering ? REORDER_PAGE_SIZE : PAGE_SIZE,
   });
-  // Loaded once: a plan points at a service by id and the table and the form
-  // both need its name.
+  // Loaded once: both the table and the form need to resolve a plan's serviceId to a name.
   const { data: servicesResult } = useServices({ pageSize: 100 });
   const services = servicesResult?.items ?? [];
 

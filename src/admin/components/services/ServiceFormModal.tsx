@@ -174,8 +174,7 @@ export default function ServiceFormModal({
   async function onSubmit(values: ServiceFormValues) {
     setFormError(null);
 
-    // Built explicitly rather than spread: PUT replaces the whole record, so
-    // every field has to be present or the API resets it to its default.
+    // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: ServiceWriteRequest = {
       name: values.name.trim(),
       slug: blank(values.slug),
@@ -211,8 +210,7 @@ export default function ServiceFormModal({
         setError("slug", { type: "server", message: error.message });
         return;
       }
-      // The dialog stays open so a half-applied feature sync stays visible
-      // and can be retried rather than being silently lost.
+      // Dialog stays open so a half-applied feature sync can be retried, not lost.
       setFormError(toErrorMessage(error));
     }
   }

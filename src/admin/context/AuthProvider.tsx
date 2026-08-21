@@ -26,10 +26,8 @@ interface AuthProviderProps {
 
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AdminUser | null>(null);
-  // Decided up front so the effect never has to setState synchronously:
-  // "loading" means there is a token worth verifying against /auth/me — an
-  // expired access token is fine here too, since `httpClient`'s interceptor
-  // transparently refreshes it as long as the refresh token is still good.
+  // "loading" means there's a token worth verifying against /auth/me — an expired access token is fine too,
+  // since `httpClient`'s interceptor transparently refreshes it as long as the refresh token is still good.
   const [status, setStatus] = useState<AuthStatus>(() => {
     const stored = getStoredToken();
     if (!stored || isRefreshExpired(stored)) {
