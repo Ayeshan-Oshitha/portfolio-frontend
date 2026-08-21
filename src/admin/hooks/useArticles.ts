@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as articlesService from "@/admin/services/articlesService";
 import type { GetArticlesParams } from "@/admin/services/articlesService";
 import { articleKeys } from "@/admin/hooks/queryKeys";
-import type { ArticleWriteRequest } from "@/admin/types";
+import type { ArticleWriteRequest, ReorderRequest } from "@/admin/types";
 
 export function useArticles(params: GetArticlesParams) {
   return useQuery({
@@ -38,6 +38,16 @@ export function useDeleteArticle() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => articlesService.deleteArticle(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: articleKeys.lists() });
+    },
+  });
+}
+
+export function useReorderArticles() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ReorderRequest) => articlesService.reorderArticles(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: articleKeys.lists() });
     },

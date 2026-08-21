@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   AdminUser,
+  AuthResponse,
   AuthStatus,
   LoginRequest,
   RegisterRequest,
 } from "@/admin/types";
 import * as authService from "@/admin/services/authService";
 import { AUTH_EXPIRED_EVENT } from "@/admin/services/httpClient";
-import { useLogin, useRegister } from "@/admin/hooks/useAuthApi";
+import { useGoogleSignIn, useLogin, useRegister } from "@/admin/hooks/useAuthApi";
 import {
   clearStoredToken,
   getStoredToken,
-  isExpired,
+  isRefreshExpired,
   setStoredToken,
 } from "@/admin/api/tokenStorage";
 import {
@@ -26,10 +27,12 @@ interface AuthProviderProps {
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AdminUser | null>(null);
   // Decided up front so the effect never has to setState synchronously:
-  // "loading" means there is a token worth verifying against /auth/me.
+  // "loading" means there is a token worth verifying against /auth/me — an
+  // expired access token is fine here too, since `httpClient`'s interceptor
+  // transparently refreshes it as long as the refresh token is still good.
   const [status, setStatus] = useState<AuthStatus>(() => {
     const stored = getStoredToken();
-    if (!stored || isExpired(stored)) {
+    if (!stored || isRefreshExpired(stored)) {
       clearStoredToken();
       return "unauthenticated";
     }
@@ -38,12 +41,19 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
   const loginMutation = useLogin();
   const registerMutation = useRegister();
+  const googleSignInMutation = useGoogleSignIn();
 
-  const logout = useCallback(() => {
-    // No logout endpoint exists — dropping the token is the whole operation.
+  const logout = useCallback(async () => {
+    const stored = getStoredToken();
     clearStoredToken();
     setUser(null);
     setStatus("unauthenticated");
+
+    if (stored && !isRefreshExpired(stored)) {
+      // Best-effort: revokes the refresh token server-side, but the local
+      // session is already gone regardless of whether this succeeds.
+      authService.logout(stored.refreshToken).catch(() => {});
+    }
   }, []);
 
   // Rehydrate the session from localStorage on mount.
@@ -71,21 +81,33 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The client broadcasts this when the API rejects our token mid-session.
+  // The client broadcasts this when the API rejects our token mid-session
+  // and a refresh either wasn't possible or also failed.
   useEffect(() => {
-    window.addEventListener(AUTH_EXPIRED_EVENT, logout);
-    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, logout);
-  }, [logout]);
+    function handleAuthExpired() {
+      setUser(null);
+      setStatus("unauthenticated");
+    }
+    window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+    return () =>
+      window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
+  }, []);
+
+  function storeSession(response: AuthResponse) {
+    setStoredToken({
+      accessToken: response.accessToken,
+      expiresAt: response.expiresAt,
+      refreshToken: response.refreshToken,
+      refreshTokenExpiresAt: response.refreshTokenExpiresAt,
+    });
+    setUser(response.user);
+    setStatus("authenticated");
+  }
 
   const login = useCallback(
     async (payload: LoginRequest) => {
       const response = await loginMutation.mutateAsync(payload);
-      setStoredToken({
-        accessToken: response.accessToken,
-        expiresAt: response.expiresAt,
-      });
-      setUser(response.user);
-      setStatus("authenticated");
+      storeSession(response);
       return response.user;
     },
     [loginMutation],
@@ -94,20 +116,24 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const register = useCallback(
     async (payload: RegisterRequest) => {
       const response = await registerMutation.mutateAsync(payload);
-      setStoredToken({
-        accessToken: response.accessToken,
-        expiresAt: response.expiresAt,
-      });
-      setUser(response.user);
-      setStatus("authenticated");
+      storeSession(response);
       return response.user;
     },
     [registerMutation],
   );
 
+  const loginWithGoogle = useCallback(
+    async (idToken: string) => {
+      const response = await googleSignInMutation.mutateAsync({ idToken });
+      storeSession(response);
+      return response.user;
+    },
+    [googleSignInMutation],
+  );
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, status, login, register, logout }),
-    [user, status, login, register, logout],
+    () => ({ user, status, login, register, loginWithGoogle, logout }),
+    [user, status, login, register, loginWithGoogle, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

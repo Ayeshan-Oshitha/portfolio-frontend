@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import Badge from "@/portfolio/components/ui/Badge";
 import Button from "@/portfolio/components/ui/Button";
@@ -10,7 +10,11 @@ import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
 import Input from "@/admin/components/ui/Input";
 import Select from "@/admin/components/ui/Select";
 import ArticleFormModal from "@/admin/components/articles/ArticleFormModal";
-import { useArticles, useDeleteArticle } from "@/admin/hooks/useArticles";
+import {
+  useArticles,
+  useDeleteArticle,
+  useReorderArticles,
+} from "@/admin/hooks/useArticles";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import type { AdminArticle, Site } from "@/admin/types";
 import { formatDate, formatDateOnly } from "@/admin/utils/format";
@@ -39,6 +43,11 @@ function toIsPublished(status: StatusFilter): boolean | undefined {
   if (status === "published") return true;
   if (status === "draft") return false;
   return undefined;
+}
+
+/** Sort order is kept per site, so which column applies depends on the filter. */
+function sortOrderFor(article: AdminArticle, site: Site): number {
+  return site === "agency" ? article.agencySortOrder : article.personalSortOrder;
 }
 
 /**
@@ -91,8 +100,52 @@ export default function ArticlesPage() {
     pageSize: PAGE_SIZE,
   });
   const deleteArticleMutation = useDeleteArticle();
+  const reorderArticlesMutation = useReorderArticles();
 
-  const error = queryError ? toErrorMessage(queryError) : null;
+  const [actionError, setActionError] = useState<string | null>(null);
+  const error =
+    actionError ?? (queryError ? toErrorMessage(queryError) : null);
+
+  /**
+   * Reordering renumbers the whole visible page, so the rows have to be in the
+   * same order the arrows imply. The API already orders by the requested
+   * site's column, but sorting here keeps the two in step after a local swap.
+   */
+  const rows = useMemo(() => {
+    const items = result?.items ?? [];
+    if (!site) return items;
+    return [...items].sort(
+      (a, b) => sortOrderFor(a, site) - sortOrderFor(b, site),
+    );
+  }, [result, site]);
+
+  /**
+   * Sends the whole page renumbered densely from the index rather than just the
+   * two swapped rows, so the numbering stays contiguous however it started.
+   */
+  async function move(index: number, delta: number) {
+    if (!site) return;
+
+    const target = index + delta;
+    if (target < 0 || target >= rows.length) return;
+
+    const next = [...rows];
+    [next[index], next[target]] = [next[target], next[index]];
+
+    setActionError(null);
+    try {
+      await reorderArticlesMutation.mutateAsync({
+        site,
+        items: next.map((article, at) => ({
+          id: article.id,
+          // Page 2 continues where page 1 left off, so the offset matters.
+          sortOrder: (page - 1) * PAGE_SIZE + at,
+        })),
+      });
+    } catch (cause) {
+      setActionError(toErrorMessage(cause));
+    }
+  }
 
   function handleSaved() {
     // Query invalidation on the mutation already refreshes the list.
@@ -127,6 +180,7 @@ export default function ArticlesPage() {
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const isReordering = reorderArticlesMutation.isPending;
 
   return (
     <div className="max-w-6xl">
@@ -183,6 +237,12 @@ export default function ArticlesPage() {
         />
       </div>
 
+      <p className="text-xs text-text-muted mb-6">
+        {site
+          ? "Use the arrows to set the order articles appear in on the selected site."
+          : "Sort order is kept per site — pick a single site to reorder articles."}
+      </p>
+
       {error && <Alert className="mb-6">{error}</Alert>}
 
       <Card className="p-0 overflow-hidden">
@@ -190,7 +250,7 @@ export default function ArticlesPage() {
           <div className="flex items-center justify-center py-16 text-primary-400">
             <Spinner className="h-6 w-6" label="Loading articles" />
           </div>
-        ) : !result || result.items.length === 0 ? (
+        ) : rows.length === 0 ? (
           <p className="py-16 text-center text-sm text-text-muted">
             No articles match these filters.
           </p>
@@ -209,7 +269,7 @@ export default function ArticlesPage() {
                 </tr>
               </thead>
               <tbody>
-                {result.items.map((item) => (
+                {rows.map((item, index) => (
                   <tr
                     key={item.id}
                     className="border-b border-border-subtle/60 last:border-0"
@@ -276,6 +336,37 @@ export default function ArticlesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => move(index, -1)}
+                          disabled={!site || isReordering || index === 0}
+                          aria-label={`Move “${item.title}” up`}
+                          title={
+                            site
+                              ? "Move up"
+                              : "Pick a single site to reorder articles"
+                          }
+                          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ArrowUp className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => move(index, 1)}
+                          disabled={
+                            !site || isReordering || index === rows.length - 1
+                          }
+                          aria-label={`Move “${item.title}” down`}
+                          title={
+                            site
+                              ? "Move down"
+                              : "Pick a single site to reorder articles"
+                          }
+                          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <ArrowDown className="h-4 w-4" aria-hidden="true" />
+                        </button>
+
                         <Button
                           variant="ghost"
                           size="sm"

@@ -30,13 +30,20 @@ export interface RejectUserRequest {
 }
 
 /**
- * `DTOs/Admin/AuthResponse.cs` — access token only, there is no refresh
- * token yet. `expiresAt` is an absolute ISO-8601 timestamp with offset.
+ * `DTOs/Admin/AuthResponse.cs`. `expiresAt`/`refreshTokenExpiresAt` are
+ * absolute ISO-8601 timestamps with offset.
  */
 export interface AuthResponse {
   readonly accessToken: string;
   readonly expiresAt: string;
+  readonly refreshToken: string;
+  readonly refreshTokenExpiresAt: string;
   readonly user: AdminUser;
+}
+
+/** `DTOs/Admin/GoogleSignInRequest.cs` */
+export interface GoogleSignInRequest {
+  readonly idToken: string;
 }
 
 export interface RegisterRequest {
@@ -145,6 +152,8 @@ export interface ApiProblem {
 export interface StoredToken {
   readonly accessToken: string;
   readonly expiresAt: string;
+  readonly refreshToken: string;
+  readonly refreshTokenExpiresAt: string;
 }
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -390,9 +399,7 @@ export interface ServiceFeatureWriteRequest {
 
 /**
  * `DTOs/Public/ProjectImageResponse.cs` — Cloudinary metadata only; the API
- * never stores bytes and never returns per-size URLs. Read-only on the admin
- * surface for now: there is no upload or signature endpoint yet, so the editor
- * leaves a project's gallery exactly as it found it.
+ * never stores bytes and never returns per-size URLs.
  */
 export interface ProjectImage {
   readonly id: string;
@@ -486,6 +493,47 @@ export interface ProjectWriteRequest {
  */
 export interface SetPublishedRequest {
   readonly isPublished: boolean;
+}
+
+/**
+ * `DTOs/Admin/AddProjectImageRequest.cs`; `UpdateProjectImageRequest` extends
+ * it unchanged. Setting `isPrimary` true clears the previous primary image.
+ */
+export interface ProjectImageWriteRequest {
+  readonly cloudinaryId: string;
+  readonly url: string;
+  readonly altText: string;
+  readonly width: number;
+  readonly height: number;
+  readonly isPrimary: boolean;
+  readonly sortOrder: number;
+}
+
+/** `DTOs/Admin/ImageReorderRequest.cs` — a single global order, no site. */
+export interface ImageReorderRequest {
+  readonly items: readonly ReorderItem[];
+}
+
+/** `Enums/MediaTarget.cs` — which folder/validation rules a signature is for. */
+export type MediaTarget = "projects" | "services" | "tags" | "articles";
+
+/** `DTOs/Admin/UploadSignatureRequest.cs` — `slug` is required when `target` is `projects`. */
+export interface UploadSignatureRequest {
+  readonly target?: MediaTarget;
+  readonly slug?: string;
+  /** Set to overwrite an existing asset instead of creating a new one. */
+  readonly publicId?: string;
+}
+
+/** `DTOs/Admin/UploadSignatureResponse.cs` — feeds a direct signed upload to Cloudinary. */
+export interface UploadSignatureResponse {
+  readonly signature: string;
+  readonly timestamp: number;
+  readonly apiKey: string;
+  readonly cloudName: string;
+  readonly folder: string;
+  readonly publicId?: string;
+  readonly uploadUrl: string;
 }
 
 /**

@@ -8,6 +8,7 @@ import BlogPage from "@/portfolio/pages/BlogPage";
 import ServicesPage from "@/portfolio/pages/ServicesPage";
 import AdminRoot from "@/admin/layout/AdminRoot";
 import RequireAuth from "@/admin/components/RequireAuth";
+import RequireSuperAdmin from "@/admin/components/RequireSuperAdmin";
 import RedirectIfAuthenticated from "@/admin/components/RedirectIfAuthenticated";
 import AdminLayout from "@/admin/layout/AdminLayout";
 import AuthLayout from "@/admin/layout/AuthLayout";
@@ -90,12 +91,17 @@ export const router = createBrowserRouter([
                 element: <DashboardPage />,
               },
               {
-                path: "users",
-                element: <UsersPage />,
-              },
-              {
-                path: "approvals",
-                element: <PendingApprovalsPage />,
+                element: <RequireSuperAdmin />,
+                children: [
+                  {
+                    path: "users",
+                    element: <UsersPage />,
+                  },
+                  {
+                    path: "approvals",
+                    element: <PendingApprovalsPage />,
+                  },
+                ],
               },
               {
                 path: "projects",

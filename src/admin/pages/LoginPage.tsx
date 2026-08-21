@@ -6,6 +6,7 @@ import Button from "@/portfolio/components/ui/Button";
 import Alert from "@/admin/components/ui/Alert";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
+import GoogleSignInButton from "@/admin/components/GoogleSignInButton";
 import useAuth from "@/admin/context/useAuth";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import ApiError from "@/admin/api/ApiError";
@@ -81,6 +82,8 @@ export default function LoginPage() {
           {isSubmitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
+
+      <GoogleSignInButton onError={setFormError} />
 
       <p className="mt-6 text-center text-sm text-text-muted">
         Need an account?{" "}

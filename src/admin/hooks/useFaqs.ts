@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as faqsService from "@/admin/services/faqsService";
 import type { GetFaqsParams } from "@/admin/services/faqsService";
 import { faqKeys } from "@/admin/hooks/queryKeys";
-import type { FaqWriteRequest } from "@/admin/types";
+import type { FaqWriteRequest, ReorderRequest } from "@/admin/types";
 
 export function useFaqs(params: GetFaqsParams) {
   return useQuery({
@@ -37,6 +37,16 @@ export function useDeleteFaq() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => faqsService.deleteFaq(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: faqKeys.lists() });
+    },
+  });
+}
+
+export function useReorderFaqs() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ReorderRequest) => faqsService.reorderFaqs(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: faqKeys.lists() });
     },

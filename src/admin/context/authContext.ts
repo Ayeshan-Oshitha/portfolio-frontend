@@ -11,7 +11,8 @@ export interface AuthContextValue {
   readonly status: AuthStatus;
   readonly login: (payload: LoginRequest) => Promise<AdminUser>;
   readonly register: (payload: RegisterRequest) => Promise<AdminUser>;
-  readonly logout: () => void;
+  readonly loginWithGoogle: (idToken: string) => Promise<AdminUser>;
+  readonly logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
