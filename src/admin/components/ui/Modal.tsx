@@ -38,15 +38,13 @@ export default function Modal({
   const titleId = useId();
   const descriptionId = useId();
 
-  // Callers pass an inline arrow more often than not; holding it in a ref
-  // keeps the setup effect below from re-running on every parent render.
+  // Ref avoids re-running the setup effect below when callers pass a fresh inline onClose.
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
 
-  // Escape closes, the page behind stays put, and focus is handed to the
-  // panel on open and back to the trigger on close.
+  // Escape closes; focus moves to the panel on open and back to the trigger on close.
   useEffect(() => {
     if (!open) return;
 
@@ -74,8 +72,7 @@ export default function Modal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/80 backdrop-blur-sm"
       onMouseDown={(event) => {
-        // Only a press that starts on the backdrop itself dismisses, so a
-        // drag-select that ends outside the panel does not close the dialog.
+        // Only dismiss if the press started on the backdrop, not a drag-select ending outside the panel.
         if (event.target === event.currentTarget) onClose();
       }}
     >

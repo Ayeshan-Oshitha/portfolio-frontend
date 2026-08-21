@@ -77,8 +77,7 @@ export default function ProjectImagesEditor({
       formData.append("folder", signature.folder);
       if (signature.publicId) formData.append("public_id", signature.publicId);
 
-      // Straight to Cloudinary, not through `httpClient` — different origin,
-      // no bearer token, and the signature above is what authorizes it.
+      // Straight to Cloudinary, not through `httpClient` — the signature above authorizes it, not our bearer token.
       const { data: uploaded } = await axios.post<CloudinaryUploadResponse>(
         signature.uploadUrl,
         formData,

@@ -45,8 +45,7 @@ export default function TagPicker({
   const tags: readonly AdminTag[] = useMemo(() => result?.items ?? [], [result]);
   const loadError = queryError ? toErrorMessage(queryError) : null;
 
-  // Selected chips follow the saved order of `value`; an id with no matching
-  // tag is dropped from the display but deliberately left in the form value.
+  // Chips follow `value`'s order; an id with no matching tag is hidden but kept in the form value.
   const selected = useMemo(
     () =>
       value
@@ -107,8 +106,7 @@ export default function TagPicker({
             </ul>
           )}
 
-          {/* Resets to the placeholder after each pick, so it reads as an
-              "add a tag" action rather than a current selection. */}
+          {/* Resets to the placeholder after each pick — reads as an "add" action, not a selection. */}
           <Select
             label="Add a tag"
             placeholder={

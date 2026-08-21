@@ -86,16 +86,14 @@ export default function TagFormModal({
     defaultValues: toFormValues(tag),
   });
 
-  // The technology fields only exist while the checkbox is on, and the slug
-  // placeholder previews what the API would generate from the name.
+  // The technology fields only exist while this checkbox is on.
   const isTechnology = useWatch({ control, name: "isTechnology" });
   const name = useWatch({ control, name: "name" });
 
   async function onSubmit(values: TagFormValues) {
     setFormError(null);
 
-    // Built explicitly rather than spread: the API rejects a category tag that
-    // still carries technology fields, and PUT replaces the whole record.
+    // Built explicitly: the API rejects a category tag that still carries technology fields.
     const body: TagWriteRequest = {
       name: values.name.trim(),
       slug: blank(values.slug),

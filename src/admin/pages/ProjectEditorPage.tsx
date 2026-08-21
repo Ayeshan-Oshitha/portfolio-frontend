@@ -169,8 +169,7 @@ export default function ProjectEditorPage() {
     );
   }
 
-  // Keyed so landing on a different project remounts the form with its values
-  // rather than leaving the previous defaults in place.
+  // Keyed so navigating to a different project remounts the form instead of reusing stale defaults.
   return (
     <ProjectForm
       key={project?.id ?? "new"}
@@ -205,9 +204,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
     defaultValues: toFormValues(project),
   });
 
-  // "Featured" is meaningless without "show" on the same site, so each box is
-  // disabled until its partner is on. The slug placeholder previews what the
-  // API would generate from the title.
+  // "Featured" requires "show" on the same site, so each checkbox is disabled until its partner is on.
   const title = useWatch({ control, name: "title" });
   const showOnAgency = useWatch({ control, name: "showOnAgency" });
   const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
@@ -223,9 +220,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
   async function onSubmit(values: ProjectFormValues) {
     setFormError(null);
 
-    // Built explicitly rather than spread: PUT replaces the whole record, so an
-    // omitted boolean would land as false, an omitted number as 0 and an
-    // omitted tagIds would wipe every tag.
+    // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field would wipe out.
     const body: ProjectWriteRequest = {
       title: values.title.trim(),
       slug: blank(values.slug),
@@ -242,8 +237,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
       seoTitle: blank(values.seoTitle),
       seoDescription: blank(values.seoDescription),
       showOnAgency: values.showOnAgency,
-      // A disabled checkbox keeps its last value, so the pairing is enforced
-      // here too rather than trusting the field.
+      // Re-enforced here since a disabled checkbox keeps its last submitted value.
       featuredOnAgency: values.showOnAgency && values.featuredOnAgency,
       agencySortOrder: values.agencySortOrder,
       showOnPersonal: values.showOnPersonal,
@@ -292,9 +286,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
         </p>
       </div>
 
-      {/* One form across all three tabs: the panels are only hidden, never
-          unmounted, so an error on a tab you are not looking at still blocks
-          submit and still shows up as a dot on its tab. */}
+      {/* Panels are hidden, never unmounted, so an error on another tab still blocks submit and shows its dot. */}
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <div
           role="tablist"
@@ -526,8 +518,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
         </Card>
 
         <div className="sticky bottom-0 mt-6 -mx-6 md:-mx-10 px-6 md:px-10 py-4 bg-surface-950/90 backdrop-blur border-t border-border-subtle">
-          {/* Raised here rather than inside a panel so an error is visible
-              whichever tab is open. */}
+          {/* Outside any panel so it stays visible regardless of which tab is open. */}
           {formError && <Alert className="mb-4">{formError}</Alert>}
 
           {tabsWithErrors.size > 0 && (

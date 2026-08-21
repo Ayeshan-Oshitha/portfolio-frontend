@@ -23,8 +23,7 @@ export const tagSchema = z
     iconCloudinaryId: optionalText,
     iconUrl: optionalText,
     colorHex: optionalText,
-    // Registered with `valueAsNumber`, so a blank field arrives as NaN and
-    // fails this check rather than silently becoming 0.
+    // Registered with `valueAsNumber`, so a blank field arrives as NaN and fails this check, not becomes 0.
     sortOrder: z
       .number({ message: "Sort order must be a whole number." })
       .int("Sort order must be a whole number."),

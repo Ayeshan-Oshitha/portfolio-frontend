@@ -98,8 +98,7 @@ export default function TagsPage() {
       await deleteTagMutation.mutateAsync(deleteTarget.id);
       setDeleteTarget(null);
     } catch (cause) {
-      // Includes the API's `tag_in_use` message, which names the content
-      // still holding the tag — worth keeping in front of the user.
+      // Surfaces the API's `tag_in_use` message, which names the content still holding the tag.
       setDeleteError(toErrorMessage(cause));
     }
   }
