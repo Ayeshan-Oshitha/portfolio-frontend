@@ -14,7 +14,6 @@ export default function WorkPage() {
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   const { data: projects = [], isLoading, isError, error } = useProjects();
-
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) =>
       prev.includes(category)
@@ -22,7 +21,6 @@ export default function WorkPage() {
         : [...prev, category],
     );
   };
-
   const filteredProjects = useMemo(() => {
     return projects
       .filter((project) => {
