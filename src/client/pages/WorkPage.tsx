@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { ALL_PROJECTS } from "../data/projects";
+import { useProjects } from "@/client/hooks/useProjects";
+import { toErrorMessage } from "@/client/services/ApiError";
 import WorkHeader from "../components/work-page/WorkHeader";
 import WorkFilters from "../components/work-page/WorkFilters";
 import WorkGrid from "../components/work-page/WorkGrid";
+import Spinner from "@/client/components/ui/Spinner";
 
 export default function WorkPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,6 +13,7 @@ export default function WorkPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
+  const { data: projects = [], isLoading, isError, error } = useProjects();
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) =>
       prev.includes(category)
@@ -18,31 +21,24 @@ export default function WorkPage() {
         : [...prev, category],
     );
   };
-
   const filteredProjects = useMemo(() => {
-    return ALL_PROJECTS.filter((project) => {
-      // 1. Search Filter
-      const query = debouncedSearchQuery.toLowerCase();
-      const matchesSearch =
-        !query ||
-        project.title.toLowerCase().includes(query) ||
-        project.categories.some((c) => c.toLowerCase().includes(query)) ||
-        project.technologies.some((t) => t.toLowerCase().includes(query));
+    return projects
+      .filter((project) => {
+        const query = debouncedSearchQuery.toLowerCase();
+        const matchesSearch =
+          !query ||
+          project.title.toLowerCase().includes(query) ||
+          project.categories.some((c) => c.toLowerCase().includes(query)) ||
+          project.technologies.some((t) => t.toLowerCase().includes(query));
 
-      // 2. Category Filter
-      const matchesCategory =
-        selectedCategories.length === 0 ||
-        selectedCategories.some((c) => project.categories.includes(c));
+        const matchesCategory =
+          selectedCategories.length === 0 ||
+          selectedCategories.some((c) => project.categories.includes(c));
 
-      return matchesSearch && matchesCategory;
-    }).sort((a, b) => {
-      // 3. Sorting (Internal year field is used for sorting)
-      if (sortOrder === "newest") {
-        return b.year - a.year;
-      }
-      return a.year - b.year;
-    });
-  }, [debouncedSearchQuery, selectedCategories, sortOrder]);
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => (sortOrder === "newest" ? b.year - a.year : a.year - b.year));
+  }, [projects, debouncedSearchQuery, selectedCategories, sortOrder]);
 
   return (
     <div className="relative pt-32 pb-24 sm:pb-32">
@@ -59,7 +55,19 @@ export default function WorkPage() {
           totalResults={filteredProjects.length}
         />
 
-        <WorkGrid projects={filteredProjects} />
+        {isLoading && (
+          <div className="flex justify-center py-24 text-text-muted">
+            <Spinner className="h-8 w-8" />
+          </div>
+        )}
+
+        {isError && (
+          <div className="py-20 text-center text-danger-400">
+            {toErrorMessage(error)}
+          </div>
+        )}
+
+        {!isLoading && !isError && <WorkGrid projects={filteredProjects} />}
       </div>
     </div>
   );

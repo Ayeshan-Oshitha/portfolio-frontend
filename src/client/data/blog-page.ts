@@ -11,6 +11,7 @@ export const BLOG_CATEGORIES = [
 export const ALL_POSTS: readonly BlogPost[] = [
   {
     id: "post-1",
+    slug: "post-1",
     title: "7 Signs Your Business Website Needs a Redesign",
     excerpt:
       "Not sure if it's time for a new website? Here are seven clear signs your business site needs a redesign — and what a modern, high-converting site should do instead.",
@@ -22,6 +23,7 @@ export const ALL_POSTS: readonly BlogPost[] = [
   },
   {
     id: "post-2",
+    slug: "post-2",
     title: "How to Build Scalable React Applications",
     excerpt:
       "A deep dive into architecture patterns, state management, and performance optimization techniques for enterprise-grade React codebases.",
@@ -33,6 +35,7 @@ export const ALL_POSTS: readonly BlogPost[] = [
   },
   {
     id: "post-3",
+    slug: "post-3",
     title: "The Psychology of Color in UI Design",
     excerpt:
       "Understanding how different hues impact user behavior, emotions, and conversion rates on modern web platforms.",
@@ -44,6 +47,7 @@ export const ALL_POSTS: readonly BlogPost[] = [
   },
   {
     id: "post-4",
+    slug: "post-4",
     title: "Navigating the Freelance Developer Market",
     excerpt:
       "Lessons learned from 5 years of freelancing: how to find clients, price your services, and manage your time effectively.",

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Project } from "@/client/types";
 
 interface WorkCardProps {
@@ -6,7 +7,9 @@ interface WorkCardProps {
 
 export default function WorkCard({ project }: WorkCardProps) {
   return (
-    <article className="group flex flex-col rounded-2xl bg-surface-950 border border-border-subtle overflow-hidden hover:border-primary-500/30 transition-colors duration-300">
+    <Link
+      to={project.href}
+      className="group flex flex-col rounded-2xl bg-surface-950 border border-border-subtle overflow-hidden hover:border-primary-500/30 transition-colors duration-300">
       {/* Image Container */}
       <div className="relative aspect-[16/10] overflow-hidden bg-surface-900">
         <img
@@ -52,6 +55,6 @@ export default function WorkCard({ project }: WorkCardProps) {
           ))}
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

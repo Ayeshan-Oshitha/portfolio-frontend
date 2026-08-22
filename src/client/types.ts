@@ -47,6 +47,7 @@ export interface Service {
 // ─── Projects ────────────────────────────────────────────────
 export interface Project {
   readonly id: string;
+  readonly slug: string;
   readonly title: string;
   readonly tagline: string;
   readonly description: string;
@@ -57,10 +58,28 @@ export interface Project {
   readonly technologies: readonly string[];
   readonly imagePlaceholder: string;
   readonly href: string;
+  // Case-study fields — only populated when the project came from the API
+  // and only needed by the detail page, so they stay optional here.
+  readonly websiteUrl?: string;
+  readonly clientName?: string;
+  readonly problem?: string;
+  readonly solution?: string;
+  readonly whatWeDelivered?: string;
+  readonly proof?: string;
+  readonly images?: readonly ProjectImage[];
+}
+
+export interface ProjectImage {
+  readonly id: string;
+  readonly url: string;
+  readonly altText: string;
+  readonly isPrimary: boolean;
+  readonly sortOrder: number;
 }
 
 export interface BlogPost {
   readonly id: string;
+  readonly slug: string;
   readonly title: string;
   readonly excerpt: string;
   readonly category: string;
@@ -68,6 +87,125 @@ export interface BlogPost {
   readonly readTime: string;
   readonly imagePlaceholder: string;
   readonly href: string;
+  // Detail-page-only field, populated when the post came from the API.
+  readonly contentMarkdown?: string;
+  readonly mediumUrl?: string;
+}
+
+// ─── Reviews ─────────────────────────────────────────────────
+export interface Review {
+  readonly id: string;
+  readonly name: string;
+  readonly country: string;
+  readonly countryCode: string;
+  readonly position?: string;
+  readonly rating: number;
+  readonly reviewText: string;
+  readonly createdAt: string;
+}
+
+export type ReviewSort = "latest" | "rating" | "country";
+
+export interface SubmitReviewPayload {
+  readonly name: string;
+  readonly country: string;
+  readonly countryCode: string;
+  readonly position?: string;
+  readonly rating: number;
+  readonly reviewText: string;
+}
+
+// ─── API DTOs (public surface) ──────────────────────────────
+export type Site = "agency" | "personal";
+
+export interface PagedResult<T> {
+  readonly items: readonly T[];
+  readonly page: number;
+  readonly pageSize: number;
+  readonly total: number;
+}
+
+export interface ApiTag {
+  readonly id: string;
+  readonly name: string;
+  readonly slug: string;
+  readonly isTechnology: boolean;
+  readonly technologyCategory?: string;
+  readonly iconUrl?: string;
+  readonly colorHex?: string;
+  readonly sortOrder: number;
+}
+
+export interface ApiProjectImage {
+  readonly id: string;
+  readonly objectKey: string;
+  readonly url: string;
+  readonly altText: string;
+  readonly width: number;
+  readonly height: number;
+  readonly isPrimary: boolean;
+  readonly sortOrder: number;
+}
+
+export interface ApiProject {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly year: number;
+  readonly shortDescription: string;
+  readonly description: string;
+  readonly websiteUrl?: string;
+  readonly problem?: string;
+  readonly solution?: string;
+  readonly whatWeDelivered?: string;
+  readonly proof?: string;
+  readonly clientName?: string;
+  readonly publishedAt?: string;
+  readonly seoTitle?: string;
+  readonly seoDescription?: string;
+  readonly featured: boolean;
+  readonly sortOrder: number;
+  readonly tags: readonly ApiTag[];
+  readonly images: readonly ApiProjectImage[];
+}
+
+export interface ApiArticle {
+  readonly id: string;
+  readonly title: string;
+  readonly excerpt: string;
+  readonly slug?: string;
+  readonly publishedDate: string;
+  readonly mediumUrl?: string;
+  readonly coverImageKey?: string;
+  readonly contentMarkdown?: string;
+  readonly featured: boolean;
+  readonly sortOrder: number;
+  readonly tags: readonly ApiTag[];
+}
+
+export interface ApiReview {
+  readonly id: string;
+  readonly name: string;
+  readonly country: string;
+  readonly countryCode: string;
+  readonly position?: string;
+  readonly rating: number;
+  readonly reviewText: string;
+  readonly createdAt: string;
+}
+
+export type ApiErrorCode =
+  | "validation_failed"
+  | "site_required"
+  | "not_found"
+  | "forbidden"
+  | string;
+
+export interface ApiProblem {
+  readonly status?: number;
+  readonly title?: string;
+  readonly detail?: string;
+  readonly code?: ApiErrorCode;
 }
 
 export interface ServiceOffering {
