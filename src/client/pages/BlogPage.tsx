@@ -1,18 +1,21 @@
 import { useState, useMemo } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { ALL_POSTS } from "../data/blog-page";
+import { useArticles } from "@/client/hooks/useArticles";
+import { toErrorMessage } from "@/client/services/ApiError";
 import BlogHeader from "../components/blog-page/BlogHeader";
 import BlogFilters from "../components/blog-page/BlogFilters";
 import BlogGrid from "../components/blog-page/BlogGrid";
+import Spinner from "@/client/components/ui/Spinner";
 
 export default function BlogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  const { data: posts = [], isLoading, isError, error } = useArticles();
+
   const filteredPosts = useMemo(() => {
-    return ALL_POSTS.filter((post) => {
-      // 1. Search Filter
+    return posts.filter((post) => {
       const query = debouncedSearchQuery.toLowerCase();
       const matchesSearch =
         !query ||
@@ -20,13 +23,12 @@ export default function BlogPage() {
         post.excerpt.toLowerCase().includes(query) ||
         post.category.toLowerCase().includes(query);
 
-      // 2. Category Filter
       const matchesCategory =
         !selectedCategory || post.category === selectedCategory;
 
       return matchesSearch && matchesCategory;
     });
-  }, [debouncedSearchQuery, selectedCategory]);
+  }, [posts, debouncedSearchQuery, selectedCategory]);
 
   return (
     <div className="relative pt-32 pb-24 sm:pb-32">
@@ -40,7 +42,19 @@ export default function BlogPage() {
           onCategorySelect={setSelectedCategory}
         />
 
-        <BlogGrid posts={filteredPosts} />
+        {isLoading && (
+          <div className="flex justify-center py-24 text-text-muted">
+            <Spinner className="h-8 w-8" />
+          </div>
+        )}
+
+        {isError && (
+          <div className="py-20 text-center text-danger-400">
+            {toErrorMessage(error)}
+          </div>
+        )}
+
+        {!isLoading && !isError && <BlogGrid posts={filteredPosts} />}
       </div>
     </div>
   );

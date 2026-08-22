@@ -22,7 +22,7 @@ export const SERVICES: readonly Service[] = [
     description:
       "Custom Shopify and Shopify Plus stores built to sell — fast storefronts, clean checkouts, migrations, and integrations engineered to turn browsers into buyers.",
     icon: ShoppingCart,
-    href: "#contact",
+    href: "/contact",
   },
   {
     id: "web-design",
@@ -30,7 +30,7 @@ export const SERVICES: readonly Service[] = [
     description:
       "Modern, mobile-first websites that look premium and convert. Every layout and call-to-action is built to guide visitors toward calls, quotes, and sales.",
     icon: Monitor,
-    href: "#contact",
+    href: "/contact",
   },
   {
     id: "graphic-design",
@@ -38,7 +38,7 @@ export const SERVICES: readonly Service[] = [
     description:
       "Brand identity, logos, book covers, and marketing collateral that look premium and stay consistent across every touchpoint.",
     icon: Palette,
-    href: "#contact",
+    href: "/contact",
   },
   {
     id: "app-development",
@@ -46,7 +46,7 @@ export const SERVICES: readonly Service[] = [
     description:
       "Cross-platform mobile apps and web applications in React Native and Expo — built for iOS, Android, and the browser.",
     icon: Smartphone,
-    href: "#contact",
+    href: "/contact",
   },
   {
     id: "web-development",
@@ -54,7 +54,7 @@ export const SERVICES: readonly Service[] = [
     description:
       "Custom websites and web apps in React and Next.js when a template won't cut it — portals, dashboards, integrations, and automation that just work.",
     icon: Code2,
-    href: "#contact",
+    href: "/contact",
   },
   {
     id: "seo",
@@ -62,6 +62,6 @@ export const SERVICES: readonly Service[] = [
     description:
       "Get found by customers ready to buy. Technical SEO, local SEO, and Google Business Profile optimization to win the Phoenix-area map pack and search results.",
     icon: Search,
-    href: "#contact",
+    href: "/contact",
   },
 ] as const;

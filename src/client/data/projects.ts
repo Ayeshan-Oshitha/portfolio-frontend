@@ -20,6 +20,7 @@ export const PROJECT_CATEGORIES = [
 export const ALL_PROJECTS: readonly Project[] = [
   {
     id: "dropfi",
+    slug: "dropfi",
     title: "DropFi",
     tagline: "Finally, a Modern XRP Wallet That Doesn't Suck",
     description:
@@ -36,10 +37,11 @@ export const ALL_PROJECTS: readonly Project[] = [
       "XRP Ledger API",
     ],
     imagePlaceholder: "/images/projects/dropfi.webp",
-    href: "#",
+    href: "/work/dropfi",
   },
   {
     id: "cryptoland",
+    slug: "cryptoland",
     title: "CryptoLand",
     tagline: "Blockchain based Strategy Game",
     description:
@@ -54,10 +56,11 @@ export const ALL_PROJECTS: readonly Project[] = [
     ],
     technologies: ["React", "Solidity", "Ethers.js", "Figma", "Node.js"],
     imagePlaceholder: "/images/projects/cryptoland.webp",
-    href: "#",
+    href: "/work/cryptoland",
   },
   {
     id: "sf-ventures",
+    slug: "sf-ventures",
     title: "S.F. Ventures",
     tagline: "Take your business to new heights",
     description:
@@ -72,10 +75,11 @@ export const ALL_PROJECTS: readonly Project[] = [
     ],
     technologies: ["Vue.js", "Tailwind CSS", "Strapi", "PostgreSQL"],
     imagePlaceholder: "/images/projects/sf-ventures.webp",
-    href: "#",
+    href: "/work/sf-ventures",
   },
   {
     id: "flavour-fusion",
+    slug: "flavour-fusion",
     title: "Flavour Fusion",
     tagline: "A culinary experience like no other",
     description:
@@ -86,10 +90,11 @@ export const ALL_PROJECTS: readonly Project[] = [
     categories: ["Web Design", "Frontend Development"],
     technologies: ["React", "Framer Motion", "Stripe API", "Firebase"],
     imagePlaceholder: "/images/projects/flavour-fusion.webp",
-    href: "#",
+    href: "/work/flavour-fusion",
   },
   {
     id: "apex-fitness",
+    slug: "apex-fitness",
     title: "Apex Fitness",
     tagline: "Transform your body, transform your life",
     description:
@@ -100,7 +105,7 @@ export const ALL_PROJECTS: readonly Project[] = [
     categories: ["Mobile Development", "Backend Development"],
     technologies: ["React Native", "Node.js", "GraphQL", "AWS"],
     imagePlaceholder: "/images/projects/apex-fitness.webp",
-    href: "#",
+    href: "/work/apex-fitness",
   },
 ] as const;
 

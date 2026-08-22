@@ -4,7 +4,10 @@ import Home from "@/client/pages/Home";
 import ContactPage from "@/client/pages/ContactPage";
 import AboutPage from "@/client/pages/AboutPage";
 import WorkPage from "@/client/pages/WorkPage";
+import ProjectDetailPage from "@/client/pages/ProjectDetailPage";
 import BlogPage from "@/client/pages/BlogPage";
+import ArticleDetailPage from "@/client/pages/ArticleDetailPage";
+import ClientReviewsPage from "@/client/pages/ReviewsPage";
 import ServicesPage from "@/client/pages/ServicesPage";
 import AdminRoot from "@/admin/layout/AdminRoot";
 import RequireAuth from "@/admin/components/RequireAuth";
@@ -49,8 +52,20 @@ export const router = createBrowserRouter([
         element: <WorkPage />,
       },
       {
+        path: "work/:slug",
+        element: <ProjectDetailPage />,
+      },
+      {
         path: "blog",
         element: <BlogPage />,
+      },
+      {
+        path: "blog/:slug",
+        element: <ArticleDetailPage />,
+      },
+      {
+        path: "reviews",
+        element: <ClientReviewsPage />,
       },
       {
         path: "contact",
