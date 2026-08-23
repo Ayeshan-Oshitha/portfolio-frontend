@@ -17,6 +17,7 @@ import AdminLayout from "@/admin/layout/AdminLayout";
 import AuthLayout from "@/admin/layout/AuthLayout";
 import LoginPage from "@/admin/pages/LoginPage";
 import RegisterPage from "@/admin/pages/RegisterPage";
+import VerifyEmailPage from "@/admin/pages/VerifyEmailPage";
 import DashboardPage from "@/admin/pages/DashboardPage";
 import ChangePasswordPage from "@/admin/pages/ChangePasswordPage";
 import UsersPage from "@/admin/pages/UsersPage";
@@ -91,6 +92,10 @@ export const router = createBrowserRouter([
               {
                 path: "register",
                 element: <RegisterPage />,
+              },
+              {
+                path: "verify-email",
+                element: <VerifyEmailPage />,
               },
             ],
           },

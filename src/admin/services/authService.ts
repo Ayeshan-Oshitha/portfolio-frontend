@@ -5,14 +5,46 @@ import type {
   GoogleSignInRequest,
   LoginRequest,
   RegisterRequest,
+  ResendVerificationRequest,
+  ResendVerificationResponse,
+  VerifyEmailRequest,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
 
+/**
+ * Creates an `email_verification_required` account and emails a verification
+ * link. Deliberately returns no token — verification then super admin
+ * approval are both required before sign-in works.
+ */
 export async function register(
   payload: RegisterRequest,
-): Promise<AuthResponse> {
-  const { data } = await httpClient.post<AuthResponse>(
+): Promise<AdminUser> {
+  const { data } = await httpClient.post<AdminUser>(
     "/admin/auth/register",
+    payload,
+    { skipAuth: true },
+  );
+  return data;
+}
+
+/** Moves a password account from `email_verification_required` to `pending`. Never issues a sign-in token. */
+export async function verifyEmail(
+  payload: VerifyEmailRequest,
+): Promise<AdminUser> {
+  const { data } = await httpClient.post<AdminUser>(
+    "/admin/auth/verify-email",
+    payload,
+    { skipAuth: true },
+  );
+  return data;
+}
+
+/** Always resolves to the same generic message, whatever the email resolves to. Answers 202. */
+export async function resendVerification(
+  payload: ResendVerificationRequest,
+): Promise<ResendVerificationResponse> {
+  const { data } = await httpClient.post<ResendVerificationResponse>(
+    "/admin/auth/resend-verification",
     payload,
     { skipAuth: true },
   );

@@ -24,6 +24,14 @@ export function useRegister() {
   return useMutation({ mutationFn: authService.register });
 }
 
+export function useVerifyEmail() {
+  return useMutation({ mutationFn: authService.verifyEmail });
+}
+
+export function useResendVerification() {
+  return useMutation({ mutationFn: authService.resendVerification });
+}
+
 export function useChangePassword() {
   return useMutation({ mutationFn: authService.changePassword });
 }

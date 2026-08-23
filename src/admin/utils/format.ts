@@ -11,6 +11,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const STATUS_LABELS: Record<UserStatus, string> = {
+  email_verification_required: "Awaiting email verification",
   pending: "Pending",
   approved: "Approved",
   rejected: "Rejected",

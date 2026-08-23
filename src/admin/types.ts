@@ -5,7 +5,12 @@
 
 export type UserRole = "super_admin" | "admin";
 
-export type UserStatus = "pending" | "approved" | "rejected" | "disabled";
+export type UserStatus =
+  | "email_verification_required"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "disabled";
 
 /** `DTOs/Admin/AdminUserResponse.cs` */
 export interface AdminUser {
@@ -57,6 +62,24 @@ export interface RegisterRequest {
 export interface LoginRequest {
   readonly email: string;
   readonly password: string;
+}
+
+/** `DTOs/Admin/VerifyEmailRequest.cs` */
+export interface VerifyEmailRequest {
+  readonly token: string;
+}
+
+/** `DTOs/Admin/ResendVerificationRequest.cs` */
+export interface ResendVerificationRequest {
+  readonly email: string;
+}
+
+/**
+ * `DTOs/Admin/ResendVerificationResponse.cs` — always the same generic
+ * message, whatever the email resolves to.
+ */
+export interface ResendVerificationResponse {
+  readonly message: string;
 }
 
 export interface ChangePasswordRequest {
@@ -130,6 +153,11 @@ export type ApiErrorCode =
   | "unauthenticated"
   | "invalid_token"
   | "account_disabled"
+  | "email_verification_required"
+  | "account_pending"
+  | "account_rejected"
+  | "invalid_verification_token"
+  | "verification_token_expired"
   | "email_taken"
   | "cannot_delete_self"
   | "user_not_found"

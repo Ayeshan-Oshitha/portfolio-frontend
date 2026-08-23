@@ -111,12 +111,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     [loginMutation],
   );
 
+  // No token is issued here — the account still needs email verification and
+  // super admin approval before it can sign in.
   const register = useCallback(
-    async (payload: RegisterRequest) => {
-      const response = await registerMutation.mutateAsync(payload);
-      storeSession(response);
-      return response.user;
-    },
+    (payload: RegisterRequest) => registerMutation.mutateAsync(payload),
     [registerMutation],
   );
 

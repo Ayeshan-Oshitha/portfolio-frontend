@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Button from "@/admin/components/ui/Button";
 import Card from "@/admin/components/ui/Card";
 import Input from "@/admin/components/ui/Input";
@@ -15,8 +16,8 @@ import {
 
 export default function RegisterPage() {
   const { register: registerUser } = useAuth();
-  const navigate = useNavigate();
   const toast = useToast();
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -37,7 +38,7 @@ export default function RegisterPage() {
   async function onSubmit(values: RegisterFormValues) {
     try {
       await registerUser(values);
-      navigate("/admin", { replace: true });
+      setSubmittedEmail(values.email);
     } catch (error) {
       // A duplicate email belongs on the field, not in the banner.
       if (error instanceof ApiError && error.code === "email_taken") {
@@ -48,13 +49,38 @@ export default function RegisterPage() {
     }
   }
 
+  if (submittedEmail) {
+    return (
+      <Card>
+        <h2 className="text-lg font-semibold text-text-primary mb-1">
+          Check your email
+        </h2>
+        <p className="text-sm text-text-muted">
+          We sent a verification link to <strong>{submittedEmail}</strong>.
+          Once you confirm it, a super admin still has to approve your
+          account before you can sign in.
+        </p>
+
+        <p className="mt-6 text-center text-sm text-text-muted">
+          <Link
+            to="/admin/login"
+            className="text-primary-400 hover:text-primary-300 font-medium"
+          >
+            Back to sign in
+          </Link>
+        </p>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <h2 className="text-lg font-semibold text-text-primary mb-1">
         Create an account
       </h2>
       <p className="text-sm text-text-muted mb-6">
-        A super admin has to approve your account before you can sign in.
+        Verify your email, then a super admin has to approve your account
+        before you can sign in.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">

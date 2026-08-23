@@ -20,6 +20,10 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 const PAGE_SIZE = 20;
 
 const STATUS_OPTIONS: readonly { value: UserStatus; label: string }[] = [
+  {
+    value: "email_verification_required",
+    label: statusLabel("email_verification_required"),
+  },
   { value: "pending", label: statusLabel("pending") },
   { value: "approved", label: statusLabel("approved") },
   { value: "rejected", label: statusLabel("rejected") },

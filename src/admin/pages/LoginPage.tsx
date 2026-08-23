@@ -11,17 +11,29 @@ import useAuth from "@/admin/context/useAuth";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import ApiError from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
+import { useResendVerification } from "@/admin/hooks/useAuthApi";
 import {
   loginSchema,
   type LoginFormValues,
 } from "@/admin/validation/authSchemas";
+
+const CURATED_AUTH_ERROR_CODES = new Set([
+  "invalid_credentials",
+  "account_disabled",
+  "email_verification_required",
+  "account_pending",
+  "account_rejected",
+]);
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
+  const resendVerification = useResendVerification();
   const [formError, setFormError] = useState<string | null>(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resendSent, setResendSent] = useState(false);
 
   const {
     register,
@@ -38,20 +50,33 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginFormValues) {
     setFormError(null);
+    setUnverifiedEmail(null);
+    setResendSent(false);
     try {
       await login(values);
       navigate(from, { replace: true });
     } catch (error) {
-      // The API's `detail` is already user-facing for invalid_credentials and account_disabled.
+      // The API's `detail` is already user-facing for these codes.
       const isCuratedAuthError =
         error instanceof ApiError &&
-        (error.code === "invalid_credentials" ||
-          error.code === "account_disabled");
+        CURATED_AUTH_ERROR_CODES.has(error.code ?? "");
       if (isCuratedAuthError) {
         setFormError((error as ApiError).message);
+        if ((error as ApiError).code === "email_verification_required") {
+          setUnverifiedEmail(values.email);
+        }
         return;
       }
       toast.error(toErrorMessage(error));
+    }
+  }
+
+  async function handleResend() {
+    if (!unverifiedEmail) return;
+    try {
+      await resendVerification.mutateAsync({ email: unverifiedEmail });
+    } finally {
+      setResendSent(true); // The endpoint always answers the same generic success.
     }
   }
 
@@ -64,6 +89,23 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         {formError && <Alert>{formError}</Alert>}
+
+        {unverifiedEmail && !resendSent && (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            loading={resendVerification.isPending}
+            onClick={handleResend}
+          >
+            Resend verification email
+          </Button>
+        )}
+        {resendSent && (
+          <p className="text-sm text-text-muted">
+            If that account needs verification, we've sent a new email.
+          </p>
+        )}
 
         <Input
           label="Email"
