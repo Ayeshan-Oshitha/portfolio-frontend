@@ -1,50 +1,141 @@
 /* ─── Google Fonts ─────────────────────────────────────────── */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 @import "tailwindcss";
 
-/* ─── Tailwind v4 Theme Tokens ─────────────────────────────── */
+/* ─── Tailwind v4 Theme Tokens ─────────────────────────────────
+   "Ice Forest" — forest green + glacial blue.
+
+   The values declared here are the LIGHT theme; `:root[data-theme="dark"]`
+   below overrides the same names with the dark values. Tailwind v4 utilities
+   compile to `var(--color-…)`, so redefining a token in a scoped selector
+   re-themes every utility at runtime — no `dark:` variants needed.
+
+   The numeric `primary-*` / `accent-*` ramps are inverted between themes:
+   `-400` is always "accent text readable on the current background" and
+   `-600` is always "solid button fill". The admin panel already relies on
+   this same inversion trick (see the admin block further down).
+   ──────────────────────────────────────────────────────────── */
 @theme {
   /* Typography */
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
 
-  /* Primary palette — Purple */
-  --color-primary-50: oklch(0.97 0.01 285);
-  --color-primary-100: oklch(0.93 0.03 285);
-  --color-primary-200: oklch(0.87 0.06 285);
-  --color-primary-300: oklch(0.78 0.1 285);
-  --color-primary-400: oklch(0.68 0.15 285);
-  --color-primary-500: oklch(0.58 0.2 285);
-  --color-primary-600: oklch(0.5 0.22 285);
-  --color-primary-700: oklch(0.43 0.2 285);
-  --color-primary-800: oklch(0.36 0.16 285);
-  --color-primary-900: oklch(0.3 0.12 285);
+  /* Primary palette — Forest green */
+  --color-primary-50: oklch(0.96 0.02 158);
+  --color-primary-100: oklch(0.92 0.04 158);
+  --color-primary-200: oklch(0.85 0.07 158);
+  --color-primary-300: oklch(0.66 0.12 158);
+  --color-primary-400: oklch(0.45 0.15 158);
+  --color-primary-500: oklch(0.43 0.14 158);
+  --color-primary-600: oklch(0.4 0.13 160);
+  --color-primary-700: oklch(0.34 0.11 160);
+  --color-primary-800: oklch(0.28 0.09 162);
+  --color-primary-900: oklch(0.22 0.07 162);
+  --color-primary-950: oklch(0.17 0.05 164);
 
-  /* Accent palette — Cyan/Blue */
-  --color-accent-400: oklch(0.75 0.15 230);
-  --color-accent-500: oklch(0.65 0.18 230);
-  --color-accent-600: oklch(0.55 0.2 230);
+  /* Accent palette — Glacial blue */
+  --color-accent-400: oklch(0.46 0.14 205);
+  --color-accent-500: oklch(0.42 0.15 208);
+  --color-accent-600: oklch(0.38 0.14 210);
+  --color-accent-950: oklch(0.18 0.06 208);
 
-  /* Surface palette — Dark backgrounds */
-  --color-surface-950: oklch(0.1 0.01 260);
-  --color-surface-900: oklch(0.14 0.015 260);
-  --color-surface-800: oklch(0.18 0.02 260);
-  --color-surface-700: oklch(0.22 0.02 260);
+  /* Surface palette — page, card, raised, strong */
+  --color-surface-950: oklch(0.982 0.006 175);
+  --color-surface-900: oklch(1 0 0);
+  --color-surface-800: oklch(0.96 0.008 175);
+  --color-surface-700: oklch(0.93 0.01 175);
 
   /* Text */
-  --color-text-primary: oklch(0.95 0.005 260);
-  --color-text-secondary: oklch(0.7 0.01 260);
-  --color-text-muted: oklch(0.55 0.01 260);
+  --color-text-primary: oklch(0.17 0.042 166);
+  --color-text-secondary: oklch(0.42 0.025 170);
+  --color-text-muted: oklch(0.52 0.025 170);
 
   /* Semantic — feedback states */
-  --color-success-400: oklch(0.78 0.15 155);
-  --color-success-500: oklch(0.68 0.17 155);
-  --color-danger-400: oklch(0.72 0.17 25);
-  --color-danger-500: oklch(0.62 0.2 25);
+  --color-success-400: oklch(0.5 0.15 158);
+  --color-success-500: oklch(0.45 0.14 158);
+  --color-danger-400: oklch(0.55 0.19 25);
+  --color-danger-500: oklch(0.5 0.2 25);
 
   /* Border */
-  --color-border-subtle: oklch(0.25 0.02 260);
-  --color-border-default: oklch(0.3 0.02 260);
+  --color-border-subtle: oklch(0.9 0.008 175);
+  --color-border-default: oklch(0.85 0.012 175);
+
+  /* ── Ice Forest design tokens ──
+     Concepts the numeric ramps above can't express. */
+  --color-ice: oklch(0.46 0.14 205);
+  --color-ice-deep: oklch(0.42 0.16 214);
+  --color-forest: oklch(0.45 0.15 158);
+  /* Golden amber, shared by the MOST POPULAR pricing badge and the bento
+     tag — both solid fills with dark ink. Pitched softer here than on dark:
+     it sits on a pale mint panel, so full chroma reads as neon next to it.
+     The ink stays dark in both themes, so contrast holds either way. */
+  --color-amber: oklch(0.875 0.132 84);
+  --color-amber-ink: oklch(0.26 0.075 68);
+
+  --color-card: oklch(1 0 0 / 0.88);
+  --color-card-br: oklch(0.3 0.03 175 / 0.1);
+  --color-raise: oklch(1 0 0 / 0.72);
+  --color-raise-br: oklch(0.3 0.03 175 / 0.12);
+  --color-hair: oklch(0.3 0.03 175 / 0.1);
+  --color-hair-strong: oklch(0.3 0.03 175 / 0.16);
+
+  --color-icon-fg: oklch(0.38 0.13 194);
+  --color-media: oklch(0.9 0.06 196);
+  --color-media-fg: oklch(0.45 0.07 190);
+  /* Deep enough to hold contrast against the near-white page (L 0.982)
+     while sitting near the sRGB chroma peak for gold, so it reads rich
+     rather than washed out. */
+  --color-star: oklch(0.71 0.185 72);
+  /* Decorative quote glyph. Carries its own alpha so each theme can set its
+     own weight — on light it stays fully opaque, since a faded accent over
+     the near-white page washes out to grey. Forest green, matching what the
+     rest of the light theme accents with. */
+  --color-quote: oklch(0.53 0.155 159);
+  --color-code: oklch(0.22 0.03 172);
+  --color-code-fg: oklch(0.9 0.02 175);
+
+  /* The contrast panel — light, saturated ice/forest tint on the light
+     theme so it still pops off the near-white page; see the dark-theme
+     block below for its deep-forest counterpart. */
+  --color-panel-ink: oklch(0.18 0.04 165);
+  --color-panel-ink-2: oklch(0.4 0.035 168);
+  /* Solid rather than a faded dark teal: at 1px, a low-alpha edge over the
+     near-white panel just reads as grey. */
+  --color-panel-br: oklch(0.66 0.15 157);
+  --color-panel-chip: oklch(1 0 0 / 0.55);
+  --color-panel-chip-br: oklch(0.3 0.05 175 / 0.2);
+  /* Product-mock palette — a light "app screenshot" look on the light
+     theme; the dark-theme block below keeps its original dark look. */
+  --color-mock-bg: oklch(0.97 0.012 175);
+  --color-mock-panel: oklch(0.94 0.015 175);
+  --color-mock-line: oklch(0.3 0.03 175 / 0.12);
+  --color-mock-fill: oklch(0.3 0.03 175 / 0.045);
+  --color-mock-ink: oklch(0.18 0.04 165);
+  --color-mock-ink-2: oklch(0.4 0.03 170);
+  --color-mock-ink-3: oklch(0.52 0.025 170);
+  --color-mock-ice: oklch(0.5 0.14 205);
+  --color-mock-forest: oklch(0.45 0.15 158);
+  /* macOS traffic lights — Apple's literal values, kept as hex because they
+     are quoted constants rather than points on our ramps. macOS renders them
+     identically in light and dark appearance, so they are never overridden. */
+  --color-mac-close: #ff5f57;
+  --color-mac-min: #febc2e;
+  --color-mac-max: #28c840;
+
+  /* The panel is light here, so its button flips dark for contrast. */
+  --color-panel-btn: oklch(0.18 0.04 165);
+  --color-panel-btn-ink: oklch(0.99 0.005 190);
+
+  /* Elevation */
+  --shadow-card: 0 2px 4px -2px oklch(0.3 0.05 175 / 0.07),
+    0 18px 40px -26px oklch(0.3 0.06 178 / 0.3);
+  /* Two soft layers rather than one deep 96px pool: on a light page a large,
+     dark, wide shadow reads as a grey smear under the card. */
+  --shadow-panel: 0 3px 8px -3px oklch(0.45 0.05 178 / 0.07),
+    0 20px 44px -26px oklch(0.45 0.06 178 / 0.22);
+  --shadow-btn: 0 14px 34px -14px oklch(0.4 0.13 178 / 0.65),
+    inset 0 1px 0 oklch(1 0 0 / 0.22);
 
   /* Animations */
   --animate-fade-in-up: fade-in-up 0.7s ease-out both;
@@ -83,7 +174,285 @@
   }
 }
 
-/* ─── Admin Panel Light Theme ──────────────────────────────── */
+/* ─── Gradients & texture ──────────────────────────────────────
+   These are NOT declared in `@theme`: Tailwind would try to generate
+   colour utilities from them. They're plain custom properties, surfaced
+   through the `@utility` rules below. ─────────────────────────── */
+:root {
+  --fw-btn: linear-gradient(
+    135deg,
+    oklch(0.4 0.13 192),
+    oklch(0.43 0.14 158)
+  );
+  --fw-icon-bg: linear-gradient(
+    140deg,
+    oklch(0.91 0.06 196),
+    oklch(0.93 0.05 168)
+  );
+  --fw-media: linear-gradient(
+    150deg,
+    oklch(0.9 0.06 196),
+    oklch(0.92 0.05 162)
+  );
+  --fw-grad-ice: linear-gradient(
+    100deg,
+    oklch(0.52 0.15 200),
+    oklch(0.42 0.16 214)
+  );
+  --fw-grad-forest: linear-gradient(
+    100deg,
+    oklch(0.52 0.16 158),
+    oklch(0.4 0.15 150)
+  );
+  --fw-amb-1: radial-gradient(
+    ellipse at center,
+    oklch(0.86 0.09 198 / 0.5),
+    transparent 62%
+  );
+  --fw-amb-2: radial-gradient(
+    circle,
+    oklch(0.88 0.09 158 / 0.42),
+    transparent 65%
+  );
+
+  /* Light theme — see --color-panel-ink above for the dark counterpart.
+     Near-white with only a whisper of tint: the badge, the dark button, the
+     lift and the shadow already mark this as the highlighted card, so the
+     surface only has to hint, not shout. */
+  --fw-panel: linear-gradient(
+    150deg,
+    oklch(0.978 0.026 162),
+    oklch(0.968 0.021 193) 55%,
+    oklch(0.974 0.024 176)
+  );
+
+  --fw-grain: 0.028;
+
+  color-scheme: light;
+}
+
+/* ─── Dark theme ───────────────────────────────────────────────
+   Set on <html> by ThemeProvider (and by the pre-paint script in
+   index.html). Root-scoped so portalled UI — toasts render into
+   document.body — inherits it too. ───────────────────────────── */
+:root[data-theme="dark"] {
+  --color-primary-50: oklch(0.96 0.02 158);
+  --color-primary-100: oklch(0.92 0.04 158);
+  --color-primary-200: oklch(0.87 0.07 158);
+  --color-primary-300: oklch(0.83 0.11 158);
+  --color-primary-400: oklch(0.78 0.13 158);
+  --color-primary-500: oklch(0.72 0.16 158);
+  --color-primary-600: oklch(0.62 0.15 155);
+  --color-primary-700: oklch(0.52 0.13 155);
+  --color-primary-800: oklch(0.4 0.1 157);
+  --color-primary-900: oklch(0.3 0.08 160);
+  --color-primary-950: oklch(0.22 0.06 162);
+
+  --color-accent-400: oklch(0.84 0.11 200);
+  --color-accent-500: oklch(0.78 0.13 202);
+  --color-accent-600: oklch(0.72 0.15 205);
+  --color-accent-950: oklch(0.24 0.06 205);
+
+  --color-surface-950: oklch(0.16 0.021 168);
+  --color-surface-900: oklch(0.2 0.025 170);
+  --color-surface-800: oklch(0.24 0.028 172);
+  --color-surface-700: oklch(0.29 0.03 172);
+
+  --color-text-primary: oklch(0.97 0.008 170);
+  --color-text-secondary: oklch(0.76 0.016 172);
+  --color-text-muted: oklch(0.62 0.016 172);
+
+  --color-success-400: oklch(0.78 0.15 155);
+  --color-success-500: oklch(0.68 0.17 155);
+  --color-danger-400: oklch(0.72 0.17 25);
+  --color-danger-500: oklch(0.62 0.2 25);
+
+  --color-border-subtle: oklch(1 0 0 / 0.08);
+  --color-border-default: oklch(1 0 0 / 0.14);
+
+  --color-ice: oklch(0.84 0.11 200);
+  --color-ice-deep: oklch(0.74 0.16 208);
+  --color-forest: oklch(0.78 0.13 158);
+
+  --color-card: oklch(1 0 0 / 0.035);
+  --color-card-br: oklch(1 0 0 / 0.08);
+  --color-raise: oklch(1 0 0 / 0.05);
+  --color-raise-br: oklch(1 0 0 / 0.12);
+  --color-hair: oklch(1 0 0 / 0.07);
+  --color-hair-strong: oklch(1 0 0 / 0.12);
+
+  --color-icon-fg: oklch(0.88 0.09 195);
+  --color-media: oklch(0.3 0.055 196);
+  --color-media-fg: oklch(0.72 0.08 195);
+  --color-star: oklch(0.85 0.166 80);
+  /* Matches what `accent-400 @ opacity-45` rendered here before the token. */
+  --color-quote: oklch(0.84 0.11 200 / 0.45);
+  --color-code: oklch(0.13 0.02 172);
+  /* Fuller chroma than light: on the deep-forest panel the badge has to
+     carry itself against a dark surround. */
+  --color-amber: oklch(0.845 0.168 82);
+
+  /* The deep-forest contrast panel and the product mock — the light theme
+     above flips both to a light look, but here they keep their original
+     dark treatment. */
+  --color-panel-ink: oklch(0.99 0.006 190);
+  --color-panel-ink-2: oklch(0.87 0.025 190);
+  --color-panel-br: oklch(1 0 0 / 0.12);
+  --color-panel-chip: oklch(1 0 0 / 0.08);
+  --color-panel-chip-br: oklch(1 0 0 / 0.16);
+  --color-panel-btn: oklch(0.99 0.005 190);
+  --color-panel-btn-ink: oklch(0.2 0.05 180);
+
+  --color-mock-bg: oklch(0.185 0.024 168);
+  --color-mock-panel: oklch(0.23 0.03 172);
+  --color-mock-line: oklch(1 0 0 / 0.07);
+  --color-mock-fill: oklch(1 0 0 / 0.035);
+  --color-mock-ink: oklch(0.97 0.008 170);
+  --color-mock-ink-2: oklch(0.68 0.015 172);
+  --color-mock-ink-3: oklch(0.58 0.015 172);
+  --color-mock-ice: oklch(0.78 0.14 200);
+  --color-mock-forest: oklch(0.72 0.16 158);
+
+  --fw-panel: linear-gradient(
+    150deg,
+    oklch(0.3 0.07 162),
+    oklch(0.2 0.045 190) 55%,
+    oklch(0.25 0.06 172)
+  );
+
+  --shadow-card: inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 22px 48px -30px oklch(0.05 0.02 180 / 0.85);
+  --shadow-panel: inset 0 1px 0 oklch(1 0 0 / 0.14),
+    0 46px 100px -46px oklch(0.4 0.12 180 / 0.8);
+  --shadow-btn: 0 14px 40px -12px oklch(0.72 0.15 180 / 0.7),
+    inset 0 1px 0 oklch(1 0 0 / 0.45);
+
+  --fw-btn: linear-gradient(135deg, oklch(0.88 0.1 196), oklch(0.79 0.15 166));
+  --fw-icon-bg: linear-gradient(
+    140deg,
+    oklch(0.72 0.14 195 / 0.22),
+    oklch(0.6 0.14 165 / 0.18)
+  );
+  --fw-media: linear-gradient(
+    150deg,
+    oklch(0.3 0.055 196),
+    oklch(0.26 0.05 162)
+  );
+  --fw-grad-ice: linear-gradient(
+    100deg,
+    oklch(0.9 0.09 198),
+    oklch(0.74 0.16 208)
+  );
+  --fw-grad-forest: linear-gradient(
+    100deg,
+    oklch(0.84 0.15 160),
+    oklch(0.68 0.17 152)
+  );
+  --fw-amb-1: radial-gradient(
+    ellipse at center,
+    oklch(0.66 0.15 195 / 0.22),
+    transparent 62%
+  );
+  --fw-amb-2: radial-gradient(
+    circle,
+    oklch(0.6 0.17 155 / 0.16),
+    transparent 65%
+  );
+
+  --fw-grain: 0.05;
+
+  color-scheme: dark;
+}
+
+/* On the primary button the fill flips light-on-dark between themes, so
+   its label colour has to flip with it. */
+:root {
+  --fw-btn-ink: oklch(0.99 0.004 175);
+}
+
+:root[data-theme="dark"] {
+  --fw-btn-ink: oklch(0.15 0.02 165);
+}
+
+/* Area-fill colours for the product mock's revenue chart. These are read
+   straight into SVG <stop stop-color> rather than through a utility class,
+   because `currentColor` in a gradient stop resolves against the <stop>'s
+   own inherited colour (it sits in <defs>), not the path referencing the
+   gradient — which silently rendered the fills grey. */
+:root {
+  --fw-chart-ice: oklch(0.72 0.15 204);
+  --fw-chart-forest: oklch(0.73 0.16 156);
+}
+
+:root[data-theme="dark"] {
+  --fw-chart-ice: oklch(0.78 0.14 200);
+  --fw-chart-forest: oklch(0.72 0.16 158);
+}
+
+/* ─── Utilities for the gradient tokens ────────────────────── */
+@utility fw-btn {
+  background-image: var(--fw-btn);
+  color: var(--fw-btn-ink);
+}
+
+@utility fw-panel {
+  background-image: var(--fw-panel);
+}
+
+@utility fw-icon-bg {
+  background-image: var(--fw-icon-bg);
+}
+
+@utility fw-media {
+  background-image: var(--fw-media);
+}
+
+@utility fw-amb-1 {
+  background-image: var(--fw-amb-1);
+}
+
+@utility fw-amb-2 {
+  background-image: var(--fw-amb-2);
+}
+
+/* Gradient text — pairs with `text-transparent`. */
+@utility fw-text-ice {
+  background-image: var(--fw-grad-ice);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@utility fw-text-forest {
+  background-image: var(--fw-grad-forest);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Film grain over gradients — the single biggest thing separating the
+   design from a flat AI gradient. Apply to a `relative` container. */
+@utility fw-grain {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    opacity: var(--fw-grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* ─── Admin Panel Light Theme ──────────────────────────────────
+   Scoped to a wrapper <div> in admin/layout/AdminRoot.tsx (and
+   re-declared on admin's portalled Modal/ToastContainer). Because it
+   sits below <html>, it wins over the client theme regardless of which
+   theme the visitor picked — the CMS stays light either way. ──── */
 [data-theme="admin-light"] {
   --color-surface-950: oklch(1 0 0);
   --color-surface-900: oklch(0.99 0 0);
@@ -97,7 +466,7 @@
   --color-border-subtle: oklch(0.91 0.005 260);
   --color-border-default: oklch(0.85 0.006 260);
 
-  /* Accent — black, overriding the site-wide purple for the admin panel */
+  /* Accent — black, overriding the site-wide brand colour for the CMS */
   --color-primary-50: oklch(0.97 0 0);
   --color-primary-100: oklch(0.92 0 0);
   --color-primary-200: oklch(0.83 0 0);
@@ -109,10 +478,22 @@
   --color-primary-800: oklch(0.07 0 0);
   --color-primary-900: oklch(0.04 0 0);
 
-  /* Slightly deepened feedback colors for legible text on a white background */
-  --color-success-400: oklch(0.6 0.15 155);
-  --color-danger-400: oklch(0.58 0.19 25);
+  /* Pinned to the light-theme blues so the CMS doesn't inherit the
+     client's bright dark-mode accent when a visitor has dark selected. */
+  --color-accent-400: oklch(0.46 0.14 205);
+  --color-accent-500: oklch(0.42 0.15 208);
+  --color-accent-600: oklch(0.38 0.14 210);
 
+  /* Slightly deepened feedback colors for legible text on a white background.
+     The -500 stops are pinned too: the CMS uses them but sits below <html>,
+     so without these it would inherit the client's bright dark-theme values
+     whenever a visitor has dark mode selected. */
+  --color-success-400: oklch(0.6 0.15 155);
+  --color-success-500: oklch(0.52 0.14 155);
+  --color-danger-400: oklch(0.58 0.19 25);
+  --color-danger-500: oklch(0.5 0.2 25);
+
+  color-scheme: light;
   background-color: var(--color-surface-950);
   color: var(--color-text-primary);
 }
@@ -133,7 +514,7 @@ body {
 /* ─── Selection Color ──────────────────────────────────────── */
 ::selection {
   background-color: var(--color-primary-600);
-  color: white;
+  color: var(--color-surface-950);
 }
 
 /* ─── Scrollbar ────────────────────────────────────────────── */
@@ -175,4 +556,63 @@ body {
 
 .modal-scroll::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-primary-600);
+}
+
+/* ─── Markdown prose ───────────────────────────────────────────
+   Case studies and articles come back as markdown and are rendered by
+   @uiw/react-md-editor, which ships its own palette. Retint it onto our
+   tokens so it follows the theme like everything else. ─────────── */
+.fw-prose .wmde-markdown {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: 16.5px;
+  line-height: 1.75;
+}
+
+.fw-prose .wmde-markdown h1,
+.fw-prose .wmde-markdown h2,
+.fw-prose .wmde-markdown h3,
+.fw-prose .wmde-markdown h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  color: var(--color-text-primary);
+  border-bottom: 0;
+}
+
+.fw-prose .wmde-markdown strong {
+  color: var(--color-text-primary);
+}
+
+.fw-prose .wmde-markdown a {
+  color: var(--color-accent-400);
+}
+
+.fw-prose .wmde-markdown blockquote {
+  border-left: 3px solid var(--color-primary-400);
+  color: var(--color-text-primary);
+  background: transparent;
+}
+
+.fw-prose .wmde-markdown code {
+  background-color: var(--color-raise);
+  color: var(--color-text-primary);
+}
+
+.fw-prose .wmde-markdown pre,
+.fw-prose .wmde-markdown pre code {
+  background-color: var(--color-code);
+  color: var(--color-code-fg);
+}
+
+.fw-prose .wmde-markdown hr {
+  background-color: var(--color-hair);
+}
+
+.fw-prose .wmde-markdown table tr,
+.fw-prose .wmde-markdown table td,
+.fw-prose .wmde-markdown table th {
+  border-color: var(--color-hair);
+  background-color: transparent;
 }

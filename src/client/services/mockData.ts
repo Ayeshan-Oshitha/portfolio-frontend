@@ -219,6 +219,7 @@ export const MOCK_REVIEWS: readonly ApiReview[] = [
     reviewText:
       "Delivered exactly what we needed, on time and with great communication throughout. Would work together again in a heartbeat.",
     createdAt: "2026-06-01T00:00:00Z",
+    isFeatured: true,
   },
   {
     id: "mock-review-2",
@@ -230,6 +231,7 @@ export const MOCK_REVIEWS: readonly ApiReview[] = [
     reviewText:
       "Technical depth and product sense in equal measure. Our game shipped faster than we thought possible.",
     createdAt: "2026-05-18T00:00:00Z",
+    isFeatured: true,
   },
   {
     id: "mock-review-3",
@@ -241,6 +243,7 @@ export const MOCK_REVIEWS: readonly ApiReview[] = [
     reviewText:
       "Great collaborator, very responsive. A few rounds of revisions but the end result was worth it.",
     createdAt: "2026-04-30T00:00:00Z",
+    isFeatured: true,
   },
   {
     id: "mock-review-4",
@@ -252,6 +255,7 @@ export const MOCK_REVIEWS: readonly ApiReview[] = [
     reviewText:
       "Our online orders tripled after the new site launched. Couldn't be happier with the result.",
     createdAt: "2026-03-22T00:00:00Z",
+    isFeatured: true,
   },
   {
     id: "mock-review-5",
@@ -263,6 +267,7 @@ export const MOCK_REVIEWS: readonly ApiReview[] = [
     reviewText:
       "Professional from kickoff to launch. The app has completely changed how our members book classes.",
     createdAt: "2026-02-10T00:00:00Z",
+    isFeatured: true,
   },
   {
     id: "mock-review-6",

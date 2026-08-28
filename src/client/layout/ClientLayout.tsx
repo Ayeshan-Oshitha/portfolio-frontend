@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Header from "@/client/components/header/Header";
 import Footer from "@/client/components/footer/Footer";
+import ThemeProvider from "@/client/context/ThemeProvider";
 import ToastProvider from "@/client/context/ToastProvider";
 
 const queryClient = new QueryClient({
@@ -14,13 +15,15 @@ const queryClient = new QueryClient({
 export default function ClientLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <Header />
-        <main className="min-h-screen">
-          <Outlet />
-        </main>
-        <Footer />
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <Header />
+          <main className="min-h-screen">
+            <Outlet />
+          </main>
+          <Footer />
+        </ToastProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

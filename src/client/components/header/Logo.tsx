@@ -1,25 +1,56 @@
 import { Link } from "react-router-dom";
 import { BRAND } from "@/client/data/navigation";
 
-export default function Logo() {
-  return (
-    <Link to="/" className="flex items-center gap-3 group">
-      {/* Icon Mark */}
-      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 shadow-lg shadow-primary-600/20 group-hover:shadow-primary-500/40 transition-all duration-300 transform group-hover:scale-105">
-        <span className="text-white font-black text-lg sm:text-xl tracking-tighter leading-none mt-0.5">
-          {BRAND.name.charAt(0)}
-        </span>
-      </div>
+interface LogoProps {
+  readonly size?: "sm" | "md";
+  readonly className?: string;
+}
 
-      {/* Wordmark */}
-      <div className="flex flex-col">
-        <span className="text-base sm:text-lg font-black tracking-tight text-text-primary uppercase leading-none mb-1">
-          {BRAND.name}
-        </span>
-        <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase leading-none">
-          {BRAND.tagline}
-        </span>
-      </div>
+const MARK_SIZE: Record<"sm" | "md", number> = { sm: 26, md: 30 };
+const TEXT_CLASSES: Record<"sm" | "md", string> = {
+  sm: "text-[18px]",
+  md: "text-[20px]",
+};
+
+/**
+ * The frost mark: a six-point crystal with a forest-green core — the two
+ * halves of the name in one glyph.
+ */
+export default function Logo({ size = "md", className = "" }: LogoProps) {
+  return (
+    <Link
+      to="/"
+      className={`flex shrink-0 items-center gap-2.5 ${className}`}
+      aria-label={`${BRAND.name} — home`}
+    >
+      <svg
+        width={MARK_SIZE[size]}
+        height={MARK_SIZE[size]}
+        viewBox="0 0 32 32"
+        fill="none"
+        aria-hidden="true"
+        className="text-accent-400"
+      >
+        <path
+          d="M16 2.5v27M5 8.2l22 15.6M27 8.2L5 23.8"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+        <path
+          d="M16 9.5l3.4 2M16 9.5l-3.4 2M16 22.5l3.4-2M16 22.5l-3.4-2"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+        />
+        <circle cx="16" cy="16" r="3.4" className="fill-primary-400" />
+      </svg>
+
+      <span
+        className={`font-display font-medium tracking-[-0.01em] text-text-primary ${TEXT_CLASSES[size]}`}
+      >
+        {BRAND.name}
+      </span>
     </Link>
   );
 }

@@ -1,37 +1,16 @@
-import { ArrowRight } from "lucide-react";
-import { PRICING_HEADER, PRICING_TIERS } from "@/client/data/pricing";
 import SectionHeader from "@/client/components/ui/SectionHeader";
-import Button from "@/client/components/ui/Button";
 import PricingCard from "./PricingCard";
+import { PRICING_HEADER, PRICING_TIERS } from "@/client/data/pricing";
 
 export default function Pricing() {
   return (
-    <section
-      id="pricing"
-      className="relative py-24 sm:py-32"
-      aria-labelledby="pricing-heading"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeader {...PRICING_HEADER} />
+    <section className="mx-auto max-w-7xl px-4 py-26 sm:px-6 lg:px-8">
+      <SectionHeader {...PRICING_HEADER} tone="ice" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {PRICING_TIERS.map((tier) => (
-            <PricingCard key={tier.id} tier={tier} />
-          ))}
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="flex justify-center mt-14">
-          <Button
-            href="#contact"
-            variant="primary"
-            size="lg"
-            icon={<ArrowRight size={18} />}
-            className="uppercase tracking-wider text-xs"
-          >
-            Get a Free Quote
-          </Button>
-        </div>
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3 lg:gap-8">
+        {PRICING_TIERS.map((tier) => (
+          <PricingCard key={tier.id} tier={tier} />
+        ))}
       </div>
     </section>
   );

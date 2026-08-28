@@ -9,6 +9,9 @@ import BlogPage from "@/client/pages/BlogPage";
 import ArticleDetailPage from "@/client/pages/ArticleDetailPage";
 import ClientReviewsPage from "@/client/pages/ReviewsPage";
 import ServicesPage from "@/client/pages/ServicesPage";
+import ServiceDetailPage from "@/client/pages/ServiceDetailPage";
+import ClientPricingPage from "@/client/pages/PricingPage";
+import ProductsPage from "@/client/pages/ProductsPage";
 import AdminRoot from "@/admin/layout/AdminRoot";
 import RequireAuth from "@/admin/components/RequireAuth";
 import RequireSuperAdmin from "@/admin/components/RequireSuperAdmin";
@@ -47,6 +50,18 @@ export const router = createBrowserRouter([
       {
         path: "services",
         element: <ServicesPage />,
+      },
+      {
+        path: "services/:slug",
+        element: <ServiceDetailPage />,
+      },
+      {
+        path: "pricing",
+        element: <ClientPricingPage />,
+      },
+      {
+        path: "products",
+        element: <ProductsPage />,
       },
       {
         path: "work",

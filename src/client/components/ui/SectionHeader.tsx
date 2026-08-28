@@ -1,6 +1,9 @@
+import Eyebrow from "@/client/components/ui/Eyebrow";
 import type { SectionHeaderConfig } from "@/client/types";
 
 interface SectionHeaderProps extends SectionHeaderConfig {
+  readonly align?: "left" | "center";
+  readonly tone?: "ice" | "forest";
   readonly className?: string;
 }
 
@@ -8,23 +11,32 @@ export default function SectionHeader({
   badge,
   title,
   subtitle,
+  align = "center",
+  tone = "forest",
   className = "",
 }: SectionHeaderProps) {
+  const isCenter = align === "center";
+
   return (
-    <div className={`text-center max-w-3xl mx-auto mb-16 ${className}`}>
+    <div
+      className={`${isCenter ? "mx-auto max-w-3xl text-center" : "max-w-2xl"} mb-14 ${className}`}
+    >
       {badge && (
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 text-xs font-semibold tracking-widest uppercase rounded-full bg-primary-600/10 text-primary-400 border border-primary-600/20">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+        <Eyebrow align={align} tone={tone} className="mb-4.5">
           {badge}
-        </span>
+        </Eyebrow>
       )}
 
-      <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-text-primary whitespace-pre-line leading-tight">
+      <h2 className="font-display text-[38px] leading-[1.08] font-medium tracking-[-0.018em] whitespace-pre-line text-text-primary md:text-[50px]">
         {title}
       </h2>
 
       {subtitle && (
-        <p className="mt-6 text-base md:text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto">
+        <p
+          className={`mt-3.5 text-base leading-relaxed text-text-secondary md:text-[16.5px] ${
+            isCenter ? "mx-auto max-w-2xl" : ""
+          }`}
+        >
           {subtitle}
         </p>
       )}

@@ -18,17 +18,17 @@ export default function ReviewsSortControl({
   totalResults,
 }: ReviewsSortControlProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-10 border-b border-border-subtle">
+    <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-10 border-b border-hair">
       <div className="flex items-center gap-2">
         {SORT_OPTIONS.map((option) => (
           <button
             key={option.value}
             type="button"
             onClick={() => onSortChange(option.value)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 ${
+            className={`cursor-pointer rounded-[9px] px-4 py-2 text-[13px] transition-colors duration-200 ${
               sort === option.value
-                ? "bg-primary-600/20 text-primary-400 border-primary-500/40"
-                : "bg-surface-900 text-text-secondary border-border-default hover:text-text-primary hover:border-text-muted"
+                ? "fw-btn font-bold"
+                : "border border-card-br bg-card font-semibold text-text-secondary hover:text-text-primary"
             }`}
           >
             {option.label}
@@ -36,7 +36,7 @@ export default function ReviewsSortControl({
         ))}
       </div>
 
-      <span className="text-xs font-semibold tracking-wider uppercase text-text-muted">
+      <span className="text-[13px] tabular-nums text-text-muted">
         {totalResults} review{totalResults !== 1 ? "s" : ""}
       </span>
     </div>

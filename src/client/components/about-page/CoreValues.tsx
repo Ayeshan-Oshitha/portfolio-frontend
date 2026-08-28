@@ -1,36 +1,36 @@
-import { VALUES_HEADER, VALUES_DATA } from "@/client/data/about-page";
-import SectionHeader from "@/client/components/ui/SectionHeader";
+import Eyebrow from "@/client/components/ui/Eyebrow";
+import { VALUES_DATA, VALUES_HEADER } from "@/client/data/about-page";
 
 export default function CoreValues() {
   return (
-    <section className="relative py-24 sm:py-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeader {...VALUES_HEADER} />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mt-16">
-          {VALUES_DATA.map((value) => {
-            const Icon = value.icon;
-            return (
-              <div
-                key={value.id}
-                className="flex flex-col sm:flex-row gap-6 p-8 rounded-2xl bg-surface-900/60 border border-border-subtle hover:bg-surface-800/80 transition-colors duration-300"
-              >
-                <div className="flex items-center justify-center w-14 h-14 shrink-0 rounded-xl bg-primary-600/20 text-primary-400 border border-primary-600/20">
-                  <Icon size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-text-primary mb-3">
-                    {value.title}
-                  </h3>
-                  <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
-                    {value.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+    <div>
+      <div className="mb-10 max-w-2xl">
+        {VALUES_HEADER.badge && (
+          <Eyebrow className="mb-4.5">{VALUES_HEADER.badge}</Eyebrow>
+        )}
+        <h2 className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.018em] text-text-primary md:text-[44px]">
+          {VALUES_HEADER.title}
+        </h2>
       </div>
-    </section>
+
+      <div className="grid grid-cols-1 gap-4.5 md:grid-cols-3">
+        {VALUES_DATA.map((value, index) => (
+          <div
+            key={value.id}
+            className="flex flex-col gap-3.5 rounded-[20px] border border-card-br bg-card p-8 shadow-card"
+          >
+            <span className="font-display text-[34px] leading-none font-medium tabular-nums text-primary-400">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3 className="font-display text-[21px] font-medium tracking-[-0.018em] text-text-primary">
+              {value.title}
+            </h3>
+            <p className="text-[15px] leading-[1.68] text-text-secondary">
+              {value.description}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

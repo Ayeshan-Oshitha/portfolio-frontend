@@ -1,37 +1,20 @@
-import { SOCIAL_LINKS } from "@/client/data/navigation";
+import { Link } from "react-router-dom";
+import ThemeSwitcher from "@/client/components/ui/ThemeSwitcher";
 
 export default function HeaderActions() {
   return (
-    <div className="hidden lg:flex items-center gap-1 flex-shrink-0">
-      {/* Divider */}
-      <div className="w-px h-5 bg-white/15 mx-2" aria-hidden="true" />
+    // The switcher sits outside the `lg:` gate on purpose, so the toggle stays
+    // reachable from the collapsed header without opening the mobile menu.
+    // Below `lg` the nav and this CTA give way to the hamburger.
+    <div className="flex shrink-0 items-center gap-3">
+      <ThemeSwitcher />
 
-      {/* Social icons */}
-      <div className="flex items-center gap-1">
-        {SOCIAL_LINKS.map((link) => {
-          const Icon = link.icon;
-          return (
-            <a
-              key={link.platform}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={link.ariaLabel}
-              className="flex items-center justify-center w-9 h-9 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/5 transition-all duration-200"
-            >
-              <Icon size={17} />
-            </a>
-          );
-        })}
-      </div>
-
-      {/* CTA */}
-      <a
-        href="/contact"
-        className="px-5 py-2.5 rounded-full border border-white/25 bg-white/5 text-white text-[11px] font-bold tracking-widest uppercase hover:bg-white/10 hover:border-white/40 transition-all duration-200 whitespace-nowrap"
+      <Link
+        to="/contact"
+        className="hidden lg:inline-flex items-center rounded-xl fw-btn px-5 py-2.5 text-sm font-bold shadow-btn transition-all duration-200 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950"
       >
-        Get a Free Quote
-      </a>
+        Contact Us
+      </Link>
     </div>
   );
 }

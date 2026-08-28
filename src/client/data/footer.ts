@@ -1,35 +1,42 @@
 import type { FooterData } from "@/client/types";
 
 export const FOOTER_DATA: FooterData = {
-  addressLines: ["YourName Studios", "Mesa, AZ 85212"],
-  email: "hello@yourdomain.com",
-  serviceArea:
-    "Serving Mesa, Phoenix, Tempe, Scottsdale, Chandler, Gilbert, Queen Creek, AZ",
-  copyright:
-    "© 2026 YourName Studios. Web design & e-commerce development in Mesa, AZ.",
+  blurb: "SaaS products and custom platforms, engineered with clarity.",
+  email: "[hello@frostwoodtech.com]",
+  copyright: "© 2026 FrostWoodTech. All rights reserved.",
   linkGroups: [
     {
-      title: "COMPANY",
+      title: "PRODUCTS",
       links: [
-        { label: "Services", href: "/services" },
-        { label: "Work", href: "/work" },
-        { label: "Blog", href: "/blog" },
-        { label: "About", href: "/about" },
-        { label: "Contact", href: "/contact" },
-        { label: "Free Audit", href: "#" },
+        { label: "Frostboard", href: "#" },
+        { label: "Changelog", href: "#" },
+        { label: "Pricing", href: "/pricing" },
+        { label: "Status", href: "#" },
       ],
     },
     {
       title: "SERVICES",
       links: [
-        { label: "E-commerce", href: "#" },
-        { label: "Web Design", href: "#" },
-        { label: "Graphic Design", href: "#" },
-        { label: "App Development", href: "#" },
-        { label: "Web Development", href: "#" },
-        { label: "SEO", href: "#" },
-        { label: "All services →", href: "/services", isAccent: true },
+        { label: "SaaS & web apps", href: "/services" },
+        { label: "Web & e-commerce", href: "/services" },
+        { label: "Design systems", href: "/services" },
+        { label: "SEO & growth", href: "/services" },
       ],
     },
+    {
+      title: "COMPANY",
+      links: [
+        { label: "About", href: "/about" },
+        { label: "Work", href: "/work" },
+        { label: "Blog", href: "/blog" },
+        { label: "Reviews", href: "/reviews" },
+        { label: "Contact", href: "/contact" },
+      ],
+    },
+  ],
+  legalLinks: [
+    { label: "Privacy", href: "#" },
+    { label: "Terms", href: "#" },
+    { label: "Security", href: "#" },
   ],
 } as const;

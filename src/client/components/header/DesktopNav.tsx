@@ -4,7 +4,7 @@ import { NAV_ITEMS } from "@/client/data/navigation";
 export default function DesktopNav() {
   return (
     <nav
-      className="hidden md:flex flex-1 items-center md:justify-end lg:justify-center gap-1"
+      className="hidden flex-1 items-center justify-center gap-1 lg:flex"
       aria-label="Main navigation"
     >
       {NAV_ITEMS.map((item) => (
@@ -13,14 +13,24 @@ export default function DesktopNav() {
           to={item.href}
           end={item.href === "/"}
           className={({ isActive }) =>
-            `px-3 py-2 text-[11px] font-bold tracking-[0.1em] uppercase transition-colors duration-200 rounded-lg hover:bg-white/5 ${
+            `rounded-lg px-3.5 py-2 text-[14.5px] transition-colors duration-200 ${
               isActive
-                ? "text-primary-400 underline underline-offset-4 decoration-2 decoration-primary-400"
-                : "text-white/60 hover:text-white"
+                ? "font-bold text-text-primary"
+                : "font-medium text-text-secondary hover:text-text-primary"
             }`
           }
         >
-          {item.label}
+          {({ isActive }) => (
+            <span className="relative inline-block">
+              {item.label}
+              {isActive && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-primary-400"
+                />
+              )}
+            </span>
+          )}
         </NavLink>
       ))}
     </nav>

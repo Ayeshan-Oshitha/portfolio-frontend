@@ -21,13 +21,55 @@ export interface BrandInfo {
 
 // ─── Hero ────────────────────────────────────────────────────
 export interface HeroData {
-  readonly badge: string;
-  readonly headlinePrimary: string;
-  readonly headlineHighlight: string;
-  readonly headlineSuffix: string;
+  readonly badgeTag: string;
+  readonly badgeText: string;
+  /** The headline is split so the two accent phrases can carry gradients. */
+  readonly headlineLead: string;
+  readonly headlineIce: string;
+  readonly headlineMid: string;
+  readonly headlineForest: string;
+  readonly headlineTail: string;
   readonly description: string;
   readonly primaryCta: CtaConfig;
   readonly secondaryCta: CtaConfig;
+  readonly trustLine: string;
+}
+
+export interface BentoCell {
+  readonly id: string;
+  readonly tag?: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: LucideIcon;
+  readonly chips?: readonly string[];
+  readonly linkLabel?: string;
+  readonly href?: string;
+  /** Feature cells span two columns and use the raised panel treatment. */
+  readonly feature?: boolean;
+}
+
+export interface Metric {
+  readonly id: string;
+  readonly value: string;
+  readonly suffix?: string;
+  readonly suffixTone?: "ice" | "forest";
+  readonly label: string;
+}
+
+export interface Testimonial {
+  readonly id: string;
+  readonly quote: string;
+  readonly name: string;
+  readonly role: string;
+  readonly initials: string;
+  readonly rating?: number;
+}
+
+export interface ProcessStep {
+  readonly id: string;
+  readonly step: string;
+  readonly title: string;
+  readonly description: string;
 }
 
 export interface CtaConfig {
@@ -102,6 +144,7 @@ export interface Review {
   readonly rating: number;
   readonly reviewText: string;
   readonly createdAt: string;
+  readonly isFeatured?: boolean;
 }
 
 export type ReviewSort = "latest" | "rating" | "country";
@@ -192,6 +235,7 @@ export interface ApiReview {
   readonly rating: number;
   readonly reviewText: string;
   readonly createdAt: string;
+  readonly isFeatured?: boolean;
 }
 
 export type ApiErrorCode =
@@ -214,6 +258,25 @@ export interface ServiceOffering {
   readonly description: string;
   readonly icon: LucideIcon;
   readonly features: readonly string[];
+}
+
+export interface ServiceIncluded {
+  readonly id: string;
+  readonly title: string;
+  readonly description: string;
+  readonly icon: LucideIcon;
+}
+
+export interface ServiceDetail {
+  readonly slug: string;
+  readonly title: string;
+  readonly deck: string;
+  readonly stats: readonly Metric[];
+  readonly included: readonly ServiceIncluded[];
+  readonly stack: readonly string[];
+  /** Ids from PRICING_TIERS — the detail page reuses the real tiers rather
+   *  than inventing a second, per-service price list. */
+  readonly relevantTiers: readonly string[];
 }
 
 export interface FAQ {
@@ -246,18 +309,36 @@ export interface PricingTier {
   readonly ctaHref: string;
 }
 
+export interface ComparisonRow {
+  readonly id: string;
+  readonly feature: string;
+  /** One entry per tier, in PRICING_TIERS order. `true` renders a tick,
+   *  `false` an em dash, a string renders verbatim. */
+  readonly values: readonly (string | boolean)[];
+}
+
+export interface AddOn {
+  readonly id: string;
+  readonly price: string;
+  readonly unit?: string;
+  readonly title: string;
+  readonly description: string;
+}
+
 // ─── About ───────────────────────────────────────────────────
-export interface AboutData {
+export interface AboutHeroData {
   readonly badge: string;
-  readonly greeting: string;
+  readonly title: string;
+  readonly description: string;
+}
+
+export interface TeamMember {
+  readonly id: string;
   readonly name: string;
   readonly role: string;
-  readonly location: string;
-  readonly bio: string;
-  readonly closingQuote: string;
-  readonly primaryCta: CtaConfig;
-  readonly secondaryCta: CtaConfig;
-  readonly imagePlaceholder: string;
+  readonly initials: string;
+  /** Renders the dashed "we are hiring" tile instead of a person. */
+  readonly isOpenRole?: boolean;
 }
 
 export interface Experience {
@@ -290,11 +371,12 @@ export interface CoreValue {
 // ─── Contact ─────────────────────────────────────────────────
 export interface ContactData {
   readonly badge: string;
-  readonly headlinePrimary: string;
-  readonly headlineHighlight: string;
-  readonly headlineSuffix: string;
+  readonly title: string;
   readonly description: string;
   readonly email: string;
+  readonly phone: string;
+  readonly location: string;
+  readonly availability: string;
   readonly serviceTypes: readonly string[];
   readonly formFields: readonly FormFieldConfig[];
 }
@@ -302,10 +384,12 @@ export interface ContactData {
 export interface FormFieldConfig {
   readonly id: string;
   readonly label: string;
-  readonly type: "text" | "email" | "tel" | "textarea";
+  readonly type: "text" | "email" | "tel" | "textarea" | "select";
   readonly placeholder: string;
   readonly required: boolean;
   readonly halfWidth?: boolean;
+  /** Required when `type` is "select". */
+  readonly options?: readonly string[];
 }
 
 // ─── Footer ──────────────────────────────────────────────────
@@ -321,11 +405,11 @@ export interface FooterLinkGroup {
 }
 
 export interface FooterData {
-  readonly addressLines: readonly string[];
+  readonly blurb: string;
   readonly email: string;
-  readonly serviceArea: string;
   readonly linkGroups: readonly FooterLinkGroup[];
   readonly copyright: string;
+  readonly legalLinks: readonly FooterLink[];
 }
 
 // ─── Shared UI ───────────────────────────────────────────────

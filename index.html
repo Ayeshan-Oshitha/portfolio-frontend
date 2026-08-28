@@ -6,15 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Professional web design, e-commerce development, and SEO services. Building fast, high-converting websites and Shopify stores."
+      content="FrostWoodTech builds SaaS products and custom client platforms — precise where it counts, fast where it matters, and built to last."
     />
-    <meta name="theme-color" content="#0a0a1a" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#f7faf9"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#121a18"
+    />
 
     <!-- Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <title>FrostWoodTech Web | Web Design & Development</title>
+    <!--
+      Resolve the theme before first paint, otherwise a dark-mode visitor
+      gets a white flash while the bundle loads. Kept inline and blocking on
+      purpose; ThemeProvider takes over once React mounts.
+    -->
+    <script>
+      (function () {
+        var root = document.documentElement;
+        try {
+          var stored = localStorage.getItem("fwt-theme");
+          root.setAttribute(
+            "data-theme",
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light",
+          );
+        } catch (e) {
+          // Storage can throw in private mode — fall back to the light default.
+          root.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+
+    <title>FrostWoodTech | SaaS Products & Custom Platforms</title>
   </head>
   <body>
     <div id="root"></div>

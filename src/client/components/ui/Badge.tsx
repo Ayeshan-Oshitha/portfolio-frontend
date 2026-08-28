@@ -7,9 +7,9 @@ interface BadgeProps {
 }
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
-  default: "bg-surface-800 text-text-secondary border border-border-subtle",
+  default: "fw-icon-bg text-icon-fg border border-hair",
   outline: "bg-transparent text-text-secondary border border-border-default",
-  subtle: "bg-primary-600/10 text-primary-400 border border-primary-600/20",
+  subtle: "bg-raise text-text-secondary border border-raise-br",
 };
 
 export default function Badge({
@@ -19,7 +19,7 @@ export default function Badge({
 }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 text-xs font-medium tracking-wide uppercase rounded-md ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-bold tracking-[0.04em] uppercase ${VARIANT_CLASSES[variant]} ${className}`}
     >
       {children}
     </span>

@@ -1,13 +1,14 @@
-interface HeroBadgeProps {
-  readonly text: string;
-}
+import { ChevronRight } from "lucide-react";
+import { HERO_DATA } from "@/client/data/hero";
 
-export default function HeroBadge({ text }: HeroBadgeProps) {
+export default function HeroBadge() {
   return (
-    <div className="animate-fade-in-up">
-      <span className="inline-flex items-center gap-2 px-5 py-2 text-[11px] font-semibold tracking-[0.2em] uppercase rounded-full bg-surface-800/60 text-text-secondary border border-border-subtle backdrop-blur-sm">
-        {text}
+    <div className="inline-flex items-center gap-2.5 rounded-full border border-card-br bg-card py-1.5 pr-2.5 pl-2 text-[13px] font-semibold text-text-secondary shadow-card">
+      <span className="rounded-full bg-primary-400/15 px-2.5 py-1 text-[11.5px] font-extrabold tracking-[0.05em] text-primary-400">
+        {HERO_DATA.badgeTag}
       </span>
+      <span>{HERO_DATA.badgeText}</span>
+      <ChevronRight size={14} className="text-text-muted" aria-hidden="true" />
     </div>
   );
 }

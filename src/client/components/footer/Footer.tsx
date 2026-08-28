@@ -3,91 +3,88 @@ import { FOOTER_DATA } from "@/client/data/footer";
 import { SOCIAL_LINKS } from "@/client/data/navigation";
 import Logo from "../header/Logo";
 
+function FooterLink({ href, label }: { href: string; label: string }) {
+  const classes =
+    "text-sm text-text-muted transition-colors duration-200 hover:text-text-primary";
+
+  if (href.startsWith("http") || href === "#") {
+    return (
+      <a href={href} className={classes}>
+        {label}
+      </a>
+    );
+  }
+  return (
+    <Link to={href} className={classes}>
+      {label}
+    </Link>
+  );
+}
+
 export default function Footer() {
   return (
-    <footer className="border-t border-border-subtle bg-surface-950 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Brand Column */}
-          <div className="flex flex-col gap-6">
-            <Logo />
-            <div className="flex flex-col gap-1 text-sm text-text-secondary mt-2">
-              {FOOTER_DATA.addressLines.map((line, idx) => (
-                <span key={idx}>{line}</span>
-              ))}
-            </div>
+    <footer className="border-t border-hair pt-13">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex flex-col gap-3.5">
+            <Logo size="sm" />
+            <p className="max-w-60 text-sm leading-relaxed text-text-muted">
+              {FOOTER_DATA.blurb}
+            </p>
             <a
               href={`mailto:${FOOTER_DATA.email}`}
-              className="text-sm font-medium text-text-primary hover:text-primary-400 transition-colors duration-200"
+              className="text-sm font-semibold text-accent-400 transition-colors duration-200 hover:text-accent-500"
             >
               {FOOTER_DATA.email}
             </a>
-            <p className="text-sm text-text-muted mt-2 max-w-xs">
-              {FOOTER_DATA.serviceArea}
-            </p>
+
+            <div className="mt-1 flex gap-2.5">
+              {SOCIAL_LINKS.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <a
+                    key={link.platform}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={link.ariaLabel}
+                    className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-card-br bg-card text-text-muted transition-colors duration-200 hover:text-text-primary"
+                  >
+                    <Icon size={16} />
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Link Groups */}
           {FOOTER_DATA.linkGroups.map((group) => (
-            <div key={group.title} className="flex flex-col gap-6">
-              <h4 className="text-xs font-bold tracking-widest uppercase text-text-primary">
+            <div key={group.title} className="flex flex-col gap-3">
+              <h4 className="text-[12.5px] font-bold tracking-[0.1em] text-text-primary">
                 {group.title}
               </h4>
-              <ul className="flex flex-col gap-4">
-                {group.links.map((link) => {
-                  const linkClasses = `text-sm transition-colors duration-200 ${
-                    link.isAccent
-                      ? "text-primary-400 font-medium hover:text-primary-300"
-                      : "text-text-secondary hover:text-text-primary"
-                  }`;
-
-                  if (link.href.startsWith("http") || link.href === "#") {
-                    return (
-                      <li key={link.label}>
-                        <a href={link.href} className={linkClasses}>
-                          {link.label}
-                        </a>
-                      </li>
-                    );
-                  }
-
-                  return (
-                    <li key={link.label}>
-                      <Link to={link.href} className={linkClasses}>
-                        {link.label}
-                      </Link>
-                    </li>
-                  );
-                })}
+              <ul className="flex flex-col gap-3">
+                {group.links.map((link) => (
+                  <li key={link.label}>
+                    <FooterLink href={link.href} label={link.label} />
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
         </div>
 
-        {/* Bottom Bar */}
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-6 pt-8 border-t border-border-subtle">
-          <p className="text-xs text-text-muted">{FOOTER_DATA.copyright}</p>
-
-          <div className="flex items-center gap-4">
-            {SOCIAL_LINKS.map((link) => {
-              const Icon = link.icon;
-              return (
-                <a
-                  key={link.platform}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={link.ariaLabel}
-                  className="text-text-muted hover:text-text-primary transition-colors duration-200"
-                >
-                  <Icon size={18} />
-                </a>
-              );
-            })}
-            {/* BBB Placeholder */}
-            <span className="text-xs font-bold tracking-widest text-text-muted ml-2">
-              BBB
-            </span>
+        <div className="mt-11 flex flex-col-reverse items-center justify-between gap-5 border-t border-hair pt-6 pb-10 sm:flex-row">
+          <p className="text-[13.5px] text-text-muted">
+            {FOOTER_DATA.copyright}
+          </p>
+          <div className="flex gap-7">
+            {FOOTER_DATA.legalLinks.map((link) => (
+              <FooterLink
+                key={link.label}
+                href={link.href}
+                label={link.label}
+              />
+            ))}
           </div>
         </div>
       </div>

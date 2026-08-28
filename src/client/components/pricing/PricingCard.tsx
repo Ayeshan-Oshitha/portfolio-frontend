@@ -1,5 +1,5 @@
-import { Check, ArrowRight } from "lucide-react";
-import Button from "@/client/components/ui/Button";
+import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { PricingTier } from "@/client/types";
 
 interface PricingCardProps {
@@ -7,68 +7,95 @@ interface PricingCardProps {
 }
 
 export default function PricingCard({ tier }: PricingCardProps) {
+  const { isPopular } = tier;
+
   return (
-    <article
-      className={`group relative flex flex-col rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
-        tier.isPopular
-          ? "bg-surface-800/80 border-2 border-primary-500/40 shadow-lg shadow-primary-600/10 hover:border-primary-400/60 hover:shadow-primary-500/20"
-          : "bg-surface-900/60 border border-border-subtle hover:border-primary-600/20 hover:shadow-primary-600/5"
+    <div
+      className={`relative flex flex-col gap-5 overflow-hidden rounded-[20px] border p-8 ${
+        isPopular
+          ? "fw-panel fw-grain border-panel-br shadow-panel lg:z-10 lg:scale-105"
+          : "border-card-br bg-card shadow-card"
       }`}
     >
-      {/* Popular badge */}
-      {tier.isPopular && (
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-          <span className="inline-flex px-4 py-1.5 text-[10px] font-bold tracking-widest uppercase rounded-full bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-lg shadow-primary-600/30">
-            Most Popular
+      <div className="relative z-2">
+        <div className="flex items-center justify-between gap-3">
+          <span
+            className={`text-xs font-bold tracking-[0.1em] uppercase ${
+              isPopular ? "text-panel-ink-2" : "text-text-muted"
+            }`}
+          >
+            {tier.name}
+          </span>
+          {isPopular && (
+            <span className="shrink-0 rounded-full bg-amber px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] text-amber-ink">
+              MOST POPULAR
+            </span>
+          )}
+        </div>
+
+        <div className="mt-3.5 flex items-baseline gap-2">
+          <span
+            className={`font-display text-[44px] leading-none font-medium tabular-nums ${
+              isPopular ? "text-panel-ink" : "text-text-primary"
+            }`}
+          >
+            {tier.price}
+          </span>
+          <span
+            className={`text-[13.5px] ${
+              isPopular ? "text-panel-ink-2" : "text-text-muted"
+            }`}
+          >
+            {tier.priceLabel}
           </span>
         </div>
-      )}
 
-      {/* Tier name */}
-      <h3 className="text-lg font-semibold text-text-primary mb-4">
-        {tier.name}
-      </h3>
-
-      {/* Price */}
-      <div className="flex items-baseline gap-1.5 mb-4">
-        <span className="text-[10px] font-semibold tracking-widest uppercase text-text-muted">
-          {tier.priceLabel}
-        </span>
-        <span className="text-4xl font-bold text-text-primary tracking-tight">
-          {tier.price}
-        </span>
+        <p
+          className={`mt-3.5 text-[14.5px] leading-[1.6] ${
+            isPopular ? "text-panel-ink-2" : "text-text-secondary"
+          }`}
+        >
+          {tier.description}
+        </p>
       </div>
 
-      {/* Description */}
-      <p className="text-sm text-text-secondary leading-relaxed mb-8">
-        {tier.description}
-      </p>
+      <div
+        aria-hidden="true"
+        className={`relative z-2 h-px ${
+          isPopular ? "bg-panel-chip-br" : "bg-hair"
+        }`}
+      />
 
-      {/* Features list */}
-      <ul className="flex flex-col gap-3.5 mb-8 flex-1" role="list">
+      <ul className="relative z-2 flex flex-col gap-3">
         {tier.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-3">
+          <li
+            key={feature}
+            className={`flex items-center gap-2.5 text-[14.5px] ${
+              isPopular ? "text-panel-ink" : "text-text-primary"
+            }`}
+          >
             <Check
               size={16}
-              className={`shrink-0 mt-0.5 ${
-                tier.isPopular ? "text-primary-400" : "text-text-muted"
+              aria-hidden="true"
+              className={`shrink-0 ${
+                isPopular ? "text-panel-ink" : "text-primary-400"
               }`}
             />
-            <span className="text-sm text-text-secondary">{feature}</span>
+            {feature}
           </li>
         ))}
       </ul>
 
-      {/* CTA */}
-      <Button
-        href={tier.ctaHref}
-        variant={tier.isPopular ? "primary" : "outline"}
-        size="md"
-        icon={<ArrowRight size={16} />}
-        className="w-full uppercase tracking-wider text-xs"
+      <Link
+        to={tier.ctaHref}
+        className={`relative z-2 mt-auto rounded-xl py-3.5 text-center text-[14.5px] font-bold transition-all duration-200 ${
+          isPopular
+            ? "bg-panel-btn text-panel-btn-ink hover:-translate-y-0.5"
+            : "border border-card-br bg-surface-900 text-text-primary hover:border-hair-strong"
+        }`}
       >
         {tier.ctaLabel}
-      </Button>
-    </article>
+      </Link>
+    </div>
   );
 }

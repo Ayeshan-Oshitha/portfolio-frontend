@@ -1,67 +1,117 @@
 import {
-  ShoppingCart,
-  Monitor,
-  Palette,
-  Smartphone,
-  Code2,
+  LayoutDashboard,
+  Link2,
   Search,
+  Smartphone,
+  Sparkles,
+  ShoppingCart,
+  TerminalSquare,
 } from "lucide-react";
-import type { Service, SectionHeaderConfig } from "@/client/types";
+import type {
+  BentoCell,
+  Service,
+  SectionHeaderConfig,
+} from "@/client/types";
 
 export const SERVICES_HEADER: SectionHeaderConfig = {
-  badge: "What I Do",
-  title: "Services Built\nTo Grow Your Business",
+  badge: "What we build",
+  title: "Two ways to grow —\none standard of craft.",
   subtitle:
-    "Web design, e-commerce, and SEO for Mesa & Phoenix businesses — built to rank on Google and turn visitors into customers.",
+    "Subscribe to a product we already run, or commission a platform engineered around your exact workflow.",
 } as const;
 
-export const SERVICES: readonly Service[] = [
+/** Home page — the bento grid. The first cell spans two columns. */
+export const BENTO_CELLS: readonly BentoCell[] = [
   {
-    id: "ecommerce",
-    title: "E-commerce",
+    id: "saas",
+    tag: "SAAS",
+    title: "Products that are already running.",
     description:
-      "Custom Shopify and Shopify Plus stores built to sell — fast storefronts, clean checkouts, migrations, and integrations engineered to turn browsers into buyers.",
-    icon: ShoppingCart,
-    href: "/contact",
+      "Subscription apps we build, host and improve continuously. Onboard your team this week — no build phase, no discovery cycle.",
+    icon: LayoutDashboard,
+    chips: ["Multi-tenant", "SSO & RBAC", "99.9% SLA", "Data export"],
+    feature: true,
   },
   {
-    id: "web-design",
-    title: "Web Design",
+    id: "platforms",
+    title: "Platforms built to your shape.",
     description:
-      "Modern, mobile-first websites that look premium and convert. Every layout and call-to-action is built to guide visitors toward calls, quotes, and sales.",
-    icon: Monitor,
-    href: "/contact",
+      "Bespoke web and mobile applications, client portals and internal dashboards — architected for your operations, owned entirely by you.",
+    icon: TerminalSquare,
+    linkLabel: "See how we work",
+    href: "/services",
   },
   {
-    id: "graphic-design",
-    title: "Graphic Design",
+    id: "design-systems",
+    title: "Design systems",
     description:
-      "Brand identity, logos, book covers, and marketing collateral that look premium and stay consistent across every touchpoint.",
-    icon: Palette,
-    href: "/contact",
+      "Identity, product UI and a token system your team can extend without us.",
+    icon: Sparkles,
   },
   {
-    id: "app-development",
-    title: "App Development",
+    id: "integrations",
+    title: "Integrations & API",
     description:
-      "Cross-platform mobile apps and web applications in React Native and Expo — built for iOS, Android, and the browser.",
-    icon: Smartphone,
-    href: "/contact",
-  },
-  {
-    id: "web-development",
-    title: "Web Development",
-    description:
-      "Custom websites and web apps in React and Next.js when a template won't cut it — portals, dashboards, integrations, and automation that just work.",
-    icon: Code2,
-    href: "/contact",
+      "Stripe, HubSpot, ERPs and legacy systems, wired together and automated.",
+    icon: Link2,
   },
   {
     id: "seo",
-    title: "SEO & Local SEO",
+    title: "SEO & growth",
     description:
-      "Get found by customers ready to buy. Technical SEO, local SEO, and Google Business Profile optimization to win the Phoenix-area map pack and search results.",
+      "Technical and local SEO so the thing we ship keeps compounding for you.",
     icon: Search,
-    href: "/contact",
+  },
+] as const;
+
+/** Services page — the full six-discipline grid. */
+export const SERVICES: readonly Service[] = [
+  {
+    id: "saas-web-apps",
+    title: "SaaS & web apps",
+    description:
+      "Multi-tenant products in React and .NET — auth, billing, roles and admin, production-ready from the first release.",
+    icon: LayoutDashboard,
+    href: "/services/saas-web-apps",
+  },
+  {
+    id: "web-ecommerce",
+    title: "Web & e-commerce",
+    description:
+      "Marketing sites and Shopify / Shopify Plus storefronts — fast, accessible, and shaped around the checkout.",
+    icon: ShoppingCart,
+    href: "/services/web-ecommerce",
+  },
+  {
+    id: "mobile-apps",
+    title: "Mobile apps",
+    description:
+      "Cross-platform apps in React Native and Expo — one codebase for iOS, Android and web, shipped to both stores.",
+    icon: Smartphone,
+    href: "/services/mobile-apps",
+  },
+  {
+    id: "design-systems",
+    title: "Brand & design systems",
+    description:
+      "Identity, product UI and a documented token system your team can extend long after we are done.",
+    icon: Sparkles,
+    href: "/services/design-systems",
+  },
+  {
+    id: "integrations",
+    title: "Integrations & API",
+    description:
+      "Portals, dashboards and third-party integrations — Stripe, HubSpot, ERPs and the legacy system nobody wants to touch.",
+    icon: Link2,
+    href: "/services/integrations",
+  },
+  {
+    id: "seo-growth",
+    title: "SEO & growth",
+    description:
+      "Technical SEO, schema and Core Web Vitals work so what we build keeps earning traffic month after month.",
+    icon: Search,
+    href: "/services/seo-growth",
   },
 ] as const;

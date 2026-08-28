@@ -31,20 +31,21 @@ interface ButtonAsLink extends ButtonBaseProps {
 type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary-600 text-white hover:bg-primary-500 shadow-lg shadow-primary-600/25 hover:shadow-primary-500/40",
+  // `fw-btn` carries the ice→forest gradient and its matching ink colour,
+  // both of which flip with the theme (see index.css).
+  primary: "fw-btn shadow-btn hover:brightness-110",
   secondary:
-    "bg-surface-800 text-text-primary hover:bg-surface-700 border border-border-subtle",
+    "bg-card text-text-primary border border-card-br shadow-card hover:border-hair-strong",
   outline:
-    "bg-transparent text-text-primary border border-border-default hover:border-primary-500 hover:text-primary-400",
+    "bg-transparent text-text-primary border border-border-default hover:border-accent-400 hover:text-accent-400",
   ghost:
-    "bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-800",
+    "bg-transparent text-text-secondary hover:text-text-primary hover:bg-raise",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 text-sm gap-1.5",
-  md: "px-6 py-3 text-sm gap-2",
-  lg: "px-8 py-4 text-base gap-2.5",
+  sm: "px-4 py-2.5 text-sm gap-1.5",
+  md: "px-6 py-3.5 text-[15px] gap-2",
+  lg: "px-7 py-4 text-base gap-2.5",
 };
 
 export default function Button({
@@ -57,7 +58,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950";
+    "inline-flex items-center justify-center font-bold rounded-xl transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950";
 
   const { disabled = false, loading = false } = props as ButtonAsButton;
   const isDisabled = disabled || loading;

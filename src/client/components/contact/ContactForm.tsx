@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Send } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Button from "@/client/components/ui/Button";
 import ServiceTypeSelector from "./ServiceTypeSelector";
 import FormField from "./FormField";
@@ -37,10 +37,30 @@ export default function ContactForm({ data }: ContactFormProps) {
   );
 
   return (
-    <div className="rounded-2xl bg-surface-900/60 border border-border-subtle p-8 sm:p-10">
-      <form onSubmit={handleSubmit} noValidate>
-        {/* Service type toggles */}
-        <div className="mb-8">
+    <div className="rounded-[22px] border border-card-br bg-card p-8 shadow-card sm:p-10">
+      <h2 className="font-display text-[26px] font-medium tracking-[-0.018em] text-text-primary">
+        Start a project
+      </h2>
+      <p className="mt-2 text-[14.5px] text-text-secondary">
+        Everything except the message is optional — but the more we know, the
+        sharper the quote.
+      </p>
+
+      <form onSubmit={handleSubmit} noValidate className="mt-7">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {data.formFields
+            .filter((field) => field.type !== "textarea")
+            .map((field) => (
+              <FormField
+                key={field.id}
+                field={field}
+                value={formValues[field.id] ?? ""}
+                onChange={handleFieldChange}
+              />
+            ))}
+        </div>
+
+        <div className="mb-6">
           <ServiceTypeSelector
             serviceTypes={data.serviceTypes}
             selected={selectedServices}
@@ -48,28 +68,31 @@ export default function ContactForm({ data }: ContactFormProps) {
           />
         </div>
 
-        {/* Form fields grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
-          {data.formFields.map((field) => (
-            <FormField
-              key={field.id}
-              field={field}
-              value={formValues[field.id] ?? ""}
-              onChange={handleFieldChange}
-            />
-          ))}
+        <div className="mb-7 grid grid-cols-1">
+          {data.formFields
+            .filter((field) => field.type === "textarea")
+            .map((field) => (
+              <FormField
+                key={field.id}
+                field={field}
+                value={formValues[field.id] ?? ""}
+                onChange={handleFieldChange}
+              />
+            ))}
         </div>
 
-        {/* Submit button */}
         <Button
           type="submit"
-          variant="primary"
           size="lg"
-          icon={<Send size={16} />}
-          className="w-full uppercase tracking-wider text-xs bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-500 hover:to-accent-400 border-0"
+          className="w-full"
+          icon={<ArrowRight size={16} />}
         >
-          Submit
+          Send it over
         </Button>
+
+        <p className="mt-3.5 text-center text-[13px] text-text-muted">
+          We reply to every enquiry within one working day.
+        </p>
       </form>
     </div>
   );

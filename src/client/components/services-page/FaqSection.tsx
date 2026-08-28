@@ -1,62 +1,75 @@
 import { useState } from "react";
-import { Plus, Minus } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import Eyebrow from "@/client/components/ui/Eyebrow";
 import { FAQ_DATA } from "@/client/data/services-page";
+import type { FAQ } from "@/client/types";
 
-export default function FaqSection() {
-  const [openId, setOpenId] = useState<string | null>(null);
+interface FaqSectionProps {
+  readonly faqs?: readonly FAQ[];
+}
+
+export default function FaqSection({ faqs = FAQ_DATA }: FaqSectionProps) {
+  const [openId, setOpenId] = useState<string | null>(faqs[0]?.id ?? null);
 
   const toggleFaq = (id: string) => {
     setOpenId((prev) => (prev === id ? null : id));
   };
 
   return (
-    <section className="mb-20">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight">
-          Frequently Asked Questions
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-15">
+      <div>
+        <Eyebrow className="mb-4.5">Questions</Eyebrow>
+        <h2 className="font-display text-[32px] leading-[1.1] font-medium tracking-[-0.018em] text-text-primary md:text-[40px]">
+          Before you ask
         </h2>
+        <p className="mt-4 text-[15.5px] leading-[1.65] text-text-secondary">
+          Something not covered? Ask on the call — we would rather answer it
+          than have you guess.
+        </p>
       </div>
 
-      <div className="max-w-3xl mx-auto space-y-4">
-        {FAQ_DATA.map((faq) => {
+      <div className="flex flex-col gap-3.5 lg:col-span-2">
+        {faqs.map((faq) => {
           const isOpen = openId === faq.id;
 
           return (
             <div
               key={faq.id}
-              className={`rounded-xl border transition-all duration-300 ${
-                isOpen
-                  ? "bg-[#111] border-primary-500/30"
-                  : "bg-[#0a0a0a] border-border-subtle hover:border-text-muted"
-              }`}
+              className="rounded-2xl border border-card-br bg-card shadow-card"
             >
               <button
+                type="button"
                 onClick={() => toggleFaq(faq.id)}
-                className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+                aria-expanded={isOpen}
+                className="flex w-full cursor-pointer items-center justify-between gap-5 px-7 py-6 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-inset"
               >
-                <span className="text-base sm:text-lg font-bold text-text-primary pr-8">
+                <span className="text-[17px] font-bold text-text-primary">
                   {faq.question}
                 </span>
-                <span
-                  className={`flex-shrink-0 transition-transform duration-300 ${isOpen ? "text-primary-400 rotate-180" : "text-primary-600"}`}
-                >
-                  {isOpen ? <Minus size={20} /> : <Plus size={20} />}
-                </span>
+                <ChevronDown
+                  size={18}
+                  aria-hidden="true"
+                  className={`shrink-0 text-text-muted transition-transform duration-300 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                />
               </button>
 
               <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                  isOpen ? "max-h-96 opacity-100 pb-6" : "max-h-0 opacity-0"
+                className={`grid transition-all duration-300 ease-in-out ${
+                  isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                 }`}
               >
-                <p className="px-6 text-text-secondary leading-relaxed">
-                  {faq.answer}
-                </p>
+                <div className="overflow-hidden">
+                  <p className="px-7 pb-6 text-[15.5px] leading-[1.7] text-text-secondary">
+                    {faq.answer}
+                  </p>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

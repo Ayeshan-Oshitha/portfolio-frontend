@@ -35,25 +35,19 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 pt-4 sm:pt-6 pointer-events-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pointer-events-auto">
-        <div
-          className={`flex items-center justify-between h-[68px] px-3 sm:px-5 rounded-full border transition-shadow duration-300 bg-[#1f202c] border-[#2a2b45] ${
-            isScrolled
-              ? "shadow-2xl shadow-black/60"
-              : "shadow-lg shadow-black/30"
-          }`}
-        >
-          {/* Part 1: Logo — Left */}
-          <Logo />
+    <header
+      className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
+        isScrolled
+          ? "border-hair bg-surface-950/85 backdrop-blur-xl"
+          : "border-transparent bg-transparent"
+      }`}
+    >
+      <div className="mx-auto flex h-20.5 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
+        <Logo />
+        <DesktopNav />
 
-          {/* Part 2: Nav Links — Absolutely centered */}
-          <DesktopNav />
-
-          {/* Part 3: Icons + CTA — Right */}
+        <div className="flex items-center gap-3">
           <HeaderActions />
-
-          {/* Mobile menu button (shown on smaller screens only) */}
           <MobileMenuButton
             isOpen={isMobileMenuOpen}
             onToggle={handleToggleMobileMenu}
@@ -61,9 +55,7 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="pointer-events-auto">
-        <MobileNav isOpen={isMobileMenuOpen} onClose={handleCloseMobileMenu} />
-      </div>
+      <MobileNav isOpen={isMobileMenuOpen} onClose={handleCloseMobileMenu} />
     </header>
   );
 }

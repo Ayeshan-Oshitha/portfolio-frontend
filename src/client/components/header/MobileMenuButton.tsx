@@ -13,11 +13,15 @@ export default function MobileMenuButton({
     <button
       type="button"
       onClick={onToggle}
-      className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-800/50 transition-colors duration-200 cursor-pointer"
+      className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-raise-br bg-raise text-text-secondary transition-colors duration-200 hover:text-text-primary lg:hidden"
       aria-label={isOpen ? "Close menu" : "Open menu"}
       aria-expanded={isOpen}
     >
-      {isOpen ? <X size={22} /> : <Menu size={22} />}
+      {isOpen ? (
+        <X size={20} aria-hidden="true" />
+      ) : (
+        <Menu size={20} aria-hidden="true" />
+      )}
     </button>
   );
 }

@@ -1,38 +1,31 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import Button from "@/client/components/ui/Button";
-import type { CtaConfig } from "@/client/types";
+import { HERO_DATA } from "@/client/data/hero";
 
-interface HeroActionsProps {
-  readonly primaryCta: CtaConfig;
-  readonly secondaryCta: CtaConfig;
-}
-
-export default function HeroActions({
-  primaryCta,
-  secondaryCta,
-}: HeroActionsProps) {
+export default function HeroActions() {
   return (
-    <div
-      className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up"
-      style={{ animationDelay: "450ms" }}
-    >
-      <Button
-        href={primaryCta.href}
-        size="lg"
-        variant="primary"
-        icon={<ArrowRight size={18} />}
-        className="uppercase tracking-wider text-xs"
-      >
-        {primaryCta.label}
-      </Button>
-      <Button
-        href={secondaryCta.href}
-        size="lg"
-        variant="outline"
-        className="uppercase tracking-wider text-xs"
-      >
-        {secondaryCta.label}
-      </Button>
+    <div className="flex flex-col items-center gap-6.5">
+      <div className="flex flex-col gap-3.5 sm:flex-row">
+        <Button
+          href={HERO_DATA.primaryCta.href}
+          size="lg"
+          icon={<ArrowRight size={16} aria-hidden="true" />}
+        >
+          {HERO_DATA.primaryCta.label}
+        </Button>
+        <Button href={HERO_DATA.secondaryCta.href} variant="secondary" size="lg">
+          {HERO_DATA.secondaryCta.label}
+        </Button>
+      </div>
+
+      <p className="flex items-center gap-2.5 text-center text-[13.5px] text-text-muted">
+        <Check
+          size={15}
+          className="shrink-0 text-primary-400"
+          aria-hidden="true"
+        />
+        {HERO_DATA.trustLine}
+      </p>
     </div>
   );
 }

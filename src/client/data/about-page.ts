@@ -1,99 +1,106 @@
-import { Lightbulb, Target, Users, Zap } from "lucide-react";
 import type {
-  Experience,
-  StoryData,
-  Highlight,
   CoreValue,
+  Metric,
   SectionHeaderConfig,
+  StoryData,
+  TeamMember,
 } from "@/client/types";
-
-export const EXPERIENCES_HEADER: SectionHeaderConfig = {
-  badge: "Experience",
-  title: "Professional Journey",
-  subtitle: "A timeline of my roles in design and development.",
-};
-
-export const EXPERIENCES_DATA: readonly Experience[] = [
-  {
-    id: "exp-1",
-    role: "Senior Frontend Engineer",
-    company: "Tech Innovators Inc.",
-    period: "2022 - Present",
-    description:
-      "Lead the frontend architecture for scalable web applications using React, Next.js, and Tailwind CSS. Mentored junior developers and established CI/CD best practices.",
-  },
-  {
-    id: "exp-2",
-    role: "Frontend Developer",
-    company: "Creative Web Studio",
-    period: "2019 - 2022",
-    description:
-      "Developed performant and accessible user interfaces for e-commerce clients. Bridged the gap between design and engineering teams.",
-  },
-  {
-    id: "exp-3",
-    role: "UI/UX Designer",
-    company: "Digital Design Agency",
-    period: "2017 - 2019",
-    description:
-      "Created wireframes, prototypes, and high-fidelity mockups. Conducted user research and usability testing to drive design decisions.",
-  },
-] as const;
+import { Handshake, MessageSquareWarning, Scissors } from "lucide-react";
 
 export const STORY_DATA: StoryData = {
-  badge: "My Story",
-  title: "From Design to Development",
+  badge: "Our story",
+  title: "Named for the two things good software needs.",
   paragraphs: [
-    "I didn't start out writing code. My journey began in graphic design, where I learned the fundamentals of composition, color theory, and typography. I spent years crafting visual identities and user experiences in Figma and Adobe Suite.",
-    "But I always wanted to bring my designs to life. I was frustrated by the disconnect between how something looked in a mockup and how it functioned in the browser. That drive led me to learn HTML, CSS, and eventually JavaScript.",
-    "Today, I operate at the intersection of design and engineering. Because of my background, I don't just see components as blocks of code—I see them as interactive pieces of a larger brand story. I specialize in building fast, scalable React applications with a relentless focus on the end-user experience.",
+    "Frost, for the clarity — a system you can see through, where the structure is obvious and nothing is hidden. Wood, for the growth — something that keeps standing, keeps adding rings, and does not need replacing every three years.",
+    "We started in 2019 doing client work, got tired of watching good products die from bad foundations, and started building our own. Today we run a small suite of SaaS products and take on a deliberately limited number of client platforms — enough to stay sharp, few enough to stay obsessive.",
   ],
-};
-
-export const HIGHLIGHTS_HEADER: SectionHeaderConfig = {
-  badge: "Impact",
-  title: "Career Highlights",
-};
-
-export const HIGHLIGHTS_DATA: readonly Highlight[] = [
-  { id: "hl-1", metric: "5+", label: "Years of Experience" },
-  { id: "hl-2", metric: "30+", label: "Projects Completed" },
-  { id: "hl-3", metric: "100%", label: "Client Satisfaction" },
-  { id: "hl-4", metric: "1M+", label: "Lines of Code" },
-] as const;
+} as const;
 
 export const VALUES_HEADER: SectionHeaderConfig = {
-  badge: "Principles",
-  title: "Core Values",
-};
+  badge: "How we think",
+  title: "Three rules we do not bend.",
+} as const;
 
 export const VALUES_DATA: readonly CoreValue[] = [
   {
-    id: "val-1",
-    title: "User-Centric Design",
+    id: "ownership",
+    title: "You own everything",
     description:
-      "Every decision is made with the end-user in mind. If it doesn't solve a real problem, it's just decoration.",
-    icon: Users,
+      "Code, accounts, infrastructure, domain — in your name from the first commit. We never hold a product hostage to keep a retainer alive.",
+    icon: Handshake,
   },
   {
-    id: "val-2",
-    title: "Performance First",
+    id: "bad-news",
+    title: "Bad news travels fast",
     description:
-      "Speed is a feature. I build lightweight, optimized applications that respect the user's time and bandwidth.",
-    icon: Zap,
+      "If something slips, you hear it the day we know — not at the deadline. A schedule you can trust is worth more than one that sounds good.",
+    icon: MessageSquareWarning,
   },
   {
-    id: "val-3",
-    title: "Continuous Learning",
+    id: "less-scope",
+    title: "Fewer features, done properly",
     description:
-      "Technology evolves rapidly. I stay curious and adaptable, always exploring new tools and methodologies.",
-    icon: Lightbulb,
+      "We will talk you out of scope. Every feature is a permanent maintenance cost, and the ones nobody uses are the expensive kind.",
+    icon: Scissors,
+  },
+] as const;
+
+export const TEAM_HEADER: SectionHeaderConfig = {
+  badge: "The team",
+  title: "The people who do the work.",
+  subtitle:
+    "No account managers, no layers. The person you meet on the call is the person who writes the code.",
+} as const;
+
+export const TEAM_DATA: readonly TeamMember[] = [
+  {
+    id: "oshitha",
+    name: "Oshitha Costa",
+    role: "Founder & engineer",
+    initials: "OC",
   },
   {
-    id: "val-4",
-    title: "Pixel Perfection",
-    description:
-      "The details matter. I ensure that the final product matches the design intent with absolute precision.",
-    icon: Target,
+    id: "member-2",
+    name: "[TEAM MEMBER]",
+    role: "[ROLE]",
+    initials: "[ ]",
+  },
+  {
+    id: "member-3",
+    name: "[TEAM MEMBER]",
+    role: "[ROLE]",
+    initials: "[ ]",
+  },
+  {
+    id: "hiring",
+    name: "We're hiring",
+    role: "Senior engineers, remote",
+    initials: "+",
+    isOpenRole: true,
+  },
+] as const;
+
+export const ABOUT_METRICS: readonly Metric[] = [
+  { id: "founded", value: "2019", label: "Year we started" },
+  {
+    id: "shipped",
+    value: "40",
+    suffix: "+",
+    suffixTone: "forest",
+    label: "Products & platforms shipped",
+  },
+  {
+    id: "retention",
+    value: "98",
+    suffix: "%",
+    suffixTone: "forest",
+    label: "Clients who come back",
+  },
+  {
+    id: "release",
+    value: "6",
+    suffix: "wk",
+    suffixTone: "ice",
+    label: "Median time to first release",
   },
 ] as const;

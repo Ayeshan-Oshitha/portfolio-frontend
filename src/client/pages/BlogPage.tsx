@@ -2,9 +2,10 @@ import { useState, useMemo } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useArticles } from "@/client/hooks/useArticles";
 import { toErrorMessage } from "@/client/services/ApiError";
-import BlogHeader from "../components/blog-page/BlogHeader";
-import BlogFilters from "../components/blog-page/BlogFilters";
-import BlogGrid from "../components/blog-page/BlogGrid";
+import BlogHeader from "@/client/components/blog-page/BlogHeader";
+import BlogFilters from "@/client/components/blog-page/BlogFilters";
+import BlogGrid from "@/client/components/blog-page/BlogGrid";
+import PanelCTA from "@/client/components/ui/PanelCTA";
 import Spinner from "@/client/components/ui/Spinner";
 
 export default function BlogPage() {
@@ -30,31 +31,53 @@ export default function BlogPage() {
     });
   }, [posts, debouncedSearchQuery, selectedCategory]);
 
+  const isFiltered = debouncedSearchQuery.length > 0 || selectedCategory !== null;
+
   return (
-    <div className="relative pt-32 pb-24 sm:pb-32">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-70 left-1/2 h-190 w-275 -translate-x-1/2 fw-amb-1"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-15 -left-80 h-190 w-190 fw-amb-2"
+      />
+
+      <div className="relative z-2 mx-auto flex max-w-7xl flex-col gap-13 px-4 pt-23 pb-26 sm:px-6 lg:px-8">
         <BlogHeader />
 
-        <BlogFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
+        <div className="flex flex-col gap-5">
+          <BlogFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCategory={selectedCategory}
+            onCategorySelect={setSelectedCategory}
+          />
+
+          {isLoading && (
+            <div className="flex justify-center py-24 text-text-muted">
+              <Spinner className="h-8 w-8" />
+            </div>
+          )}
+
+          {isError && (
+            <div className="py-20 text-center text-danger-400">
+              {toErrorMessage(error)}
+            </div>
+          )}
+
+          {!isLoading && !isError && (
+            <BlogGrid posts={filteredPosts} showFeatured={!isFiltered} />
+          )}
+        </div>
+
+        <PanelCTA
+          title="One post a month. No newsletter fluff."
+          description="We write when we've actually learned something. Or skip the list and just tell us what you're building."
+          primaryLabel="Start a project"
+          primaryHref="/contact"
         />
-
-        {isLoading && (
-          <div className="flex justify-center py-24 text-text-muted">
-            <Spinner className="h-8 w-8" />
-          </div>
-        )}
-
-        {isError && (
-          <div className="py-20 text-center text-danger-400">
-            {toErrorMessage(error)}
-          </div>
-        )}
-
-        {!isLoading && !isError && <BlogGrid posts={filteredPosts} />}
       </div>
     </div>
   );
