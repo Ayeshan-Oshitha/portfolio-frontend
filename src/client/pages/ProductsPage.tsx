@@ -22,8 +22,8 @@ export default function ProductsPage() {
             Coming soon.
           </h1>
           <p className="mt-5.5 text-[17px] leading-[1.62] text-text-secondary sm:text-[18.5px]">
-            We&apos;re building out our product lineup. Check back soon, or
-            get in touch to hear what&apos;s in the works.
+            We&apos;re building out our product lineup. Check back soon, or get
+            in touch to hear what&apos;s in the works.
           </p>
         </div>
 

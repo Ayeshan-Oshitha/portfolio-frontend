@@ -39,20 +39,16 @@ export async function getService(
   id: string,
   signal?: AbortSignal,
 ): Promise<AdminService> {
-  const { data } = await httpClient.get<AdminService>(
-    `/admin/services/${id}`,
-    { signal },
-  );
+  const { data } = await httpClient.get<AdminService>(`/admin/services/${id}`, {
+    signal,
+  });
   return data;
 }
 
 export async function createService(
   body: ServiceWriteRequest,
 ): Promise<AdminService> {
-  const { data } = await httpClient.post<AdminService>(
-    "/admin/services",
-    body,
-  );
+  const { data } = await httpClient.post<AdminService>("/admin/services", body);
   return data;
 }
 

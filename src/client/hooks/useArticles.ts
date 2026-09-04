@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getArticles, type GetArticlesParams } from "@/client/services/articlesService";
+import {
+  getArticles,
+  type GetArticlesParams,
+} from "@/client/services/articlesService";
 import { mapApiArticleToBlogPost } from "@/client/lib/mappers";
 
 export function useArticles(params: GetArticlesParams = {}) {

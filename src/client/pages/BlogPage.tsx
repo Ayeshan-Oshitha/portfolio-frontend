@@ -31,7 +31,8 @@ export default function BlogPage() {
     });
   }, [posts, debouncedSearchQuery, selectedCategory]);
 
-  const isFiltered = debouncedSearchQuery.length > 0 || selectedCategory !== null;
+  const isFiltered =
+    debouncedSearchQuery.length > 0 || selectedCategory !== null;
 
   return (
     <div className="relative overflow-hidden">

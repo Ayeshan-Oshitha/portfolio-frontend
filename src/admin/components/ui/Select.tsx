@@ -1,4 +1,12 @@
 import { forwardRef } from "react";
+import {
+  FIELD_BASE,
+  FIELD_ERROR,
+  FIELD_LABEL,
+  FIELD_SIZE,
+  FIELD_STATE,
+} from "./fieldClasses";
+import type { AdminFieldSize } from "./types";
 
 export interface SelectOption {
   readonly value: string;
@@ -12,17 +20,9 @@ interface SelectProps extends React.ComponentPropsWithoutRef<"select"> {
   readonly placeholder?: string;
   readonly error?: string;
   readonly containerClassName?: string;
+  /** `sm` matches the filter toolbars; `md` is the form default. */
+  readonly fieldSize?: AdminFieldSize;
 }
-
-/** The `<select>` counterpart to `Input`, sharing its field styling. */
-const BASE_SELECT_CLASSES =
-  "w-full appearance-none px-4 py-3 pr-10 text-sm text-text-primary bg-surface-950 border rounded-lg transition-colors duration-200 focus:outline-none focus:ring-1 disabled:opacity-50 disabled:cursor-not-allowed";
-
-const STATE_CLASSES = {
-  default:
-    "border-border-default focus:border-primary-500 focus:ring-primary-500/30",
-  error: "border-danger-500 focus:border-danger-500 focus:ring-danger-500/30",
-} as const;
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
   {
@@ -34,6 +34,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
     required,
     className = "",
     containerClassName = "",
+    fieldSize = "md",
     ...props
   },
   ref,
@@ -44,10 +45,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
 
   return (
     <div className={containerClassName}>
-      <label
-        htmlFor={selectId}
-        className="block text-[10px] font-semibold tracking-widest uppercase text-text-muted mb-2"
-      >
+      <label htmlFor={selectId} className={FIELD_LABEL}>
         {label}
         {required && (
           <span className="text-primary-400 ml-0.5" aria-hidden="true">
@@ -64,7 +62,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
           required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className={`${BASE_SELECT_CLASSES} ${STATE_CLASSES[state]} ${className}`}
+          className={`${FIELD_BASE} ${FIELD_SIZE[fieldSize]} ${FIELD_STATE[state]} appearance-none pr-10 ${className}`}
         >
           {placeholder && <option value="">{placeholder}</option>}
           {options.map((option) => (
@@ -91,7 +89,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
       </div>
 
       {error && (
-        <p id={errorId} className="mt-2 text-xs text-danger-400">
+        <p id={errorId} className={FIELD_ERROR}>
           {error}
         </p>
       )}

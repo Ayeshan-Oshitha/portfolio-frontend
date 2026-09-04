@@ -72,12 +72,14 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     description:
       "An immersive blockchain strategy game where players build, trade, and conquer using smart contracts and NFTs.",
     websiteUrl: "https://example.com/cryptoland",
-    problem: "Blockchain games at the time felt shallow and purely speculative.",
+    problem:
+      "Blockchain games at the time felt shallow and purely speculative.",
     solution:
       "We designed real strategic depth around resource management, with smart contracts handling trades transparently.",
     whatWeDelivered:
       "A browser-based game client, a Solidity contract suite, and an NFT marketplace integration.",
-    proof: "Featured on three blockchain gaming leaderboards within a month of launch.",
+    proof:
+      "Featured on three blockchain gaming leaderboards within a month of launch.",
     clientName: "CryptoLand Studios",
     featured: true,
     sortOrder: 2,
@@ -99,10 +101,12 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     description:
       "Modern business solutions portal designed to help companies track growth metrics and manage clients.",
     websiteUrl: "https://example.com/sf-ventures",
-    problem: "The client was managing growth metrics across disconnected spreadsheets.",
+    problem:
+      "The client was managing growth metrics across disconnected spreadsheets.",
     solution:
       "We built a unified portal with live dashboards and a CMS so their team could self-serve content updates.",
-    whatWeDelivered: "A Vue.js dashboard, a headless CMS setup, and a PostgreSQL-backed reporting API.",
+    whatWeDelivered:
+      "A Vue.js dashboard, a headless CMS setup, and a PostgreSQL-backed reporting API.",
     proof: "Cut monthly reporting time from two days to under an hour.",
     clientName: "S.F. Ventures Inc.",
     featured: true,
@@ -125,9 +129,12 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     description:
       "A premium restaurant website with online reservations, menu management, and a seamless ordering experience.",
     websiteUrl: "https://example.com/flavour-fusion",
-    problem: "Phone-only reservations were costing the restaurant walk-in revenue during peak hours.",
-    solution: "We shipped an online reservation and ordering flow tied directly into their POS.",
-    whatWeDelivered: "A React storefront, Stripe-powered checkout, and a Firebase-backed reservation system.",
+    problem:
+      "Phone-only reservations were costing the restaurant walk-in revenue during peak hours.",
+    solution:
+      "We shipped an online reservation and ordering flow tied directly into their POS.",
+    whatWeDelivered:
+      "A React storefront, Stripe-powered checkout, and a Firebase-backed reservation system.",
     proof: "Online orders now account for 30% of weekly revenue.",
     clientName: "Flavour Fusion Restaurant Group",
     featured: false,
@@ -149,9 +156,12 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     description:
       "A modern fitness app with membership management, class scheduling, and health progress tracking.",
     websiteUrl: "https://example.com/apex-fitness",
-    problem: "Members had no easy way to book classes or track progress between visits.",
-    solution: "We built a mobile app with class booking, progress charts, and push reminders.",
-    whatWeDelivered: "A React Native app, a GraphQL API, and an AWS-hosted backend.",
+    problem:
+      "Members had no easy way to book classes or track progress between visits.",
+    solution:
+      "We built a mobile app with class booking, progress charts, and push reminders.",
+    whatWeDelivered:
+      "A React Native app, a GraphQL API, and an AWS-hosted backend.",
     proof: "Class no-show rates dropped by 40% after launch.",
     clientName: "Apex Fitness Clubs",
     featured: false,

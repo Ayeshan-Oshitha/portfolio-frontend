@@ -10,7 +10,7 @@ import {
 } from "@/admin/api/tokenStorage";
 
 const BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:7060/api"
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:7060/api/cms"
 ).replace(/\/$/, "");
 
 /**

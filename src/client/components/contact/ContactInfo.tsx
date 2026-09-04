@@ -40,7 +40,10 @@ function Method({
     "flex items-center gap-4 rounded-2xl border border-card-br bg-card p-5 shadow-card";
 
   return href ? (
-    <a href={href} className={`${classes} transition-colors hover:border-hair-strong`}>
+    <a
+      href={href}
+      className={`${classes} transition-colors hover:border-hair-strong`}
+    >
       {body}
     </a>
   ) : (

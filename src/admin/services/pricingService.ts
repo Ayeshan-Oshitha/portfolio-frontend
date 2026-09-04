@@ -42,7 +42,15 @@ export async function getPricingPlans(
   const { data } = await httpClient.get<PagedResult<AdminPricingPlan>>(
     "/admin/pricing-plans",
     {
-      params: { site, serviceId, comboOnly, isPublished, search, page, pageSize },
+      params: {
+        site,
+        serviceId,
+        comboOnly,
+        isPublished,
+        search,
+        page,
+        pageSize,
+      },
       signal,
     },
   );

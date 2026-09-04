@@ -1,0 +1,19 @@
+# Normalize line endings to LF in the repository, regardless of the
+# committer's OS or local core.autocrlf setting. Matches Prettier's
+# "endOfLine": "lf" (.prettierrc.json), so formatting and git diffs agree —
+# without this, Windows checkouts with autocrlf=true silently convert
+# committed LF files to CRLF, which then shows as a full-file diff the next
+# time anyone touches them.
+* text=auto eol=lf
+
+# Binary assets: never touch line endings, never diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary

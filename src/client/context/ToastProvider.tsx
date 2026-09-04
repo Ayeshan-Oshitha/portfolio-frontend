@@ -40,8 +40,14 @@ export default function ToastProvider({ children }: ToastProviderProps) {
     };
   }, []);
 
-  const success = useCallback((message: string) => push("success", message), [push]);
-  const error = useCallback((message: string) => push("error", message), [push]);
+  const success = useCallback(
+    (message: string) => push("success", message),
+    [push],
+  );
+  const error = useCallback(
+    (message: string) => push("error", message),
+    [push],
+  );
   const info = useCallback((message: string) => push("info", message), [push]);
 
   const value = useMemo(

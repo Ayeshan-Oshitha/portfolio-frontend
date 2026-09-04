@@ -1,9 +1,6 @@
 import { useRef, useState } from "react";
 import axios from "axios";
 import { ArrowDown, ArrowUp, Star, Trash2, Upload } from "lucide-react";
-import Button from "@/admin/components/ui/Button";
-import Spinner from "@/client/components/ui/Spinner";
-import Input from "@/admin/components/ui/Input";
 import {
   useAddProjectImage,
   useDeleteProjectImage,
@@ -14,6 +11,7 @@ import { createUploadSignature } from "@/admin/services/mediaService";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import type { ProjectImage } from "@/admin/types";
+import { Button, IconButton, Input, Spinner } from "@/admin/components/ui";
 
 interface ProjectImagesEditorProps {
   readonly projectId: string;
@@ -240,26 +238,18 @@ export default function ProjectImagesEditor({
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
+                <IconButton
+                  icon={<ArrowUp className="h-4 w-4" />}
+                  label="Move up"
                   onClick={() => move(index, -1)}
                   disabled={isReordering || index === 0}
-                  aria-label="Move up"
-                  title="Move up"
-                  className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
+                />
+                <IconButton
+                  icon={<ArrowDown className="h-4 w-4" />}
+                  label="Move down"
                   onClick={() => move(index, 1)}
                   disabled={isReordering || index === rows.length - 1}
-                  aria-label="Move down"
-                  title="Move down"
-                  className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                </button>
+                />
 
                 <Button
                   variant="ghost"

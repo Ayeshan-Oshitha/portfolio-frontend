@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { extractMarkdownImages } from "@/admin/utils/markdownImages";
 
 /**
  * Mirrors the hand-rolled checks in the API's `Services/ArticleService.cs`,
@@ -28,7 +29,11 @@ export const articleSchema = z
       .string()
       .regex(DATE_ONLY, "Published date must be a calendar date."),
     mediumUrl: optionalText,
-    coverImageKey: optionalText,
+    /** Stores the image's public url, picked from the images used in the body. */
+    coverImageKey: z
+      .string()
+      .trim()
+      .min(1, "Pick a cover image from the images in your content."),
     contentMarkdown: optionalText,
     isPublished: z.boolean(),
     showOnAgency: z.boolean(),
@@ -45,7 +50,8 @@ export const articleSchema = z
       let isAbsoluteHttp = false;
       try {
         const parsed = new URL(values.mediumUrl);
-        isAbsoluteHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
+        isAbsoluteHttp =
+          parsed.protocol === "http:" || parsed.protocol === "https:";
       } catch {
         isAbsoluteHttp = false;
       }
@@ -57,6 +63,22 @@ export const articleSchema = z
           message: "mediumUrl must be an absolute http(s) URL.",
         });
       }
+    }
+
+    // The cover has to be one of the article's own images: the API stores the
+    // url verbatim and never resolves it, so a cover pointing at something the
+    // body doesn't carry is how a dead image reaches the public site.
+    if (
+      values.coverImageKey &&
+      !extractMarkdownImages(values.contentMarkdown).includes(
+        values.coverImageKey,
+      )
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["coverImageKey"],
+        message: "The cover must be one of the images used in the content.",
+      });
     }
 
     if (values.featuredOnAgency && !values.showOnAgency) {

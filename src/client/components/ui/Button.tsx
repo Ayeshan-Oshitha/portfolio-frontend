@@ -63,9 +63,7 @@ export default function Button({
   const { disabled = false, loading = false } = props as ButtonAsButton;
   const isDisabled = disabled || loading;
 
-  const stateClasses = isDisabled
-    ? "opacity-60 pointer-events-none"
-    : "";
+  const stateClasses = isDisabled ? "opacity-60 pointer-events-none" : "";
 
   const classes = `${baseClasses} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${stateClasses} ${className}`;
 

@@ -88,6 +88,26 @@ export interface ChangePasswordRequest {
   readonly confirmNewPassword: string;
 }
 
+/** `DTOs/Admin/ForgotPasswordRequest.cs` */
+export interface ForgotPasswordRequest {
+  readonly email: string;
+}
+
+/**
+ * `DTOs/Admin/ForgotPasswordResponse.cs` — always the same generic message,
+ * whatever the email resolves to.
+ */
+export interface ForgotPasswordResponse {
+  readonly message: string;
+}
+
+/** `DTOs/Admin/SetPasswordRequest.cs` — used by both password-reset and account-setup links. */
+export interface SetPasswordRequest {
+  readonly token: string;
+  readonly password: string;
+  readonly confirmPassword: string;
+}
+
 /** `Enums/TechCategory.cs` — serialised as its snake_case name. */
 export type TechCategory =
   | "frontend"
@@ -158,6 +178,9 @@ export type ApiErrorCode =
   | "account_rejected"
   | "invalid_verification_token"
   | "verification_token_expired"
+  | "invalid_setup_token"
+  | "setup_token_already_used"
+  | "setup_token_expired"
   | "email_taken"
   | "cannot_delete_self"
   | "user_not_found"
@@ -556,6 +579,30 @@ export interface UploadSignatureRequest {
   readonly slug?: string;
   /** Set to overwrite an existing asset instead of creating a new one. */
   readonly publicId?: string;
+}
+
+/**
+ * `DTOs/Admin/PresignedUploadRequest.cs` — the current upload contract. The
+ * server picks the folder from `target`, so the client never names a path.
+ * `slug` is required when `target` is `projects` or `articles`.
+ */
+export interface PresignedUploadRequest {
+  readonly target: MediaTarget;
+  readonly slug?: string;
+  /** Set to overwrite one specific object instead of adding a new one. */
+  readonly objectKey?: string;
+}
+
+/**
+ * `DTOs/Admin/PresignedUploadResponse.cs` — PUT the raw file bytes straight to
+ * `uploadUrl` with a matching content type; the bytes never touch the API.
+ */
+export interface PresignedUploadResponse {
+  readonly uploadUrl: string;
+  readonly objectKey: string;
+  /** Where the object reads back once the PUT lands — the API resolves it, the client can't. */
+  readonly publicUrl: string;
+  readonly expiresAt: string;
 }
 
 /** `DTOs/Admin/UploadSignatureResponse.cs` — feeds a direct signed upload to Cloudinary. */

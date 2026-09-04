@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
-import Spinner from "@/client/components/ui/Spinner";
-import type { ButtonVariant, ButtonSize } from "@/client/types";
+import Spinner from "./Spinner";
+import type { AdminButtonVariant, AdminButtonSize } from "./types";
 
 interface ButtonBaseProps {
-  readonly variant?: ButtonVariant;
-  readonly size?: ButtonSize;
+  readonly variant?: AdminButtonVariant;
+  readonly size?: AdminButtonSize;
   readonly children: React.ReactNode;
   readonly className?: string;
   readonly icon?: React.ReactNode;
   readonly iconPosition?: "left" | "right";
+  /** Stretches to the container — the default for form submit buttons. */
+  readonly fullWidth?: boolean;
 }
 
 interface ButtonAsButton extends ButtonBaseProps {
@@ -30,20 +32,31 @@ interface ButtonAsLink extends ButtonBaseProps {
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
 
-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-primary-600 text-white shadow-sm hover:bg-primary-700 hover:shadow",
+const VARIANT_CLASSES: Record<AdminButtonVariant, string> = {
+  primary:
+    "bg-primary-600 text-white shadow-btn hover:bg-primary-700 active:bg-primary-800",
   secondary:
-    "bg-surface-800 text-text-primary hover:bg-surface-700 border border-border-default",
+    "bg-surface-800 text-text-primary border border-border-default hover:bg-surface-700 hover:border-border-strong",
   outline:
-    "bg-transparent text-text-primary border border-border-default hover:bg-surface-800",
+    "bg-surface-900 text-text-primary border border-border-default hover:bg-surface-800 hover:border-border-strong",
   ghost:
     "bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-800",
+  subtle:
+    "bg-primary-50 text-primary-700 border border-primary-200 hover:bg-primary-100",
+  danger: "bg-danger-500 text-white shadow-btn hover:bg-danger-400",
 };
 
-const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 text-sm gap-1.5",
-  md: "px-6 py-3 text-sm gap-2",
-  lg: "px-8 py-4 text-base gap-2.5",
+/**
+ * Fixed heights rather than vertical padding: the filter toolbars lay buttons
+ * and fields out side by side, and matching `h-*` values are what keep that
+ * row on a single baseline. Radius scales with size for the same reason —
+ * a `lg` button with `sm` corners reads unfinished.
+ */
+const SIZE_CLASSES: Record<AdminButtonSize, string> = {
+  xs: "h-8 px-2.5 text-xs gap-1.5 rounded-md",
+  sm: "h-9 px-3.5 text-sm gap-1.5 rounded-lg",
+  md: "h-11 px-5 text-sm gap-2 rounded-lg",
+  lg: "h-12 px-7 text-base gap-2.5 rounded-xl",
 };
 
 /**
@@ -58,17 +71,23 @@ export default function Button({
   className = "",
   icon,
   iconPosition = "right",
+  fullWidth = false,
   ...props
 }: ButtonProps) {
   const baseClasses =
-    "inline-flex items-center justify-center font-semibold rounded-lg transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950";
+    "inline-flex items-center justify-center font-semibold tracking-tight select-none " +
+    "transition-[background-color,border-color,box-shadow,transform] duration-150 " +
+    "motion-safe:active:translate-y-px cursor-pointer " +
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 " +
+    "focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950";
 
   const { disabled = false, loading = false } = props as ButtonAsButton;
   const isDisabled = disabled || loading;
 
   const stateClasses = isDisabled ? "opacity-60 pointer-events-none" : "";
+  const widthClasses = fullWidth ? "w-full" : "";
 
-  const classes = `${baseClasses} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${stateClasses} ${className}`;
+  const classes = `${baseClasses} ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${widthClasses} ${stateClasses} ${className}`;
 
   const content = (
     <>

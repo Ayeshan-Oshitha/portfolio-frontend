@@ -2,10 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import Button from "@/admin/components/ui/Button";
-import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
-import Input from "@/admin/components/ui/Input";
 import GoogleSignInButton from "@/admin/components/GoogleSignInButton";
 import useAuth from "@/admin/context/useAuth";
 import { toErrorMessage } from "@/admin/api/ApiError";
@@ -16,6 +12,7 @@ import {
   loginSchema,
   type LoginFormValues,
 } from "@/admin/validation/authSchemas";
+import { Alert, Button, Input } from "@/admin/components/ui";
 
 const CURATED_AUTH_ERROR_CODES = new Set([
   "invalid_credentials",
@@ -81,9 +78,11 @@ export default function LoginPage() {
   }
 
   return (
-    <Card>
-      <h2 className="text-lg font-semibold text-text-primary mb-1">Sign in</h2>
-      <p className="text-sm text-text-muted mb-6">
+    <>
+      <h2 className="admin-display text-xl leading-snug text-text-primary mb-1">
+        Sign in
+      </h2>
+      <p className="text-sm text-text-secondary mb-6">
         Use your admin credentials to continue.
       </p>
 
@@ -94,7 +93,7 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="secondary"
-            className="w-full"
+            fullWidth
             loading={resendVerification.isPending}
             onClick={handleResend}
           >
@@ -102,7 +101,7 @@ export default function LoginPage() {
           </Button>
         )}
         {resendSent && (
-          <p className="text-sm text-text-muted">
+          <p className="text-sm text-text-secondary">
             If that account needs verification, we've sent a new email.
           </p>
         )}
@@ -127,7 +126,16 @@ export default function LoginPage() {
           {...register("password")}
         />
 
-        <Button type="submit" loading={isSubmitting} className="w-full">
+        <p className="text-right text-sm">
+          <Link
+            to="/admin/forgot-password"
+            className="font-semibold text-primary-600 underline-offset-4 hover:text-primary-700 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </p>
+
+        <Button type="submit" loading={isSubmitting} fullWidth>
           {isSubmitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
@@ -138,11 +146,11 @@ export default function LoginPage() {
         Need an account?{" "}
         <Link
           to="/admin/register"
-          className="text-primary-400 hover:text-primary-300 font-medium"
+          className="font-semibold text-primary-600 underline-offset-4 hover:text-primary-700 hover:underline"
         >
           Register
         </Link>
       </p>
-    </Card>
+    </>
   );
 }

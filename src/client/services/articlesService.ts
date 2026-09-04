@@ -15,7 +15,13 @@ const SITE: Site = "agency";
 const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === "true";
 
 export async function getArticles(
-  { site = SITE, tag, featured, page = 1, pageSize = 20 }: GetArticlesParams = {},
+  {
+    site = SITE,
+    tag,
+    featured,
+    page = 1,
+    pageSize = 20,
+  }: GetArticlesParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<ApiArticle>> {
   if (USE_MOCK_DATA) {

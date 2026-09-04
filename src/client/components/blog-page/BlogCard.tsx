@@ -65,7 +65,9 @@ export default function BlogCard({ post, featured = false }: BlogCardProps) {
 
         <h3
           className={`font-display font-medium tracking-[-0.018em] text-text-primary ${
-            featured ? "text-[26px] sm:text-[34px]" : "text-[21px] leading-[1.24]"
+            featured
+              ? "text-[26px] sm:text-[34px]"
+              : "text-[21px] leading-[1.24]"
           }`}
         >
           {post.title}

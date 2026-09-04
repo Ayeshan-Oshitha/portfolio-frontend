@@ -28,7 +28,11 @@ export const SERVICES_PAGE_HEADER: SectionHeaderConfig = {
 } as const;
 
 export const SERVICES_PAGE_STATS: readonly Metric[] = [
-  { id: "proposal", value: "3 days", label: "From enquiry to written proposal" },
+  {
+    id: "proposal",
+    value: "3 days",
+    label: "From enquiry to written proposal",
+  },
   { id: "release", value: "6 weeks", label: "Median time to first release" },
 ] as const;
 

@@ -33,7 +33,8 @@ export function toErrorMessage(error: unknown): string {
       console.error("Network error:", error);
       return GENERIC_CONNECTION_ERROR;
     }
-    if (error.status === 404) return "We couldn't find what you were looking for.";
+    if (error.status === 404)
+      return "We couldn't find what you were looking for.";
     if (error.status >= 500) {
       console.error(`Server error (${error.status}):`, error.problem, error);
       return GENERIC_SERVER_ERROR;

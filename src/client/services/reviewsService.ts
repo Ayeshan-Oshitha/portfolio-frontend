@@ -21,7 +21,8 @@ function sortReviews(
 ): readonly ApiReview[] {
   const copy = [...reviews];
   if (sort === "rating") return copy.sort((a, b) => b.rating - a.rating);
-  if (sort === "country") return copy.sort((a, b) => a.country.localeCompare(b.country));
+  if (sort === "country")
+    return copy.sort((a, b) => a.country.localeCompare(b.country));
   return copy.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );

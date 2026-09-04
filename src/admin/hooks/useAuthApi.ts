@@ -35,3 +35,11 @@ export function useResendVerification() {
 export function useChangePassword() {
   return useMutation({ mutationFn: authService.changePassword });
 }
+
+export function useForgotPassword() {
+  return useMutation({ mutationFn: authService.forgotPassword });
+}
+
+export function useSetPassword() {
+  return useMutation({ mutationFn: authService.setPassword });
+}

@@ -50,6 +50,20 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
+export const forgotPasswordSchema = z.object({
+  email,
+});
+
+export const setPasswordSchema = z
+  .object({
+    password: password("Password"),
+    confirmPassword: z.string(),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Password and its confirmation do not match.",
+    path: ["confirmPassword"],
+  });
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required."),
@@ -63,4 +77,6 @@ export const changePasswordSchema = z
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type RegisterFormValues = z.infer<typeof registerSchema>;
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+export type SetPasswordFormValues = z.infer<typeof setPasswordSchema>;
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

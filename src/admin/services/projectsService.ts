@@ -40,20 +40,16 @@ export async function getProject(
   id: string,
   signal?: AbortSignal,
 ): Promise<AdminProject> {
-  const { data } = await httpClient.get<AdminProject>(
-    `/admin/projects/${id}`,
-    { signal },
-  );
+  const { data } = await httpClient.get<AdminProject>(`/admin/projects/${id}`, {
+    signal,
+  });
   return data;
 }
 
 export async function createProject(
   body: ProjectWriteRequest,
 ): Promise<AdminProject> {
-  const { data } = await httpClient.post<AdminProject>(
-    "/admin/projects",
-    body,
-  );
+  const { data } = await httpClient.post<AdminProject>("/admin/projects", body);
   return data;
 }
 

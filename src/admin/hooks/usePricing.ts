@@ -31,13 +31,8 @@ export function useCreatePricingPlan() {
 export function useUpdatePricingPlan() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      body,
-    }: {
-      id: string;
-      body: PricingPlanWriteRequest;
-    }) => pricingService.updatePricingPlan(id, body),
+    mutationFn: ({ id, body }: { id: string; body: PricingPlanWriteRequest }) =>
+      pricingService.updatePricingPlan(id, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: pricingKeys.lists() });
     },

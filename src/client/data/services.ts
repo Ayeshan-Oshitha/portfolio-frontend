@@ -7,11 +7,7 @@ import {
   ShoppingCart,
   TerminalSquare,
 } from "lucide-react";
-import type {
-  BentoCell,
-  Service,
-  SectionHeaderConfig,
-} from "@/client/types";
+import type { BentoCell, Service, SectionHeaderConfig } from "@/client/types";
 
 export const SERVICES_HEADER: SectionHeaderConfig = {
   badge: "What we build",

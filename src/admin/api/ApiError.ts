@@ -31,7 +31,8 @@ const GENERIC_SERVER_ERROR =
   "Something went wrong on our end. Please try again in a moment.";
 const GENERIC_CONNECTION_ERROR =
   "Could not reach the server. Please check your connection and try again.";
-const GENERIC_REQUEST_ERROR = "That request couldn't be completed. Please try again.";
+const GENERIC_REQUEST_ERROR =
+  "That request couldn't be completed. Please try again.";
 
 /** Network failures and unexpected throws reach the UI as a readable string; technical detail goes to the console. */
 export function toErrorMessage(error: unknown): string {

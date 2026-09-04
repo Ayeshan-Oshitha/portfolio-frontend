@@ -1,8 +1,5 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@/admin/components/ui/Button";
-import Card from "@/admin/components/ui/Card";
-import Input from "@/admin/components/ui/Input";
 import { useChangePassword } from "@/admin/hooks/useAuthApi";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
@@ -10,6 +7,7 @@ import {
   changePasswordSchema,
   type ChangePasswordFormValues,
 } from "@/admin/validation/authSchemas";
+import { Button, Input, PageHeader } from "@/admin/components/ui";
 
 export default function ChangePasswordPage() {
   const toast = useToast();
@@ -47,51 +45,43 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-text-primary mb-1">
-        Change password
-      </h1>
-      <p className="text-sm text-text-muted mb-8">
-        Your new password must be at least 8 characters.
-      </p>
+      <PageHeader
+        title="Change password"
+        description="Your new password must be at least 8 characters."
+      />
 
-      <Card>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="space-y-5"
-        >
-          <Input
-            label="Current password"
-            type="password"
-            autoComplete="current-password"
-            required
-            error={errors.currentPassword?.message}
-            {...register("currentPassword")}
-          />
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <Input
+          label="Current password"
+          type="password"
+          autoComplete="current-password"
+          required
+          error={errors.currentPassword?.message}
+          {...register("currentPassword")}
+        />
 
-          <Input
-            label="New password"
-            type="password"
-            autoComplete="new-password"
-            required
-            error={errors.newPassword?.message}
-            {...register("newPassword")}
-          />
+        <Input
+          label="New password"
+          type="password"
+          autoComplete="new-password"
+          required
+          error={errors.newPassword?.message}
+          {...register("newPassword")}
+        />
 
-          <Input
-            label="Confirm new password"
-            type="password"
-            autoComplete="new-password"
-            required
-            error={errors.confirmNewPassword?.message}
-            {...register("confirmNewPassword")}
-          />
+        <Input
+          label="Confirm new password"
+          type="password"
+          autoComplete="new-password"
+          required
+          error={errors.confirmNewPassword?.message}
+          {...register("confirmNewPassword")}
+        />
 
-          <Button type="submit" loading={isSubmitting}>
-            {isSubmitting ? "Updating…" : "Update password"}
-          </Button>
-        </form>
-      </Card>
+        <Button type="submit" loading={isSubmitting}>
+          {isSubmitting ? "Updating…" : "Update password"}
+        </Button>
+      </form>
     </div>
   );
 }

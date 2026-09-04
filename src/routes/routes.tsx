@@ -21,12 +21,15 @@ import AuthLayout from "@/admin/layout/AuthLayout";
 import LoginPage from "@/admin/pages/LoginPage";
 import RegisterPage from "@/admin/pages/RegisterPage";
 import VerifyEmailPage from "@/admin/pages/VerifyEmailPage";
+import ForgotPasswordPage from "@/admin/pages/ForgotPasswordPage";
+import SetPasswordPage from "@/admin/pages/SetPasswordPage";
 import DashboardPage from "@/admin/pages/DashboardPage";
 import ChangePasswordPage from "@/admin/pages/ChangePasswordPage";
 import UsersPage from "@/admin/pages/UsersPage";
 import PendingApprovalsPage from "@/admin/pages/PendingApprovalsPage";
 import TagsPage from "@/admin/pages/TagsPage";
 import ArticlesPage from "@/admin/pages/ArticlesPage";
+import ArticleEditorPage from "@/admin/pages/ArticleEditorPage";
 import AdminServicesPage from "@/admin/pages/ServicesPage";
 import PricingPage from "@/admin/pages/PricingPage";
 import ProjectsPage from "@/admin/pages/ProjectsPage";
@@ -112,12 +115,20 @@ export const router = createBrowserRouter([
                 path: "verify-email",
                 element: <VerifyEmailPage />,
               },
+              {
+                path: "forgot-password",
+                element: <ForgotPasswordPage />,
+              },
+              {
+                path: "set-password",
+                element: <SetPasswordPage />,
+              },
             ],
           },
         ],
       },
       {
-        // element: <RequireAuth />,
+        element: <RequireAuth />,
         children: [
           {
             element: <AdminLayout />,
@@ -156,6 +167,14 @@ export const router = createBrowserRouter([
               {
                 path: "articles",
                 element: <ArticlesPage />,
+              },
+              {
+                path: "articles/new",
+                element: <ArticleEditorPage />,
+              },
+              {
+                path: "articles/:id",
+                element: <ArticleEditorPage />,
               },
               {
                 path: "tags",

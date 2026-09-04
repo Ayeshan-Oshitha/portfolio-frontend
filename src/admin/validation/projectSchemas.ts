@@ -39,13 +39,10 @@ export const projectSchema = z
   .object({
     title: z.string().trim().min(1, "Title is required."),
     slug: optionalText,
-    year: z.number({ message: "Year must be a whole number." }).int(
-      "Year must be a whole number.",
-    ),
-    shortDescription: z
-      .string()
-      .trim()
-      .min(1, "shortDescription is required."),
+    year: z
+      .number({ message: "Year must be a whole number." })
+      .int("Year must be a whole number."),
+    shortDescription: z.string().trim().min(1, "shortDescription is required."),
     description: z.string().trim().min(1, "Description is required."),
     websiteUrl: optionalText,
     problem: optionalText,

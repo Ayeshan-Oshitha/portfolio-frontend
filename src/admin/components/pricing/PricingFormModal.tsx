@@ -1,12 +1,6 @@
 import { useEffect } from "react";
 import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@/admin/components/ui/Button";
-import Checkbox from "@/admin/components/ui/Checkbox";
-import Input from "@/admin/components/ui/Input";
-import Modal from "@/admin/components/ui/Modal";
-import Select from "@/admin/components/ui/Select";
-import Textarea from "@/admin/components/ui/Textarea";
 import PricingFeaturesEditor from "@/admin/components/pricing/PricingFeaturesEditor";
 import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import {
@@ -31,6 +25,14 @@ import {
   type PricingFeatureValues,
   type PricingPlanFormValues,
 } from "@/admin/validation/pricingSchemas";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Modal,
+  Select,
+  Textarea,
+} from "@/admin/components/ui";
 
 interface PricingFormModalProps {
   /** `null` opens the dialog in create mode. */
@@ -130,7 +132,9 @@ function toOptionalNumber(raw: unknown): number | undefined {
  * (which is why the dedicated features-reorder endpoint is not needed here).
  */
 interface SyncFeaturesDeps {
-  readonly addFeature: ReturnType<typeof useAddPricingPlanFeature>["mutateAsync"];
+  readonly addFeature: ReturnType<
+    typeof useAddPricingPlanFeature
+  >["mutateAsync"];
   readonly updateFeature: ReturnType<
     typeof useUpdatePricingPlanFeature
   >["mutateAsync"];
@@ -196,10 +200,13 @@ export default function PricingFormModal({
     reset,
     clearPersisted,
     formState: { errors, isSubmitting },
-  } = usePersistedForm<PricingPlanFormValues>(`pricing-form:${plan?.id ?? "new"}`, {
-    resolver: zodResolver(pricingPlanSchema),
-    defaultValues: toFormValues(plan),
-  });
+  } = usePersistedForm<PricingPlanFormValues>(
+    `pricing-form:${plan?.id ?? "new"}`,
+    {
+      resolver: zodResolver(pricingPlanSchema),
+      defaultValues: toFormValues(plan),
+    },
+  );
 
   const kind = useWatch({ control, name: "kind" });
   const priceType = useWatch({ control, name: "priceType" });
@@ -433,7 +440,7 @@ export default function PricingFormModal({
         </div>
 
         <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
             Agency site
           </legend>
 
@@ -459,7 +466,7 @@ export default function PricingFormModal({
         </fieldset>
 
         <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
             Personal site
           </legend>
 

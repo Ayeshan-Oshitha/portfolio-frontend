@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import Alert from "@/admin/components/ui/Alert";
-import Button from "@/admin/components/ui/Button";
-import Card from "@/admin/components/ui/Card";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
-import { useResendVerification, useVerifyEmail } from "@/admin/hooks/useAuthApi";
+import {
+  useResendVerification,
+  useVerifyEmail,
+} from "@/admin/hooks/useAuthApi";
+import { Alert, Button } from "@/admin/components/ui";
 
 type VerifyState = "verifying" | "success" | "error";
 
@@ -38,7 +39,8 @@ export default function VerifyEmailPage() {
       .catch((error: unknown) => {
         setState("error");
         setCanResend(
-          error instanceof ApiError && EXPIRED_OR_INVALID_CODES.has(error.code ?? ""),
+          error instanceof ApiError &&
+            EXPIRED_OR_INVALID_CODES.has(error.code ?? ""),
         );
         setErrorMessage(toErrorMessage(error));
       });
@@ -58,21 +60,21 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <Card>
-      <h2 className="text-lg font-semibold text-text-primary mb-1">
+    <>
+      <h2 className="admin-display text-xl leading-snug text-text-primary mb-1">
         Email verification
       </h2>
 
       {state === "verifying" && (
-        <p className="text-sm text-text-muted">Verifying your email…</p>
+        <p className="text-sm text-text-secondary">Verifying your email…</p>
       )}
 
       {state === "success" && (
         <>
           <Alert variant="success">Your email has been verified.</Alert>
           <p className="mt-4 text-sm text-text-muted">
-            A super admin still has to approve your account before you can
-            sign in.
+            A super admin still has to approve your account before you can sign
+            in.
           </p>
         </>
       )}
@@ -84,7 +86,8 @@ export default function VerifyEmailPage() {
             <Button
               type="button"
               variant="secondary"
-              className="w-full mt-4"
+              fullWidth
+              className="mt-4"
               loading={resendVerification.isPending}
               onClick={handleResend}
             >
@@ -102,11 +105,11 @@ export default function VerifyEmailPage() {
       <p className="mt-6 text-center text-sm text-text-muted">
         <Link
           to="/admin/login"
-          className="text-primary-400 hover:text-primary-300 font-medium"
+          className="font-semibold text-primary-600 underline-offset-4 hover:text-primary-700 hover:underline"
         >
           Back to sign in
         </Link>
       </p>
-    </Card>
+    </>
   );
 }

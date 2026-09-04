@@ -1,21 +1,35 @@
 import { useState } from "react";
 import { Ban, Trash2 } from "lucide-react";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
-import Badge from "@/client/components/ui/Badge";
-import Button from "@/admin/components/ui/Button";
-import Spinner from "@/client/components/ui/Spinner";
-import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
-import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
-import Input from "@/admin/components/ui/Input";
-import Select from "@/admin/components/ui/Select";
-import { useDeleteUser, useDisableUser, useUsers } from "@/admin/hooks/useUsers";
+import {
+  useDeleteUser,
+  useDisableUser,
+  useUsers,
+} from "@/admin/hooks/useUsers";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useAuth from "@/admin/context/useAuth";
 import useToast from "@/admin/context/useToast";
 import type { AdminUser, UserStatus } from "@/admin/types";
 import { formatDate, roleLabel, statusLabel } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  DataTableShell,
+  Input,
+  PageHeader,
+  Pagination,
+  Select,
+  Toolbar,
+  Table,
+  THead,
+  TH,
+  TBody,
+  TR,
+  TD,
+} from "@/admin/components/ui";
 
 const PAGE_SIZE = 20;
 
@@ -52,7 +66,12 @@ export default function UsersPage() {
     data: result,
     isPending: isLoading,
     error: queryError,
-  } = useUsers({ search, status: status || undefined, page, pageSize: PAGE_SIZE });
+  } = useUsers({
+    search,
+    status: status || undefined,
+    page,
+    pageSize: PAGE_SIZE,
+  });
   const deleteUserMutation = useDeleteUser();
   const disableUserMutation = useDisableUser();
 
@@ -91,18 +110,20 @@ export default function UsersPage() {
     }
   }
 
+  const rows = result?.items ?? [];
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="max-w-5xl">
-      <h1 className="text-2xl font-bold text-text-primary mb-1">Users</h1>
-      <p className="text-sm text-text-muted mb-8">
-        {total} {total === 1 ? "account" : "accounts"} registered.
-      </p>
+      <PageHeader
+        title="Users"
+        description={`${total} ${total === 1 ? "account" : "accounts"} registered.`}
+      />
 
-      <div className="flex items-end gap-3 mb-6">
+      <Toolbar>
         <Input
+          fieldSize="sm"
           label="Search"
           placeholder="Name or email"
           value={searchInput}
@@ -114,6 +135,7 @@ export default function UsersPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Status"
           placeholder="All statuses"
           options={STATUS_OPTIONS}
@@ -124,113 +146,80 @@ export default function UsersPage() {
           }}
           containerClassName="w-44"
         />
-      </div>
+      </Toolbar>
 
-      {error && <Alert className="mb-6">{error}</Alert>}
-
-      <Card className="p-0 overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-primary-400">
-            <Spinner className="h-6 w-6" label="Loading users" />
-          </div>
-        ) : !result || result.items.length === 0 ? (
-          <p className="py-16 text-center text-sm text-text-muted">
-            No users match this search.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-border-subtle bg-surface-900/40 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Last sign-in</th>
-                  <th className="px-6 py-4 sr-only">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-border-subtle/60 last:border-0 hover:bg-surface-800/60 transition-colors duration-150"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="block text-text-primary font-medium">
-                        {item.firstName} {item.lastName}
-                      </span>
-                      <span className="block text-text-muted text-xs">
-                        {item.email}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant="subtle">{roleLabel(item.role)}</Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant="outline">
-                        {statusLabel(item.status)}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
-                      {formatDate(item.lastLoginAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1">
-                        {item.status === "approved" && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => askDisable(item)}
-                            disabled={item.id === currentUser?.id}
-                            icon={<Ban className="h-4 w-4" />}
-                            iconPosition="left"
-                          >
-                            Disable
-                          </Button>
-                        )}
+      <Card padding="none" className="overflow-hidden">
+        <DataTableShell
+          error={error}
+          isLoading={isLoading}
+          isEmpty={rows.length === 0}
+          emptyTitle="No users found"
+          emptyDescription="No users match this search."
+        >
+          <Table>
+            <THead>
+              <TH>Name</TH>
+              <TH>Role</TH>
+              <TH>Status</TH>
+              <TH>Last sign-in</TH>
+              <TH className="sr-only">Actions</TH>
+            </THead>
+            <TBody>
+              {rows.map((item) => (
+                <TR key={item.id}>
+                  <TD>
+                    <span className="block text-text-primary font-medium">
+                      {item.firstName} {item.lastName}
+                    </span>
+                    <span className="block text-text-muted text-xs">
+                      {item.email}
+                    </span>
+                  </TD>
+                  <TD>
+                    <Badge tone="brand">{roleLabel(item.role)}</Badge>
+                  </TD>
+                  <TD>
+                    <Badge variant="outline">{statusLabel(item.status)}</Badge>
+                  </TD>
+                  <TD variant="nowrap">{formatDate(item.lastLoginAt)}</TD>
+                  <TD>
+                    <div className="flex items-center justify-end gap-1">
+                      {item.status === "approved" && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => askDelete(item)}
+                          onClick={() => askDisable(item)}
                           disabled={item.id === currentUser?.id}
-                          icon={<Trash2 className="h-4 w-4" />}
+                          icon={<Ban className="h-4 w-4" />}
                           iconPosition="left"
                         >
-                          Delete
+                          Disable
                         </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => askDelete(item)}
+                        disabled={item.id === currentUser?.id}
+                        icon={<Trash2 className="h-4 w-4" />}
+                        iconPosition="left"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </DataTableShell>
       </Card>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-text-muted">
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onChange={(next) => setPage(next)}
+      />
 
       <ConfirmDialog
         open={deleteTarget !== null}

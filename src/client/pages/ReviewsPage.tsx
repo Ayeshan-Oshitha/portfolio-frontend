@@ -19,7 +19,10 @@ export default function ReviewsPage() {
   const [sort, setSort] = useState<ReviewSort>("latest");
   const [showForm, setShowForm] = useState(false);
 
-  const { data, isLoading, isError, error } = useReviews({ sort, pageSize: 50 });
+  const { data, isLoading, isError, error } = useReviews({
+    sort,
+    pageSize: 50,
+  });
   const reviews = useMemo(() => data?.items ?? [], [data]);
 
   const average = useMemo(() => {

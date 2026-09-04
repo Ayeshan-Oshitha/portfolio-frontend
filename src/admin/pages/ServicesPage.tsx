@@ -9,14 +9,6 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import Badge from "@/client/components/ui/Badge";
-import Button from "@/admin/components/ui/Button";
-import Spinner from "@/client/components/ui/Spinner";
-import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
-import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
-import Input from "@/admin/components/ui/Input";
-import Select from "@/admin/components/ui/Select";
 import ServiceFormModal from "@/admin/components/services/ServiceFormModal";
 import {
   useDeleteService,
@@ -29,6 +21,25 @@ import useToast from "@/admin/context/useToast";
 import type { AdminService, Site } from "@/admin/types";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  DataTableShell,
+  IconButton,
+  Input,
+  PageHeader,
+  Select,
+  Toolbar,
+  Table,
+  THead,
+  TH,
+  TBody,
+  TR,
+  TD,
+} from "@/admin/components/ui";
 
 const PAGE_SIZE = 20;
 
@@ -67,7 +78,10 @@ export default function ServicesPage() {
   const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
   const [site, setSite] = useSearchParamState<Site | "">("site", "");
-  const [published, setPublished] = useSearchParamState<string>("published", "");
+  const [published, setPublished] = useSearchParamState<string>(
+    "published",
+    "",
+  );
   const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
   const page = Number(pageParam) || 1;
   const setPage = (updater: number | ((prev: number) => number)) => {
@@ -227,19 +241,11 @@ export default function ServicesPage() {
 
   return (
     <div className="max-w-6xl">
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">
-            Services
-          </h1>
-          <p className="text-sm text-text-muted">
-            {total} {total === 1 ? "service" : "services"} — pricing plans hang
-            off these.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isReordering ? (
+      <PageHeader
+        title="Services"
+        description={`${total} ${total === 1 ? "service" : "services"} — pricing plans hang off these.`}
+        actions={
+          isReordering ? (
             <>
               <Button
                 variant="ghost"
@@ -274,12 +280,13 @@ export default function ServicesPage() {
                 New service
               </Button>
             </>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
-      <div className="flex items-end gap-3 mb-6">
+      <Toolbar>
         <Input
+          fieldSize="sm"
           label="Search"
           placeholder="Service name"
           value={searchInput}
@@ -291,6 +298,7 @@ export default function ServicesPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Site"
           options={SITE_OPTIONS}
           value={site}
@@ -301,6 +309,7 @@ export default function ServicesPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Status"
           options={PUBLISHED_OPTIONS}
           value={published}
@@ -310,9 +319,7 @@ export default function ServicesPage() {
           }}
           containerClassName="w-36"
         />
-      </div>
-
-      {error && <Alert className="mb-6">{error}</Alert>}
+      </Toolbar>
 
       {isReordering ? (
         <Alert variant="info" className="mb-6">
@@ -327,157 +334,131 @@ export default function ServicesPage() {
         )
       )}
 
-      <Card className="p-0 overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-primary-400">
-            <Spinner className="h-6 w-6" label="Loading services" />
-          </div>
-        ) : rows.length === 0 ? (
-          <p className="py-16 text-center text-sm text-text-muted">
-            No services match these filters.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-border-subtle bg-surface-900/40 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Short description</th>
-                  <th className="px-6 py-4">Sites</th>
-                  <th className="px-6 py-4">Features</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 sr-only">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-border-subtle/60 last:border-0 hover:bg-surface-800/60 transition-colors duration-150"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="block text-text-primary font-medium">
-                        {item.name}
-                      </span>
-                      <span className="block text-text-muted text-xs">
-                        /{item.slug}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary max-w-xs">
-                      <span className="line-clamp-2">
-                        {item.shortDescription}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {item.showOnAgency && (
-                          <Badge
-                            variant={
-                              item.featuredOnAgency ? "default" : "outline"
-                            }
+      <Card padding="none" className="overflow-hidden">
+        <DataTableShell
+          error={error}
+          isLoading={isLoading}
+          isEmpty={rows.length === 0}
+          emptyTitle="No services found"
+          emptyDescription="No services match these filters."
+        >
+          <Table>
+            <THead>
+              <TH>Name</TH>
+              <TH>Short description</TH>
+              <TH>Sites</TH>
+              <TH>Features</TH>
+              <TH>Status</TH>
+              <TH className="sr-only">Actions</TH>
+            </THead>
+            <TBody>
+              {rows.map((item, index) => (
+                <TR key={item.id}>
+                  <TD>
+                    <span className="block text-text-primary font-medium">
+                      {item.name}
+                    </span>
+                    <span className="block text-text-muted text-xs">
+                      /{item.slug}
+                    </span>
+                  </TD>
+                  <TD className="max-w-xs">
+                    <span className="line-clamp-2">
+                      {item.shortDescription}
+                    </span>
+                  </TD>
+                  <TD>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {item.showOnAgency && (
+                        <Badge
+                          tone={item.featuredOnAgency ? "brand" : "neutral"}
+                        >
+                          {item.featuredOnAgency ? "Agency ★" : "Agency"}
+                        </Badge>
+                      )}
+                      {item.showOnPersonal && (
+                        <Badge
+                          tone={item.featuredOnPersonal ? "brand" : "neutral"}
+                        >
+                          {item.featuredOnPersonal ? "Personal ★" : "Personal"}
+                        </Badge>
+                      )}
+                      {!item.showOnAgency && !item.showOnPersonal && (
+                        <span className="text-text-muted text-xs">Hidden</span>
+                      )}
+                    </div>
+                  </TD>
+                  <TD>{item.features.length}</TD>
+                  <TD>
+                    <Badge tone={item.isPublished ? "success" : "neutral"}>
+                      {item.isPublished ? "Published" : "Draft"}
+                    </Badge>
+                  </TD>
+                  <TD>
+                    <div className="flex items-center justify-end gap-1">
+                      {isReordering ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveDraft(index, -1)}
+                            disabled={index === 0 || isSavingOrder}
+                            icon={<ArrowUp className="h-4 w-4" />}
+                            iconPosition="left"
                           >
-                            {item.featuredOnAgency ? "Agency ★" : "Agency"}
-                          </Badge>
-                        )}
-                        {item.showOnPersonal && (
-                          <Badge
-                            variant={
-                              item.featuredOnPersonal ? "default" : "outline"
+                            Up
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveDraft(index, 1)}
+                            disabled={
+                              index === rows.length - 1 || isSavingOrder
                             }
+                            icon={<ArrowDown className="h-4 w-4" />}
+                            iconPosition="left"
                           >
-                            {item.featuredOnPersonal
-                              ? "Personal ★"
-                              : "Personal"}
-                          </Badge>
-                        )}
-                        {!item.showOnAgency && !item.showOnPersonal && (
-                          <span className="text-text-muted text-xs">
-                            Hidden
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary">
-                      {item.features.length}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant={item.isPublished ? "default" : "subtle"}>
-                        {item.isPublished ? "Published" : "Draft"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1">
-                        {isReordering ? (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => moveDraft(index, -1)}
-                              disabled={index === 0 || isSavingOrder}
-                              icon={<ArrowUp className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Up
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => moveDraft(index, 1)}
-                              disabled={
-                                index === rows.length - 1 || isSavingOrder
-                              }
-                              icon={<ArrowDown className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Down
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => togglePublished(item)}
-                              loading={publishingId === item.id}
-                              icon={
-                                item.isPublished ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )
-                              }
-                              iconPosition="left"
-                            >
-                              {item.isPublished ? "Unpublish" : "Publish"}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEdit(item)}
-                              icon={<Pencil className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => askDelete(item)}
-                              icon={<Trash2 className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Delete
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                            Down
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <IconButton
+                            icon={
+                              item.isPublished ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )
+                            }
+                            label={
+                              item.isPublished
+                                ? `Unpublish “${item.name}”`
+                                : `Publish “${item.name}”`
+                            }
+                            onClick={() => togglePublished(item)}
+                            disabled={publishingId === item.id}
+                          />
+                          <IconButton
+                            icon={<Pencil className="h-4 w-4" />}
+                            label={`Edit “${item.name}”`}
+                            onClick={() => openEdit(item)}
+                          />
+                          <IconButton
+                            icon={<Trash2 className="h-4 w-4" />}
+                            label={`Delete “${item.name}”`}
+                            onClick={() => askDelete(item)}
+                            tone="danger"
+                          />
+                        </>
+                      )}
+                    </div>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </DataTableShell>
       </Card>
 
       {!isReordering && totalPages > 1 && (

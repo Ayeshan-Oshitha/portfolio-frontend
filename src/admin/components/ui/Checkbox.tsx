@@ -28,7 +28,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
           ref={ref}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className={`mt-0.5 h-4 w-4 shrink-0 rounded border-border-default bg-surface-950 accent-primary-600 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${className}`}
+          className={`mt-0.5 h-4.5 w-4.5 shrink-0 rounded border-border-default bg-surface-900 accent-primary-600 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950 ${className}`}
         />
 
         <label htmlFor={inputId} className="cursor-pointer">
@@ -42,7 +42,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
       </div>
 
       {error && (
-        <p id={errorId} className="mt-2 text-xs text-danger-400">
+        <p id={errorId} className="mt-2 text-xs text-danger-500">
           {error}
         </p>
       )}

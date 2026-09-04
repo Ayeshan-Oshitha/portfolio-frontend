@@ -4,18 +4,13 @@ import {
   ArrowDown,
   ArrowUp,
   ExternalLink,
+  Eye,
+  EyeOff,
+  FolderKanban,
   Pencil,
   Plus,
   Trash2,
 } from "lucide-react";
-import Badge from "@/client/components/ui/Badge";
-import Button from "@/admin/components/ui/Button";
-import Spinner from "@/client/components/ui/Spinner";
-import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
-import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
-import Input from "@/admin/components/ui/Input";
-import Select from "@/admin/components/ui/Select";
 import {
   useDeleteProject,
   useProjects,
@@ -28,6 +23,26 @@ import type { AdminProject, Site } from "@/admin/types";
 import { formatDate } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  DataTableShell,
+  IconButton,
+  Input,
+  PageHeader,
+  Pagination,
+  Select,
+  Toolbar,
+  Table,
+  THead,
+  TH,
+  TBody,
+  TR,
+  TD,
+} from "@/admin/components/ui";
 
 const PAGE_SIZE = 20;
 
@@ -57,7 +72,9 @@ function toIsPublished(status: StatusFilter): boolean | undefined {
 
 /** Sort order is kept per site, so which column applies depends on the filter. */
 function sortOrderFor(project: AdminProject, site: Site): number {
-  return site === "agency" ? project.agencySortOrder : project.personalSortOrder;
+  return site === "agency"
+    ? project.agencySortOrder
+    : project.personalSortOrder;
 }
 
 /**
@@ -199,28 +216,25 @@ export default function ProjectsPage() {
 
   return (
     <div className="max-w-6xl">
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">Projects</h1>
-          <p className="text-sm text-text-muted">
-            {total} {total === 1 ? "case study" : "case studies"} across both
-            sites.
-          </p>
-        </div>
+      <PageHeader
+        title="Projects"
+        description={`${total} ${total === 1 ? "case study" : "case studies"} across both sites.`}
+        actions={
+          <Button
+            size="sm"
+            onClick={() => navigate("/admin/projects/new")}
+            icon={<Plus className="h-4 w-4" />}
+            iconPosition="left"
+          >
+            New project
+          </Button>
+        }
+      />
 
-        <Button
-          size="sm"
-          onClick={() => navigate("/admin/projects/new")}
-          icon={<Plus className="h-4 w-4" />}
-          iconPosition="left"
-        >
-          New project
-        </Button>
-      </div>
-
-      <div className="flex items-end gap-3 mb-3">
+      <Toolbar>
         <Input
           label="Search"
+          fieldSize="sm"
           placeholder="Project title"
           value={searchInput}
           onChange={(event) => {
@@ -232,6 +246,7 @@ export default function ProjectsPage() {
 
         <Select
           label="Site"
+          fieldSize="sm"
           options={SITE_OPTIONS}
           value={site}
           onChange={(event) => {
@@ -243,6 +258,7 @@ export default function ProjectsPage() {
 
         <Select
           label="Status"
+          fieldSize="sm"
           options={STATUS_OPTIONS}
           value={status}
           onChange={(event) => {
@@ -251,195 +267,157 @@ export default function ProjectsPage() {
           }}
           containerClassName="w-44"
         />
-      </div>
+      </Toolbar>
 
-      <p className="text-xs text-text-muted mb-6">
-        {site
-          ? "Use the arrows to set the order projects appear in on the selected site."
-          : "Sort order is kept per site — pick a single site to reorder projects."}
-      </p>
+      {/* Reordering is only meaningful within one site, so the hint is only
+          worth showing while no single site is selected. */}
+      {!site && (
+        <Alert variant="info" className="mb-6">
+          Sort order is kept per site — pick a single site to reorder projects.
+        </Alert>
+      )}
 
-      {error && <Alert className="mb-6">{error}</Alert>}
-
-      <Card className="p-0 overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-primary-400">
-            <Spinner className="h-6 w-6" label="Loading projects" />
-          </div>
-        ) : rows.length === 0 ? (
-          <p className="py-16 text-center text-sm text-text-muted">
-            No projects match these filters.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-border-subtle bg-surface-900/40 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
-                  <th className="px-6 py-4">Title</th>
-                  <th className="px-6 py-4">Year</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Visibility</th>
-                  <th className="px-6 py-4">Tags</th>
-                  <th className="px-6 py-4">Updated</th>
-                  <th className="px-6 py-4 sr-only">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-border-subtle/60 last:border-0 hover:bg-surface-800/60 transition-colors duration-150"
-                  >
-                    <td className="px-6 py-4 max-w-xs">
-                      <span className="flex items-center gap-2 text-text-primary font-medium">
-                        <span className="truncate">{item.title}</span>
-                        <a
-                          href={`/work/${item.slug}`}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          aria-label={`Open “${item.title}” on the public site`}
-                          className="shrink-0 text-text-muted hover:text-primary-400 transition-colors"
-                        >
-                          <ExternalLink
-                            className="h-3.5 w-3.5"
-                            aria-hidden="true"
-                          />
-                        </a>
-                      </span>
-                      <span className="block text-text-muted text-xs truncate">
-                        {item.slug}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary">
-                      {item.year}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant={item.isPublished ? "subtle" : "outline"}>
-                        {item.isPublished ? "Published" : "Draft"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      {(() => {
-                        const badges = visibilityBadges(item);
-                        if (badges.length === 0) {
-                          return <span className="text-text-muted">—</span>;
+      <Card padding="none" className="overflow-hidden">
+        <DataTableShell
+          error={error}
+          isLoading={isLoading}
+          isEmpty={rows.length === 0}
+          emptyIcon={FolderKanban}
+          emptyTitle="No projects found"
+          emptyDescription="No projects match these filters. Try clearing the search or switching site."
+        >
+          <Table>
+            <THead>
+              <TH>Title</TH>
+              <TH>Year</TH>
+              <TH>Status</TH>
+              <TH>Visibility</TH>
+              <TH>Tags</TH>
+              <TH>Updated</TH>
+              <TH className="sr-only">Actions</TH>
+            </THead>
+            <TBody>
+              {rows.map((item, index) => (
+                <TR key={item.id}>
+                  <TD variant="primary" className="max-w-xs">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate">{item.title}</span>
+                      <a
+                        href={`/work/${item.slug}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        aria-label={`Open “${item.title}” on the public site`}
+                        className="shrink-0 text-text-muted hover:text-primary-600 transition-colors"
+                      >
+                        <ExternalLink
+                          className="h-3.5 w-3.5"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </span>
+                    <span className="block text-text-muted text-xs font-normal truncate">
+                      {item.slug}
+                    </span>
+                  </TD>
+                  <TD variant="nowrap">{item.year}</TD>
+                  <TD>
+                    <Badge tone={item.isPublished ? "success" : "neutral"}>
+                      {item.isPublished ? "Published" : "Draft"}
+                    </Badge>
+                  </TD>
+                  <TD>
+                    {(() => {
+                      const badges = visibilityBadges(item);
+                      if (badges.length === 0) {
+                        return <span className="text-text-muted">—</span>;
+                      }
+                      return (
+                        <div className="flex flex-wrap items-center gap-2">
+                          {badges.map(({ key, label, featured }) => (
+                            <Badge
+                              key={key}
+                              tone={featured ? "brand" : "neutral"}
+                            >
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </TD>
+                  <TD>
+                    {item.tags.length === 0 ? (
+                      <span className="text-text-muted">—</span>
+                    ) : (
+                      item.tags.map((tag) => tag.name).join(", ")
+                    )}
+                  </TD>
+                  <TD variant="nowrap">{formatDate(item.updatedAt)}</TD>
+                  <TD align="right">
+                    <div className="flex items-center justify-end gap-1">
+                      <IconButton
+                        icon={<ArrowUp className="h-4 w-4" />}
+                        label={
+                          site
+                            ? `Move “${item.title}” up`
+                            : "Pick a single site to reorder projects"
                         }
-                        return (
-                          <div className="flex flex-wrap items-center gap-2">
-                            {badges.map(({ key, label, featured }) => (
-                              <Badge
-                                key={key}
-                                variant={featured ? "subtle" : "outline"}
-                              >
-                                {label}
-                              </Badge>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary">
-                      {item.tags.length === 0 ? (
-                        <span className="text-text-muted">—</span>
-                      ) : (
-                        item.tags.map((tag) => tag.name).join(", ")
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
-                      {formatDate(item.updatedAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => move(index, -1)}
-                          disabled={!site || isReordering || index === 0}
-                          aria-label={`Move “${item.title}” up`}
-                          title={
-                            site
-                              ? "Move up"
-                              : "Pick a single site to reorder projects"
-                          }
-                          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => move(index, 1)}
-                          disabled={
-                            !site || isReordering || index === rows.length - 1
-                          }
-                          aria-label={`Move “${item.title}” down`}
-                          title={
-                            site
-                              ? "Move down"
-                              : "Pick a single site to reorder projects"
-                          }
-                          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-800 transition-colors duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                          <ArrowDown className="h-4 w-4" aria-hidden="true" />
-                        </button>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => togglePublished(item)}
-                          loading={publishingId === item.id}
-                        >
-                          {item.isPublished ? "Unpublish" : "Publish"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/admin/projects/${item.id}`)}
-                          icon={<Pencil className="h-4 w-4" />}
-                          iconPosition="left"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => askDelete(item)}
-                          icon={<Trash2 className="h-4 w-4" />}
-                          iconPosition="left"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                        onClick={() => move(index, -1)}
+                        disabled={!site || isReordering || index === 0}
+                      />
+                      <IconButton
+                        icon={<ArrowDown className="h-4 w-4" />}
+                        label={
+                          site
+                            ? `Move “${item.title}” down`
+                            : "Pick a single site to reorder projects"
+                        }
+                        onClick={() => move(index, 1)}
+                        disabled={
+                          !site || isReordering || index === rows.length - 1
+                        }
+                      />
+                      <IconButton
+                        icon={
+                          item.isPublished ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )
+                        }
+                        label={
+                          item.isPublished
+                            ? `Unpublish “${item.title}”`
+                            : `Publish “${item.title}”`
+                        }
+                        onClick={() => togglePublished(item)}
+                        disabled={publishingId === item.id}
+                      />
+                      <IconButton
+                        icon={<Pencil className="h-4 w-4" />}
+                        label={`Edit “${item.title}”`}
+                        onClick={() => navigate(`/admin/projects/${item.id}`)}
+                      />
+                      <IconButton
+                        icon={<Trash2 className="h-4 w-4" />}
+                        label={`Delete “${item.title}”`}
+                        tone="danger"
+                        onClick={() => askDelete(item)}
+                      />
+                    </div>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </DataTableShell>
       </Card>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-          >
-            Previous
-          </Button>
-          <span className="text-sm text-text-muted">
-            Page {page} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onChange={(next) => setPage(next)}
+      />
 
       <ConfirmDialog
         open={deleteTarget !== null}

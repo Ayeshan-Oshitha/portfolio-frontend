@@ -30,7 +30,10 @@ export function usePersistedForm<T extends FieldValues>(
 
   const form = useForm<T>({
     ...options,
-    defaultValues: { ...options.defaultValues, ...draft } as UseFormProps<T>["defaultValues"],
+    defaultValues: {
+      ...options.defaultValues,
+      ...draft,
+    } as UseFormProps<T>["defaultValues"],
   });
 
   const clearPersisted = useRef(() => {

@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import Button from "@/admin/components/ui/Button";
-import Card from "@/admin/components/ui/Card";
-import Input from "@/admin/components/ui/Input";
 import GoogleSignInButton from "@/admin/components/GoogleSignInButton";
 import useAuth from "@/admin/context/useAuth";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
@@ -13,6 +10,7 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from "@/admin/validation/authSchemas";
+import { Button, Input } from "@/admin/components/ui";
 
 export default function RegisterPage() {
   const { register: registerUser } = useAuth();
@@ -51,36 +49,36 @@ export default function RegisterPage() {
 
   if (submittedEmail) {
     return (
-      <Card>
-        <h2 className="text-lg font-semibold text-text-primary mb-1">
+      <>
+        <h2 className="admin-display text-xl leading-snug text-text-primary mb-1">
           Check your email
         </h2>
-        <p className="text-sm text-text-muted">
-          We sent a verification link to <strong>{submittedEmail}</strong>.
-          Once you confirm it, a super admin still has to approve your
-          account before you can sign in.
+        <p className="text-sm text-text-secondary">
+          We sent a verification link to <strong>{submittedEmail}</strong>. Once
+          you confirm it, a super admin still has to approve your account before
+          you can sign in.
         </p>
 
         <p className="mt-6 text-center text-sm text-text-muted">
           <Link
             to="/admin/login"
-            className="text-primary-400 hover:text-primary-300 font-medium"
+            className="font-semibold text-primary-600 underline-offset-4 hover:text-primary-700 hover:underline"
           >
             Back to sign in
           </Link>
         </p>
-      </Card>
+      </>
     );
   }
 
   return (
-    <Card>
-      <h2 className="text-lg font-semibold text-text-primary mb-1">
+    <>
+      <h2 className="admin-display text-xl leading-snug text-text-primary mb-1">
         Create an account
       </h2>
-      <p className="text-sm text-text-muted mb-6">
-        Verify your email, then a super admin has to approve your account
-        before you can sign in.
+      <p className="text-sm text-text-secondary mb-6">
+        Verify your email, then a super admin has to approve your account before
+        you can sign in.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
@@ -133,7 +131,7 @@ export default function RegisterPage() {
           {...register("confirmPassword")}
         />
 
-        <Button type="submit" loading={isSubmitting} className="w-full">
+        <Button type="submit" loading={isSubmitting} fullWidth>
           {isSubmitting ? "Creating account…" : "Create account"}
         </Button>
       </form>
@@ -144,11 +142,11 @@ export default function RegisterPage() {
         Already have an account?{" "}
         <Link
           to="/admin/login"
-          className="text-primary-400 hover:text-primary-300 font-medium"
+          className="font-semibold text-primary-600 underline-offset-4 hover:text-primary-700 hover:underline"
         >
           Sign in
         </Link>
       </p>
-    </Card>
+    </>
   );
 }

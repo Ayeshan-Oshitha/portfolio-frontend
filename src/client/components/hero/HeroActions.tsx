@@ -13,7 +13,11 @@ export default function HeroActions() {
         >
           {HERO_DATA.primaryCta.label}
         </Button>
-        <Button href={HERO_DATA.secondaryCta.href} variant="secondary" size="lg">
+        <Button
+          href={HERO_DATA.secondaryCta.href}
+          variant="secondary"
+          size="lg"
+        >
           {HERO_DATA.secondaryCta.label}
         </Button>
       </div>

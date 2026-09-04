@@ -51,7 +51,8 @@ export default function ReviewsHeader({ average, count }: ReviewsHeaderProps) {
           </div>
 
           <p className="mt-3 text-[13.5px] tabular-nums text-text-muted">
-            Based on {count} verified client {count === 1 ? "review" : "reviews"}
+            Based on {count} verified client{" "}
+            {count === 1 ? "review" : "reviews"}
           </p>
         </div>
       )}

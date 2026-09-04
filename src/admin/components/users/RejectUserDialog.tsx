@@ -1,8 +1,6 @@
 import { useState } from "react";
-import Button from "@/admin/components/ui/Button";
-import Modal from "@/admin/components/ui/Modal";
-import Textarea from "@/admin/components/ui/Textarea";
 import type { AdminUser } from "@/admin/types";
+import { Button, Modal, Textarea } from "@/admin/components/ui";
 
 interface RejectUserDialogProps {
   readonly target: AdminUser | null;

@@ -17,7 +17,9 @@ export default function Chip({
   className = "",
 }: ChipProps) {
   return (
-    <span className={`inline-flex items-center ${VARIANT_CLASSES[variant]} ${className}`}>
+    <span
+      className={`inline-flex items-center ${VARIANT_CLASSES[variant]} ${className}`}
+    >
       {children}
     </span>
   );

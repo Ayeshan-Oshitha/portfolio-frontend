@@ -4,11 +4,15 @@ const FALLBACK_PROJECT_IMAGE = "/images/projects/placeholder.webp";
 const FALLBACK_BLOG_IMAGE = "/images/blog/placeholder.webp";
 const WORDS_PER_MINUTE = 200;
 
-export function mapApiProjectToProject(api: ApiProject, index: number): Project {
+export function mapApiProjectToProject(
+  api: ApiProject,
+  index: number,
+): Project {
   const categories = api.tags.filter((t) => !t.isTechnology).map((t) => t.name);
-  const technologies = api.tags.filter((t) => t.isTechnology).map((t) => t.name);
-  const primaryImage =
-    api.images.find((img) => img.isPrimary) ?? api.images[0];
+  const technologies = api.tags
+    .filter((t) => t.isTechnology)
+    .map((t) => t.name);
+  const primaryImage = api.images.find((img) => img.isPrimary) ?? api.images[0];
 
   return {
     id: api.id,

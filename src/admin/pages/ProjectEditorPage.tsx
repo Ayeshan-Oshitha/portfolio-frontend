@@ -1,16 +1,7 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
-import Button from "@/admin/components/ui/Button";
-import Spinner from "@/client/components/ui/Spinner";
-import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
-import Checkbox from "@/admin/components/ui/Checkbox";
-import Input from "@/admin/components/ui/Input";
-import TagPicker from "@/admin/components/ui/TagPicker";
-import Textarea from "@/admin/components/ui/Textarea";
 import ProjectImagesEditor from "@/admin/components/projects/ProjectImagesEditor";
 import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import {
@@ -26,6 +17,17 @@ import {
   projectSchema,
   type ProjectFormValues,
 } from "@/admin/validation/projectSchemas";
+import {
+  Alert,
+  BackLink,
+  Button,
+  Checkbox,
+  Input,
+  PageHeader,
+  Spinner,
+  TagPicker,
+  Textarea,
+} from "@/admin/components/ui";
 
 type TabId = "details" | "case-study" | "gallery" | "visibility";
 
@@ -275,24 +277,16 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
 
   return (
     <div className="max-w-3xl">
-      <Link
-        to="/admin/projects"
-        className="inline-flex items-center gap-2 mb-6 text-sm text-text-muted hover:text-text-primary transition-colors duration-200"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Projects
-      </Link>
+      <BackLink to="/admin/projects">Projects</BackLink>
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary mb-1">
-          {project ? "Edit project" : "New project"}
-        </h1>
-        <p className="text-sm text-text-muted">
-          {project
+      <PageHeader
+        title={project ? "Edit project" : "New project"}
+        description={
+          project
             ? "Every field is sent on save — the API replaces the whole project."
-            : "Long-form case study copy. Markdown is fine in the description fields."}
-        </p>
-      </div>
+            : "Long-form case study copy. Markdown is fine in the description fields."
+        }
+      />
 
       {/* Panels are hidden, never unmounted, so an error on another tab still blocks submit and shows its dot. */}
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -325,7 +319,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
           ))}
         </div>
 
-        <Card className={tab === "details" ? "space-y-5" : "hidden"}>
+        <div className={tab === "details" ? "space-y-5" : "hidden"}>
           <Input
             label="Title"
             required
@@ -400,9 +394,9 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
               />
             )}
           />
-        </Card>
+        </div>
 
-        <Card className={tab === "case-study" ? "space-y-5" : "hidden"}>
+        <div className={tab === "case-study" ? "space-y-5" : "hidden"}>
           <p className="text-sm text-text-muted">
             All four are optional and rendered as markdown on the public case
             study page.
@@ -435,9 +429,9 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
             error={errors.proof?.message}
             {...register("proof")}
           />
-        </Card>
+        </div>
 
-        <Card className={tab === "gallery" ? "space-y-5" : "hidden"}>
+        <div className={tab === "gallery" ? "space-y-5" : "hidden"}>
           {project ? (
             <ProjectImagesEditor
               projectId={project.id}
@@ -449,9 +443,9 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
               Save the project first — images hang off a saved project.
             </p>
           )}
-        </Card>
+        </div>
 
-        <Card className={tab === "visibility" ? "space-y-5" : "hidden"}>
+        <div className={tab === "visibility" ? "space-y-5" : "hidden"}>
           <Checkbox
             label="Published"
             hint="Drafts stay off both public sites regardless of the visibility flags below."
@@ -459,7 +453,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
           />
 
           <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
-            <legend className="px-2 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
               Agency site
             </legend>
 
@@ -483,7 +477,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
           </fieldset>
 
           <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
-            <legend className="px-2 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
               Personal site
             </legend>
 
@@ -523,7 +517,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
             error={errors.seoDescription?.message}
             {...register("seoDescription")}
           />
-        </Card>
+        </div>
 
         <div className="sticky bottom-0 mt-6 -mx-6 md:-mx-10 px-6 md:px-10 py-4 bg-surface-950/90 backdrop-blur border-t border-border-subtle">
           {tabsWithErrors.size > 0 && (

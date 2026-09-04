@@ -1,9 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@/admin/components/ui/Button";
-import Checkbox from "@/admin/components/ui/Checkbox";
-import Input from "@/admin/components/ui/Input";
-import Modal from "@/admin/components/ui/Modal";
-import Textarea from "@/admin/components/ui/Textarea";
 import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import { useCreateReview, useUpdateReview } from "@/admin/hooks/useReviews";
 import { toErrorMessage } from "@/admin/api/ApiError";
@@ -13,6 +8,13 @@ import {
   reviewSchema,
   type ReviewFormValues,
 } from "@/admin/validation/reviewSchemas";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Modal,
+  Textarea,
+} from "@/admin/components/ui";
 
 interface ReviewFormModalProps {
   /** `null` opens the dialog in create mode — an admin manually adding a testimonial. */

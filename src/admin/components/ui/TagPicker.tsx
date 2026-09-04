@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { X } from "lucide-react";
-import Spinner from "@/client/components/ui/Spinner";
-import Select from "@/admin/components/ui/Select";
+import Spinner from "./Spinner";
+import { FIELD_LABEL } from "./fieldClasses";
+import Select from "./Select";
 import { useTags } from "@/admin/hooks/useTags";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import type { AdminTag } from "@/admin/types";
@@ -42,7 +43,10 @@ export default function TagPicker({
     isPending: isLoading,
     error: queryError,
   } = useTags({ pageSize: TAG_PAGE_SIZE });
-  const tags: readonly AdminTag[] = useMemo(() => result?.items ?? [], [result]);
+  const tags: readonly AdminTag[] = useMemo(
+    () => result?.items ?? [],
+    [result],
+  );
   const loadError = queryError ? toErrorMessage(queryError) : null;
 
   // Chips follow `value`'s order; an id with no matching tag is hidden but kept in the form value.
@@ -75,9 +79,7 @@ export default function TagPicker({
 
   return (
     <div className={containerClassName}>
-      <span className="block text-[10px] font-semibold tracking-widest uppercase text-text-muted mb-2">
-        {label}
-      </span>
+      <span className={FIELD_LABEL}>{label}</span>
 
       {isLoading ? (
         <div className="flex items-center gap-3 py-3 text-sm text-text-muted">
@@ -90,13 +92,13 @@ export default function TagPicker({
             <ul className="flex flex-wrap gap-2 mb-3">
               {selected.map((tag) => (
                 <li key={tag.id}>
-                  <span className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 text-xs font-medium tracking-wide uppercase rounded-md bg-primary-600/10 text-primary-400 border border-primary-600/20">
+                  <span className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 text-[11px] font-semibold tracking-tight rounded-full bg-primary-50 text-primary-700 border border-primary-200">
                     {tag.name}
                     <button
                       type="button"
                       onClick={() => remove(tag.id)}
                       aria-label={`Remove ${tag.name}`}
-                      className="rounded p-0.5 hover:bg-primary-600/20 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
+                      className="rounded-full p-0.5 hover:bg-primary-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary-500"
                     >
                       <X className="h-3 w-3" aria-hidden="true" />
                     </button>

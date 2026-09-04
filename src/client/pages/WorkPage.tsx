@@ -86,10 +86,7 @@ export default function WorkPage() {
           )}
 
           {!isLoading && !isError && (
-            <WorkGrid
-              projects={filteredProjects}
-              showFeatured={!isFiltered}
-            />
+            <WorkGrid projects={filteredProjects} showFeatured={!isFiltered} />
           )}
         </div>
 

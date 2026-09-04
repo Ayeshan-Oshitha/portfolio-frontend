@@ -12,6 +12,14 @@ export function useArticles(params: GetArticlesParams) {
   });
 }
 
+export function useArticle(id: string | undefined) {
+  return useQuery({
+    queryKey: articleKeys.detail(id ?? ""),
+    queryFn: ({ signal }) => articlesService.getArticle(id as string, signal),
+    enabled: id !== undefined,
+  });
+}
+
 export function useCreateArticle() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -28,8 +36,9 @@ export function useUpdateArticle() {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: ArticleWriteRequest }) =>
       articlesService.updateArticle(id, body),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: articleKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: articleKeys.detail(id) });
     },
   });
 }

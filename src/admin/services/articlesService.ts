@@ -30,13 +30,20 @@ export async function getArticles(
   return data;
 }
 
+export async function getArticle(
+  id: string,
+  signal?: AbortSignal,
+): Promise<AdminArticle> {
+  const { data } = await httpClient.get<AdminArticle>(`/admin/articles/${id}`, {
+    signal,
+  });
+  return data;
+}
+
 export async function createArticle(
   body: ArticleWriteRequest,
 ): Promise<AdminArticle> {
-  const { data } = await httpClient.post<AdminArticle>(
-    "/admin/articles",
-    body,
-  );
+  const { data } = await httpClient.post<AdminArticle>("/admin/articles", body);
   return data;
 }
 

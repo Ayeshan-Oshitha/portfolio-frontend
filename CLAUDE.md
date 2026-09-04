@@ -32,7 +32,7 @@ So `components/about/` and `components/about-page/` are different things and bot
 
 Pages own interactive state (e.g. `WorkPage` holds search/filter/sort state and passes it down to `WorkFilters`/`WorkGrid`); section components below them are otherwise presentational.
 
-**Icons come from two sources with different types.** Lucide/react-icons *components* (typed `LucideIcon | IconType` in data files) for services, values, social links; and SVG *files* imported as URL strings via the barrel `src/client/assets/icons/index.ts` for the technology grid (`Technology.icon` is a `string` rendered into `<img src>`). New tech icons go in the matching `assets/icons/<category>/` folder and must be re-exported from that barrel.
+**Icons come from two sources with different types.** Lucide/react-icons _components_ (typed `LucideIcon | IconType` in data files) for services, values, social links; and SVG _files_ imported as URL strings via the barrel `src/client/assets/icons/index.ts` for the technology grid (`Technology.icon` is a `string` rendered into `<img src>`). New tech icons go in the matching `assets/icons/<category>/` folder and must be re-exported from that barrel.
 
 **Styling.** Tailwind v4 via `@tailwindcss/vite` — no `tailwind.config.js`. The design system is defined as `@theme` tokens in `src/index.css` (oklch `primary-*`, `accent-*`, `surface-*`, `text-*`, `border-*` scales plus `animate-fade-in-up` etc.), so use `bg-surface-900`, `text-text-secondary`, `border-border-subtle` and friends rather than raw palette colors. The site is dark-only; `body` is pinned to `surface-950`. Variant/size class maps are `Record<>` constants at the top of the component file (see `ui/Button.tsx`) — follow that pattern instead of inline conditionals.
 

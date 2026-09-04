@@ -1,6 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
 import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
 import useAuth from "@/admin/context/useAuth";
 
 /**
@@ -14,15 +13,13 @@ export default function RequireSuperAdmin() {
   if (user?.role !== "super_admin") {
     return (
       <div className="max-w-md">
-        <Card>
-          <Alert>Only the super admin can manage users.</Alert>
-          <Link
-            to="/admin"
-            className="mt-6 inline-block text-sm text-primary-400 hover:text-primary-300 font-medium"
-          >
-            Back to dashboard
-          </Link>
-        </Card>
+        <Alert>Only the super admin can manage users.</Alert>
+        <Link
+          to="/admin"
+          className="mt-6 inline-block text-sm font-semibold text-primary-600 underline-offset-4 hover:text-primary-700 hover:underline"
+        >
+          Back to dashboard
+        </Link>
       </div>
     );
   }

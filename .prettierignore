@@ -1,0 +1,9 @@
+dist
+node_modules
+coverage
+*.min.*
+package-lock.json
+
+# Generated / vendored assets
+public/icons.svg
+src/client/assets

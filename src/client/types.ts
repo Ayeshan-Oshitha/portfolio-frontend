@@ -239,11 +239,7 @@ export interface ApiReview {
 }
 
 export type ApiErrorCode =
-  | "validation_failed"
-  | "site_required"
-  | "not_found"
-  | "forbidden"
-  | string;
+  "validation_failed" | "site_required" | "not_found" | "forbidden" | string;
 
 export interface ApiProblem {
   readonly status?: number;

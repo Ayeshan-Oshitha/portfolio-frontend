@@ -15,20 +15,24 @@ export const authKeys = {
 export const articleKeys = {
   all: ["articles"] as const,
   lists: () => [...articleKeys.all, "list"] as const,
-  list: (params: GetArticlesParams) => [...articleKeys.lists(), params] as const,
+  list: (params: GetArticlesParams) =>
+    [...articleKeys.lists(), params] as const,
+  detail: (id: string) => [...articleKeys.all, "detail", id] as const,
 };
 
 export const projectKeys = {
   all: ["projects"] as const,
   lists: () => [...projectKeys.all, "list"] as const,
-  list: (params: GetProjectsParams) => [...projectKeys.lists(), params] as const,
+  list: (params: GetProjectsParams) =>
+    [...projectKeys.lists(), params] as const,
   detail: (id: string) => [...projectKeys.all, "detail", id] as const,
 };
 
 export const serviceKeys = {
   all: ["services"] as const,
   lists: () => [...serviceKeys.all, "list"] as const,
-  list: (params: GetServicesParams) => [...serviceKeys.lists(), params] as const,
+  list: (params: GetServicesParams) =>
+    [...serviceKeys.lists(), params] as const,
   detail: (id: string) => [...serviceKeys.all, "detail", id] as const,
 };
 

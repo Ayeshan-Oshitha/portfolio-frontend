@@ -9,14 +9,6 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import Badge from "@/client/components/ui/Badge";
-import Button from "@/admin/components/ui/Button";
-import Spinner from "@/client/components/ui/Spinner";
-import Alert from "@/admin/components/ui/Alert";
-import Card from "@/admin/components/ui/Card";
-import ConfirmDialog from "@/admin/components/ui/ConfirmDialog";
-import Input from "@/admin/components/ui/Input";
-import Select from "@/admin/components/ui/Select";
 import PricingFormModal from "@/admin/components/pricing/PricingFormModal";
 import {
   useDeletePricingPlan,
@@ -31,6 +23,25 @@ import { formatDelivery, formatPrice } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import type { AdminPricingPlan, Site } from "@/admin/types";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  DataTableShell,
+  IconButton,
+  Input,
+  PageHeader,
+  Select,
+  Toolbar,
+  Table,
+  THead,
+  TH,
+  TBody,
+  TR,
+  TD,
+} from "@/admin/components/ui";
 
 const PAGE_SIZE = 20;
 
@@ -78,8 +89,14 @@ export default function PricingPage() {
   const search = useDebounce(searchInput);
   const [site, setSite] = useSearchParamState<Site | "">("site", "");
   const [kind, setKind] = useSearchParamState<KindFilter>("kind", "");
-  const [serviceId, setServiceId] = useSearchParamState<string>("serviceId", "");
-  const [published, setPublished] = useSearchParamState<string>("published", "");
+  const [serviceId, setServiceId] = useSearchParamState<string>(
+    "serviceId",
+    "",
+  );
+  const [published, setPublished] = useSearchParamState<string>(
+    "published",
+    "",
+  );
   const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
   const page = Number(pageParam) || 1;
   const setPage = (updater: number | ((prev: number) => number)) => {
@@ -266,17 +283,11 @@ export default function PricingPage() {
 
   return (
     <div className="max-w-6xl">
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">Pricing</h1>
-          <p className="text-sm text-text-muted">
-            {total} {total === 1 ? "plan" : "plans"} across combo packs and
-            service tiers.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isReordering ? (
+      <PageHeader
+        title="Pricing"
+        description={`${total} ${total === 1 ? "plan" : "plans"} across combo packs and service tiers.`}
+        actions={
+          isReordering ? (
             <>
               <Button
                 variant="ghost"
@@ -311,12 +322,13 @@ export default function PricingPage() {
                 New plan
               </Button>
             </>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
-      <div className="flex items-end gap-3 mb-6">
+      <Toolbar>
         <Input
+          fieldSize="sm"
           label="Search"
           placeholder="Plan name"
           value={searchInput}
@@ -328,6 +340,7 @@ export default function PricingPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Site"
           options={SITE_OPTIONS}
           value={site}
@@ -338,6 +351,7 @@ export default function PricingPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Kind"
           options={KIND_OPTIONS}
           value={kind}
@@ -348,6 +362,7 @@ export default function PricingPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Service"
           placeholder="Any"
           options={serviceOptions}
@@ -361,6 +376,7 @@ export default function PricingPage() {
         />
 
         <Select
+          fieldSize="sm"
           label="Status"
           options={PUBLISHED_OPTIONS}
           value={published}
@@ -370,9 +386,7 @@ export default function PricingPage() {
           }}
           containerClassName="w-36"
         />
-      </div>
-
-      {error && <Alert className="mb-6">{error}</Alert>}
+      </Toolbar>
 
       {isReordering ? (
         <Alert variant="info" className="mb-6">
@@ -387,148 +401,124 @@ export default function PricingPage() {
         )
       )}
 
-      <Card className="p-0 overflow-hidden">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16 text-primary-400">
-            <Spinner className="h-6 w-6" label="Loading pricing plans" />
-          </div>
-        ) : rows.length === 0 ? (
-          <p className="py-16 text-center text-sm text-text-muted">
-            No pricing plans match these filters.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b border-border-subtle bg-surface-900/40 text-[10px] font-semibold tracking-widest uppercase text-text-muted">
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Kind</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Delivery</th>
-                  <th className="px-6 py-4">Features</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 sr-only">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-border-subtle/60 last:border-0 hover:bg-surface-800/60 transition-colors duration-150"
-                  >
-                    <td className="px-6 py-4">
-                      <span className="block text-text-primary font-medium">
-                        {item.name}
+      <Card padding="none" className="overflow-hidden">
+        <DataTableShell
+          error={error}
+          isLoading={isLoading}
+          isEmpty={rows.length === 0}
+          emptyTitle="No pricing plans found"
+          emptyDescription="No pricing plans match these filters."
+        >
+          <Table>
+            <THead>
+              <TH>Name</TH>
+              <TH>Kind</TH>
+              <TH>Price</TH>
+              <TH>Delivery</TH>
+              <TH>Features</TH>
+              <TH>Status</TH>
+              <TH className="sr-only">Actions</TH>
+            </THead>
+            <TBody>
+              {rows.map((item, index) => (
+                <TR key={item.id}>
+                  <TD>
+                    <span className="block text-text-primary font-medium">
+                      {item.name}
+                    </span>
+                    {item.tagline && (
+                      <span className="block text-text-muted text-xs">
+                        {item.tagline}
                       </span>
-                      {item.tagline && (
-                        <span className="block text-text-muted text-xs">
-                          {item.tagline}
-                        </span>
+                    )}
+                  </TD>
+                  <TD>
+                    {item.serviceId ? (
+                      <Badge variant="outline">
+                        {serviceName(item.serviceId)}
+                      </Badge>
+                    ) : (
+                      <Badge tone="brand">Combo pack</Badge>
+                    )}
+                  </TD>
+                  <TD variant="nowrap">{formatPrice(item)}</TD>
+                  <TD variant="nowrap">{formatDelivery(item)}</TD>
+                  <TD>{item.features.length}</TD>
+                  <TD>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge tone={item.isPublished ? "success" : "neutral"}>
+                        {item.isPublished ? "Published" : "Draft"}
+                      </Badge>
+                      {item.isPopular && (
+                        <Badge variant="outline">Popular</Badge>
                       )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {item.serviceId ? (
-                        <Badge variant="outline">
-                          {serviceName(item.serviceId)}
-                        </Badge>
+                    </div>
+                  </TD>
+                  <TD>
+                    <div className="flex items-center justify-end gap-1">
+                      {isReordering ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveDraft(index, -1)}
+                            disabled={index === 0 || isSavingOrder}
+                            icon={<ArrowUp className="h-4 w-4" />}
+                            iconPosition="left"
+                          >
+                            Up
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveDraft(index, 1)}
+                            disabled={
+                              index === rows.length - 1 || isSavingOrder
+                            }
+                            icon={<ArrowDown className="h-4 w-4" />}
+                            iconPosition="left"
+                          >
+                            Down
+                          </Button>
+                        </>
                       ) : (
-                        <Badge variant="subtle">Combo pack</Badge>
+                        <>
+                          <IconButton
+                            icon={
+                              item.isPublished ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )
+                            }
+                            label={
+                              item.isPublished
+                                ? `Unpublish “${item.name}”`
+                                : `Publish “${item.name}”`
+                            }
+                            onClick={() => togglePublished(item)}
+                            disabled={publishingId === item.id}
+                          />
+                          <IconButton
+                            icon={<Pencil className="h-4 w-4" />}
+                            label={`Edit “${item.name}”`}
+                            onClick={() => openEdit(item)}
+                          />
+                          <IconButton
+                            icon={<Trash2 className="h-4 w-4" />}
+                            label={`Delete “${item.name}”`}
+                            onClick={() => askDelete(item)}
+                            tone="danger"
+                          />
+                        </>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
-                      {formatPrice(item)}
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
-                      {formatDelivery(item)}
-                    </td>
-                    <td className="px-6 py-4 text-text-secondary">
-                      {item.features.length}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant={item.isPublished ? "default" : "subtle"}
-                        >
-                          {item.isPublished ? "Published" : "Draft"}
-                        </Badge>
-                        {item.isPopular && (
-                          <Badge variant="outline">Popular</Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1">
-                        {isReordering ? (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => moveDraft(index, -1)}
-                              disabled={index === 0 || isSavingOrder}
-                              icon={<ArrowUp className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Up
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => moveDraft(index, 1)}
-                              disabled={
-                                index === rows.length - 1 || isSavingOrder
-                              }
-                              icon={<ArrowDown className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Down
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => togglePublished(item)}
-                              loading={publishingId === item.id}
-                              icon={
-                                item.isPublished ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )
-                              }
-                              iconPosition="left"
-                            >
-                              {item.isPublished ? "Unpublish" : "Publish"}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEdit(item)}
-                              icon={<Pencil className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => askDelete(item)}
-                              icon={<Trash2 className="h-4 w-4" />}
-                              iconPosition="left"
-                            >
-                              Delete
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    </div>
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        </DataTableShell>
       </Card>
 
       {!isReordering && totalPages > 1 && (

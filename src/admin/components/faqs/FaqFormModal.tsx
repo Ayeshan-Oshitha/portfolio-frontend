@@ -1,16 +1,18 @@
 import { useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Button from "@/admin/components/ui/Button";
-import Checkbox from "@/admin/components/ui/Checkbox";
-import Input from "@/admin/components/ui/Input";
-import Modal from "@/admin/components/ui/Modal";
-import Textarea from "@/admin/components/ui/Textarea";
 import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import { useCreateFaq, useUpdateFaq } from "@/admin/hooks/useFaqs";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import type { AdminFaq, FaqWriteRequest } from "@/admin/types";
 import { faqSchema, type FaqFormValues } from "@/admin/validation/faqSchemas";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Modal,
+  Textarea,
+} from "@/admin/components/ui";
 
 interface FaqFormModalProps {
   /** `null` opens the dialog in create mode. */
@@ -176,7 +178,7 @@ export default function FaqFormModal({
         </div>
 
         <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
             Agency site
           </legend>
 
@@ -202,7 +204,7 @@ export default function FaqFormModal({
         </fieldset>
 
         <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[10px] font-semibold tracking-widest uppercase text-text-muted">
+          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
             Personal site
           </legend>
 

@@ -2,11 +2,14 @@ import type {
   AdminUser,
   AuthResponse,
   ChangePasswordRequest,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   GoogleSignInRequest,
   LoginRequest,
   RegisterRequest,
   ResendVerificationRequest,
   ResendVerificationResponse,
+  SetPasswordRequest,
   VerifyEmailRequest,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
@@ -16,9 +19,7 @@ import { httpClient } from "@/admin/services/httpClient";
  * link. Deliberately returns no token — verification then super admin
  * approval are both required before sign-in works.
  */
-export async function register(
-  payload: RegisterRequest,
-): Promise<AdminUser> {
+export async function register(payload: RegisterRequest): Promise<AdminUser> {
   const { data } = await httpClient.post<AdminUser>(
     "/admin/auth/register",
     payload,
@@ -108,4 +109,31 @@ export async function changePassword(
   payload: ChangePasswordRequest,
 ): Promise<void> {
   await httpClient.post("/admin/auth/change-password", payload);
+}
+
+/** Always resolves to the same generic message, whatever the email resolves to. Answers 200. */
+export async function forgotPassword(
+  payload: ForgotPasswordRequest,
+): Promise<ForgotPasswordResponse> {
+  const { data } = await httpClient.post<ForgotPasswordResponse>(
+    "/admin/auth/forgot-password",
+    payload,
+    { skipAuth: true },
+  );
+  return data;
+}
+
+/**
+ * Redeems a password-reset or account-setup token. Never issues a sign-in
+ * token, and revokes all of the user's existing refresh tokens server-side.
+ */
+export async function setPassword(
+  payload: SetPasswordRequest,
+): Promise<AdminUser> {
+  const { data } = await httpClient.post<AdminUser>(
+    "/admin/auth/set-password",
+    payload,
+    { skipAuth: true },
+  );
+  return data;
 }

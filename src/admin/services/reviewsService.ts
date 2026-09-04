@@ -17,7 +17,14 @@ export interface GetReviewsParams {
 }
 
 export async function getReviews(
-  { isPublished, isFeatured, country, search, page, pageSize }: GetReviewsParams = {},
+  {
+    isPublished,
+    isFeatured,
+    country,
+    search,
+    page,
+    pageSize,
+  }: GetReviewsParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminReview>> {
   const { data } = await httpClient.get<PagedResult<AdminReview>>(
@@ -59,6 +66,8 @@ export async function deleteReview(id: string): Promise<void> {
  * Bulk sort-order update. Reviews aren't split per site, unlike
  * articles/services/projects/FAQs, so the body carries no site. Answers 204.
  */
-export async function reorderReviews(body: ReviewReorderRequest): Promise<void> {
+export async function reorderReviews(
+  body: ReviewReorderRequest,
+): Promise<void> {
   await httpClient.post("/admin/reviews/reorder", body);
 }

@@ -97,7 +97,8 @@ export function useAddProjectImage() {
       projectId: string;
       body: ProjectImageWriteRequest;
     }) => projectsService.addProjectImage(projectId, body),
-    onSuccess: (_data, { projectId }) => invalidateProject(queryClient, projectId),
+    onSuccess: (_data, { projectId }) =>
+      invalidateProject(queryClient, projectId),
   });
 }
 
@@ -113,7 +114,8 @@ export function useUpdateProjectImage() {
       imageId: string;
       body: ProjectImageWriteRequest;
     }) => projectsService.updateProjectImage(projectId, imageId, body),
-    onSuccess: (_data, { projectId }) => invalidateProject(queryClient, projectId),
+    onSuccess: (_data, { projectId }) =>
+      invalidateProject(queryClient, projectId),
   });
 }
 
@@ -127,7 +129,8 @@ export function useDeleteProjectImage() {
       projectId: string;
       imageId: string;
     }) => projectsService.deleteProjectImage(projectId, imageId),
-    onSuccess: (_data, { projectId }) => invalidateProject(queryClient, projectId),
+    onSuccess: (_data, { projectId }) =>
+      invalidateProject(queryClient, projectId),
   });
 }
 
@@ -141,6 +144,7 @@ export function useReorderProjectImages() {
       projectId: string;
       body: ImageReorderRequest;
     }) => projectsService.reorderProjectImages(projectId, body),
-    onSuccess: (_data, { projectId }) => invalidateProject(queryClient, projectId),
+    onSuccess: (_data, { projectId }) =>
+      invalidateProject(queryClient, projectId),
   });
 }

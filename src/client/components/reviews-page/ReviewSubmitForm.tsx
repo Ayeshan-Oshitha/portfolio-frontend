@@ -12,7 +12,13 @@ const labelClasses =
   "block text-[10px] font-semibold tracking-widest uppercase text-text-muted mb-2";
 
 function emptyForm() {
-  return { name: "", country: "", countryCode: "", position: "", reviewText: "" };
+  return {
+    name: "",
+    country: "",
+    countryCode: "",
+    position: "",
+    reviewText: "",
+  };
 }
 
 interface ReviewSubmitFormProps {
@@ -25,7 +31,10 @@ export default function ReviewSubmitForm({ onClose }: ReviewSubmitFormProps) {
   const toast = useToast();
   const submitReviewMutation = useSubmitReview();
 
-  function handleChange(field: keyof ReturnType<typeof emptyForm>, value: string) {
+  function handleChange(
+    field: keyof ReturnType<typeof emptyForm>,
+    value: string,
+  ) {
     setValues((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -52,7 +61,9 @@ export default function ReviewSubmitForm({ onClose }: ReviewSubmitFormProps) {
 
   return (
     <div className="rounded-2xl bg-surface-900/60 border border-border-subtle p-8 sm:p-10 mb-16">
-      <h3 className="text-xl font-bold text-text-primary mb-1">Leave a Review</h3>
+      <h3 className="text-xl font-bold text-text-primary mb-1">
+        Leave a Review
+      </h3>
       <p className="text-sm text-text-secondary mb-8">
         Your review is moderated and will appear here once approved.
       </p>
@@ -131,7 +142,11 @@ export default function ReviewSubmitForm({ onClose }: ReviewSubmitFormProps) {
                 >
                   <Star
                     size={22}
-                    className={value <= rating ? "fill-primary-400 text-primary-400" : "text-border-default"}
+                    className={
+                      value <= rating
+                        ? "fill-primary-400 text-primary-400"
+                        : "text-border-default"
+                    }
                   />
                 </button>
               );
