@@ -2,6 +2,8 @@ import { Check } from "lucide-react";
 import Eyebrow from "@/client/components/ui/Eyebrow";
 import PanelCTA from "@/client/components/ui/PanelCTA";
 import PricingCard from "@/client/components/pricing/PricingCard";
+import useCurrency from "@/client/context/useCurrency";
+import { formatMoney } from "@/client/utils/money";
 import {
   ADD_ONS,
   COMPARISON_ROWS,
@@ -36,6 +38,8 @@ function ComparisonValue({ value }: { value: string | boolean }) {
 }
 
 export default function PricingPage() {
+  const { currency } = useCurrency();
+
   return (
     <div className="relative overflow-hidden">
       <div
@@ -151,7 +155,7 @@ export default function PricingPage() {
                 className="rounded-2xl border border-card-br bg-card p-7 shadow-card"
               >
                 <div className="font-display text-[26px] font-medium tabular-nums text-text-primary">
-                  {addOn.price}
+                  {formatMoney(addOn.priceUsd, currency)}
                   {addOn.unit && (
                     <span className="text-sm text-text-muted">
                       {addOn.unit}

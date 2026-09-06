@@ -4,6 +4,7 @@ import { useCreateReview, useUpdateReview } from "@/admin/hooks/useReviews";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import type { AdminReview, ReviewWriteRequest } from "@/admin/types";
+import { COUNTRY_OPTIONS, countryNameFor } from "@/admin/utils/countries";
 import {
   reviewSchema,
   type ReviewFormValues,
@@ -11,6 +12,7 @@ import {
 import {
   Button,
   Checkbox,
+  Combobox,
   Input,
   Modal,
   Textarea,
@@ -33,7 +35,6 @@ function blankValues(): ReviewFormValues {
     reviewText: "",
     isPublished: false,
     isFeatured: false,
-    sortOrder: 0,
   };
 }
 
@@ -49,7 +50,6 @@ function toFormValues(review: AdminReview | null): ReviewFormValues {
     reviewText: review.reviewText,
     isPublished: review.isPublished,
     isFeatured: review.isFeatured,
-    sortOrder: review.sortOrder,
   };
 }
 
@@ -78,6 +78,8 @@ export default function ReviewFormModal({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     clearPersisted,
     formState: { errors, isSubmitting },
   } = usePersistedForm<ReviewFormValues>(`review-form:${review?.id ?? "new"}`, {
@@ -96,7 +98,6 @@ export default function ReviewFormModal({
       reviewText: values.reviewText.trim(),
       isPublished: values.isPublished,
       isFeatured: values.isFeatured,
-      sortOrder: values.sortOrder,
     };
 
     try {
@@ -148,22 +149,21 @@ export default function ReviewFormModal({
         </div>
 
         <div className="flex gap-4">
-          <Input
+          <Combobox
             label="Country"
             required
+            placeholder="Select a country"
+            searchPlaceholder="Search countries…"
+            options={COUNTRY_OPTIONS}
+            value={watch("countryCode")}
+            onChange={(code) => {
+              setValue("countryCode", code, { shouldValidate: true });
+              setValue("country", countryNameFor(code), {
+                shouldValidate: true,
+              });
+            }}
             containerClassName="flex-1"
-            error={errors.country?.message}
-            {...register("country")}
-          />
-
-          <Input
-            label="Country code"
-            required
-            placeholder="US"
-            maxLength={2}
-            containerClassName="w-32"
-            error={errors.countryCode?.message}
-            {...register("countryCode")}
+            error={errors.country?.message ?? errors.countryCode?.message}
           />
 
           <Input
@@ -194,15 +194,6 @@ export default function ReviewFormModal({
         />
 
         <Checkbox label="Featured" {...register("isFeatured")} />
-
-        <Input
-          label="Sort order"
-          type="number"
-          step={1}
-          containerClassName="w-32"
-          error={errors.sortOrder?.message}
-          {...register("sortOrder", { valueAsNumber: true })}
-        />
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button

@@ -72,28 +72,9 @@ export async function googleSignIn(
   return data;
 }
 
-/**
- * Not used by `httpClient`'s own refresh interceptor — that calls the endpoint
- * directly to avoid recursing through this module's dependency on `httpClient`.
- * Exposed here for `AuthProvider` and anywhere else that wants an explicit
- * refresh without going through a 401.
- */
-export async function refresh(refreshToken: string): Promise<AuthResponse> {
-  const { data } = await httpClient.post<AuthResponse>(
-    "/admin/auth/refresh",
-    { refreshToken },
-    { skipAuth: true },
-  );
-  return data;
-}
-
-/** Revokes the refresh token server-side. Answers 204. Best-effort on logout. */
-export async function logout(refreshToken: string): Promise<void> {
-  await httpClient.post(
-    "/admin/auth/logout",
-    { refreshToken },
-    { skipAuth: true },
-  );
+/** Revokes the refresh-token cookie server-side and clears it. Answers 204. Best-effort on logout. */
+export async function logout(): Promise<void> {
+  await httpClient.post("/admin/auth/logout", {}, { skipAuth: true });
 }
 
 /** Note: this returns the user object flat, unlike login/register. */

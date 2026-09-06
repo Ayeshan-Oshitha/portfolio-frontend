@@ -677,6 +677,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ─── Form Field Overrides ─────────────────────────────────────
+   Chrome/Edge/Safari paint autofilled fields with their own light-blue
+   background, ignoring the app's surface/text tokens. `background-color`
+   itself can't be overridden on an autofilled field, but `box-shadow` can —
+   an opaque inset shadow the size of the field covers the browser's color,
+   and the long `transition-delay` stops it flashing blue before repainting.
+   Also drop native password-reveal buttons (Edge's legacy one, and Chrome's
+   credentials icon) so every password field shows only our own eye toggle. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary);
+  box-shadow: 0 0 0 1000px var(--color-surface-900) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
 /* ─── Selection Color ──────────────────────────────────────── */
 ::selection {
   background-color: var(--color-primary-600);

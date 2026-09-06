@@ -4,19 +4,17 @@ import { z } from "zod";
  * Mirrors the hand-rolled checks in the API's `Services/PricingService.cs`,
  * including its wording, so client and server messages stay consistent.
  *
- * Two cross-field rules matter most: a `custom` price must not carry an
- * amount (that is how "Contact us" is expressed), and a plan cannot be
- * *featured* on a site it is not even *shown* on.
+ * Pricing is agency-only — no site fields, no per-site "featured requires
+ * shown" cross-check, and no editable sort order field — a new plan is
+ * appended to the end of its group server-side, and order only ever changes
+ * by dragging rows in the admin list. The one cross-field rule that remains
+ * is that a `custom` price must not carry an amount (that is how "Contact
+ * us" is expressed).
  */
 
 const ISO_CURRENCY = /^[A-Za-z]{3}$/;
 
 const optionalText = z.string().trim().optional();
-
-const wholeNumber = (label: string) =>
-  z
-    .number({ message: `${label} must be a whole number.` })
-    .int(`${label} must be a whole number.`);
 
 /** Registered with a `setValueAs` that maps a blank field to `undefined`. */
 const optionalNumber = (label: string) =>
@@ -52,7 +50,6 @@ export const pricingPlanSchema = z
     priceType: z.enum(PRICE_TYPES),
     priceAmount: optionalNumber("Price"),
     currency: z.string().trim().min(1, "Currency is required."),
-    deliveryDays: optionalNumber("Delivery days"),
     deliveryText: optionalText,
 
     ctaLabel: optionalText,
@@ -60,14 +57,7 @@ export const pricingPlanSchema = z
 
     isPublished: z.boolean(),
     isPopular: z.boolean(),
-    sortOrder: wholeNumber("Tier order"),
-
-    showOnAgency: z.boolean(),
-    featuredOnAgency: z.boolean(),
-    agencySortOrder: wholeNumber("Agency order"),
-    showOnPersonal: z.boolean(),
-    featuredOnPersonal: z.boolean(),
-    personalSortOrder: wholeNumber("Personal order"),
+    featured: z.boolean(),
 
     features: z.array(pricingFeatureSchema),
   })
@@ -107,29 +97,6 @@ export const pricingPlanSchema = z
       }
     }
 
-    if (values.deliveryDays !== undefined && values.deliveryDays <= 0) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["deliveryDays"],
-        message: "deliveryDays must be greater than zero.",
-      });
-    }
-
-    if (values.featuredOnAgency && !values.showOnAgency) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["featuredOnAgency"],
-        message: "featuredOnAgency requires showOnAgency.",
-      });
-    }
-
-    if (values.featuredOnPersonal && !values.showOnPersonal) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["featuredOnPersonal"],
-        message: "featuredOnPersonal requires showOnPersonal.",
-      });
-    }
   });
 
 export type PricingFeatureValues = z.infer<typeof pricingFeatureSchema>;

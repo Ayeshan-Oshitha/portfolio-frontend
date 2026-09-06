@@ -4,10 +4,12 @@ import { z } from "zod";
  * Mirrors the hand-rolled checks in the API's `Services/ProjectService.cs`,
  * including its wording, so client and server messages stay consistent.
  *
- * The conditional rules are the interesting part: "featured" is meaningless
- * without "show" on the same site, and the API rejects that pairing outright.
- * The form also disables each featured box until its show box is on, so the
- * refinements below are a backstop rather than the only guard.
+ * `showOnAgency`/`featuredOnAgency`/`showOnPersonal`/`featuredOnPersonal` are
+ * part of the shape (the API's `ProjectWriteRequest` needs all four on every
+ * save) but aren't editable through this form — they're carried through from
+ * the loaded project untouched. Reorder & Visibility is what changes them,
+ * and it enforces "featured requires shown" itself, so this schema doesn't
+ * need to.
  */
 
 /** `ProjectService.EarliestYear`. */
@@ -19,11 +21,6 @@ function latestYear(): number {
 }
 
 const optionalText = z.string().trim().optional();
-
-/** Registered with `valueAsNumber`, so a blank field arrives as NaN. */
-const sortOrder = z
-  .number({ message: "Sort order must be a whole number." })
-  .int("Sort order must be a whole number.");
 
 /** Matches `Uri.TryCreate(..., UriKind.Absolute)` plus the scheme check. */
 function isAbsoluteHttpUrl(value: string): boolean {
@@ -55,10 +52,8 @@ export const projectSchema = z
     seoDescription: optionalText,
     showOnAgency: z.boolean(),
     featuredOnAgency: z.boolean(),
-    agencySortOrder: sortOrder,
     showOnPersonal: z.boolean(),
     featuredOnPersonal: z.boolean(),
-    personalSortOrder: sortOrder,
     tagIds: z.array(z.string()),
   })
   .superRefine((values, ctx) => {
@@ -76,22 +71,6 @@ export const projectSchema = z
         code: "custom",
         path: ["websiteUrl"],
         message: "websiteUrl must be an absolute http(s) URL.",
-      });
-    }
-
-    if (values.featuredOnAgency && !values.showOnAgency) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["featuredOnAgency"],
-        message: "featuredOnAgency requires showOnAgency.",
-      });
-    }
-
-    if (values.featuredOnPersonal && !values.showOnPersonal) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["featuredOnPersonal"],
-        message: "featuredOnPersonal requires showOnPersonal.",
       });
     }
   });

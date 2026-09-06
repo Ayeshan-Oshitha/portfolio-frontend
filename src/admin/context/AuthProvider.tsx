@@ -7,18 +7,14 @@ import type {
   RegisterRequest,
 } from "@/admin/types";
 import * as authService from "@/admin/services/authService";
+import { isCanceled } from "@/admin/api/ApiError";
 import { AUTH_EXPIRED_EVENT } from "@/admin/services/httpClient";
 import {
   useGoogleSignIn,
   useLogin,
   useRegister,
 } from "@/admin/hooks/useAuthApi";
-import {
-  clearStoredToken,
-  getStoredToken,
-  isRefreshExpired,
-  setStoredToken,
-} from "@/admin/api/tokenStorage";
+import { clearAccessToken, setAccessToken } from "@/admin/api/tokenStorage";
 import {
   AuthContext,
   type AuthContextValue,
@@ -30,35 +26,27 @@ interface AuthProviderProps {
 
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AdminUser | null>(null);
-  // "loading" means there's a token worth verifying against /auth/me — an expired access token is fine too,
-  // since `httpClient`'s interceptor transparently refreshes it as long as the refresh token is still good.
-  const [status, setStatus] = useState<AuthStatus>(() => {
-    const stored = getStoredToken();
-    if (!stored || isRefreshExpired(stored)) {
-      clearStoredToken();
-      return "unauthenticated";
-    }
-    return "loading";
-  });
+  // There's no client-visible refresh token to inspect anymore (it's an httpOnly cookie), so
+  // every mount starts "loading" and asks /auth/me — a cold access token 401s, httpClient's
+  // interceptor silently refreshes from the cookie and retries, and that either lands on
+  // "authenticated" or, if the cookie is gone/expired too, cleanly on "unauthenticated".
+  const [status, setStatus] = useState<AuthStatus>("loading");
 
   const loginMutation = useLogin();
   const registerMutation = useRegister();
   const googleSignInMutation = useGoogleSignIn();
 
   const logout = useCallback(async () => {
-    const stored = getStoredToken();
-    clearStoredToken();
+    clearAccessToken();
     setUser(null);
     setStatus("unauthenticated");
 
-    if (stored && !isRefreshExpired(stored)) {
-      // Best-effort: revokes the refresh token server-side, but the local
-      // session is already gone regardless of whether this succeeds.
-      authService.logout(stored.refreshToken).catch(() => {});
-    }
+    // Best-effort: revokes the refresh-token cookie server-side, but the local
+    // session is already gone regardless of whether this succeeds.
+    authService.logout().catch(() => {});
   }, []);
 
-  // Rehydrate the session from localStorage on mount.
+  // Rehydrate the session on mount via the refresh-token cookie.
   useEffect(() => {
     if (status !== "loading") return;
 
@@ -71,9 +59,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         setStatus("authenticated");
       })
       .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === "AbortError")
-          return;
-        clearStoredToken();
+        if (isCanceled(error)) return;
+        // Storage is the interceptor's to clear on a real auth failure — a network blip
+        // shouldn't cost the user a still-valid refresh token.
         setUser(null);
         setStatus("unauthenticated");
       });
@@ -96,12 +84,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   function storeSession(response: AuthResponse) {
-    setStoredToken({
-      accessToken: response.accessToken,
-      expiresAt: response.expiresAt,
-      refreshToken: response.refreshToken,
-      refreshTokenExpiresAt: response.refreshTokenExpiresAt,
-    });
+    setAccessToken({ accessToken: response.accessToken, expiresAt: response.expiresAt });
     setUser(response.user);
     setStatus("authenticated");
   }

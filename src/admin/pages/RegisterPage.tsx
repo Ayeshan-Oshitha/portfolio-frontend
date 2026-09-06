@@ -10,7 +10,7 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from "@/admin/validation/authSchemas";
-import { Button, Input } from "@/admin/components/ui";
+import { Button, Input, PasswordInput } from "@/admin/components/ui";
 
 export default function RegisterPage() {
   const { register: registerUser } = useAuth();
@@ -111,9 +111,8 @@ export default function RegisterPage() {
           {...register("email")}
         />
 
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           autoComplete="new-password"
           placeholder="At least 8 characters"
           required
@@ -121,9 +120,8 @@ export default function RegisterPage() {
           {...register("password")}
         />
 
-        <Input
+        <PasswordInput
           label="Confirm password"
-          type="password"
           autoComplete="new-password"
           placeholder="Re-enter your password"
           required
@@ -136,7 +134,7 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      <GoogleSignInButton onError={toast.error} />
+      <GoogleSignInButton onError={toast.error} text="signup_with" />
 
       <p className="mt-6 text-center text-sm text-text-muted">
         Already have an account?{" "}

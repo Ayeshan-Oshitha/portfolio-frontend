@@ -8,10 +8,10 @@ interface SectionTitleProps {
 export default function SectionTitle({
   children,
   description,
-  className = "",
+  className = "mb-4",
 }: SectionTitleProps) {
   return (
-    <div className={`mb-4 ${className}`}>
+    <div className={className}>
       <h2 className="admin-display text-xl leading-snug text-text-primary">
         {children}
       </h2>

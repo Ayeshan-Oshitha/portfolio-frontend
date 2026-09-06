@@ -4,18 +4,17 @@ import type {
   PagedResult,
   PricingFeatureWriteRequest,
   PricingPlanWriteRequest,
-  ReorderRequest,
-  Site,
+  PricingReorderRequest,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
 
 export interface GetPricingPlansParams {
-  /** Omit to list plans across both sites — the admin view sees everything. */
-  readonly site?: Site;
-  /** Ignored by the API whenever `comboOnly` is true. */
+  /** Wins over `tiersOnly` when both are sent; ignored whenever `comboOnly` is true. */
   readonly serviceId?: string;
-  /** `true` narrows to combo packs (the plans with no service). */
+  /** `true` narrows to combo packs (the plans with no service). Wins over `serviceId`/`tiersOnly`. */
   readonly comboOnly?: boolean;
+  /** `true` narrows to every service's tiers — any service, not one specific `serviceId`. */
+  readonly tiersOnly?: boolean;
   readonly isPublished?: boolean;
   /** Case-insensitive match against the name. */
   readonly search?: string;
@@ -23,34 +22,15 @@ export interface GetPricingPlansParams {
   readonly pageSize?: number;
 }
 
-/**
- * Ordered by name — not by sort order. A screen that cares about the display
- * order has to sort by the site's `agencySortOrder`/`personalSortOrder` itself.
- */
+/** Ordered by name — not by sort order. A screen that cares about the display order sorts by `sortOrder` itself. */
 export async function getPricingPlans(
-  {
-    site,
-    serviceId,
-    comboOnly,
-    isPublished,
-    search,
-    page,
-    pageSize,
-  }: GetPricingPlansParams = {},
+  { serviceId, comboOnly, tiersOnly, isPublished, search, page, pageSize }: GetPricingPlansParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminPricingPlan>> {
   const { data } = await httpClient.get<PagedResult<AdminPricingPlan>>(
     "/admin/pricing-plans",
     {
-      params: {
-        site,
-        serviceId,
-        comboOnly,
-        isPublished,
-        search,
-        page,
-        pageSize,
-      },
+      params: { serviceId, comboOnly, tiersOnly, isPublished, search, page, pageSize },
       signal,
     },
   );
@@ -107,8 +87,10 @@ export async function deletePricingPlan(id: string): Promise<void> {
   await httpClient.delete(`/admin/pricing-plans/${id}`);
 }
 
-/** Renumbers the given plans for one site; every id must exist. */
-export async function reorderPricingPlans(body: ReorderRequest): Promise<void> {
+/** Bulk sort-order update — pricing shares one global order. Every id must exist. Answers 204. */
+export async function reorderPricingPlans(
+  body: PricingReorderRequest,
+): Promise<void> {
   await httpClient.post("/admin/pricing-plans/reorder", body);
 }
 

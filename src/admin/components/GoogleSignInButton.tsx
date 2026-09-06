@@ -18,7 +18,14 @@ interface GoogleIdentityServices {
       }) => void;
       renderButton: (
         parent: HTMLElement,
-        options: { theme: string; size: string; width?: number },
+        options: {
+          theme: string;
+          size: string;
+          shape?: string;
+          text?: string;
+          logo_alignment?: string;
+          width?: number;
+        },
       ) => void;
     };
   };
@@ -52,6 +59,8 @@ function loadGoogleScript(): Promise<void> {
 
 interface GoogleSignInButtonProps {
   readonly onError?: (message: string) => void;
+  /** "Sign in with Google" on the login page, "Sign up with Google" on register. */
+  readonly text?: "signin_with" | "signup_with";
 }
 
 /**
@@ -61,6 +70,7 @@ interface GoogleSignInButtonProps {
  */
 export default function GoogleSignInButton({
   onError,
+  text = "signin_with",
 }: GoogleSignInButtonProps) {
   const { loginWithGoogle } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,7 +96,14 @@ export default function GoogleSignInButton({
         window.google.accounts.id.renderButton(containerRef.current, {
           theme: "outline",
           size: "large",
-          width: 320,
+          shape: "rectangular",
+          text,
+          logo_alignment: "left",
+          // Google's button can't take a percentage width, so match the
+          // container's actual pixel width — the same one the form fields
+          // stretch to fill — instead of a fixed size that could clip or
+          // float short of the fields either side of it.
+          width: containerRef.current.offsetWidth,
         });
         setIsReady(true);
       })
@@ -97,7 +114,7 @@ export default function GoogleSignInButton({
     return () => {
       cancelled = true;
     };
-  }, [loginWithGoogle, onError]);
+  }, [loginWithGoogle, onError, text]);
 
   if (!CLIENT_ID) return null;
 

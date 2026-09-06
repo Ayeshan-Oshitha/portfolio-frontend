@@ -1,10 +1,7 @@
 import type {
   AdminService,
-  FeatureReorderRequest,
   PagedResult,
   ReorderRequest,
-  ServiceFeature,
-  ServiceFeatureWriteRequest,
   ServiceWriteRequest,
   Site,
 } from "@/admin/types";
@@ -16,6 +13,13 @@ export interface GetServicesParams {
   readonly isPublished?: boolean;
   /** Case-insensitive match against the name. */
   readonly search?: string;
+  /**
+   * Skips the show-on-site filter `site` would otherwise apply — the
+   * reorder/visibility screen needs every published service in both columns,
+   * including ones not yet shown anywhere, since it's the screen that turns
+   * showing on in the first place.
+   */
+  readonly includeHidden?: boolean;
   readonly page?: number;
   readonly pageSize?: number;
 }
@@ -25,12 +29,12 @@ export interface GetServicesParams {
  * order has to sort by the site's `agencySortOrder`/`personalSortOrder` itself.
  */
 export async function getServices(
-  { site, isPublished, search, page, pageSize }: GetServicesParams = {},
+  { site, isPublished, search, includeHidden, page, pageSize }: GetServicesParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminService>> {
   const { data } = await httpClient.get<PagedResult<AdminService>>(
     "/admin/services",
-    { params: { site, isPublished, search, page, pageSize }, signal },
+    { params: { site, isPublished, search, includeHidden, page, pageSize }, signal },
   );
   return data;
 }
@@ -84,42 +88,4 @@ export async function deleteService(id: string): Promise<void> {
 /** Renumbers the given services for one site; every id must exist. */
 export async function reorderServices(body: ReorderRequest): Promise<void> {
   await httpClient.post("/admin/services/reorder", body);
-}
-
-export async function addServiceFeature(
-  serviceId: string,
-  body: ServiceFeatureWriteRequest,
-): Promise<ServiceFeature> {
-  const { data } = await httpClient.post<ServiceFeature>(
-    `/admin/services/${serviceId}/features`,
-    body,
-  );
-  return data;
-}
-
-export async function updateServiceFeature(
-  serviceId: string,
-  featureId: string,
-  body: ServiceFeatureWriteRequest,
-): Promise<ServiceFeature> {
-  const { data } = await httpClient.put<ServiceFeature>(
-    `/admin/services/${serviceId}/features/${featureId}`,
-    body,
-  );
-  return data;
-}
-
-/** Hard delete — features have no soft-delete flag. */
-export async function deleteServiceFeature(
-  serviceId: string,
-  featureId: string,
-): Promise<void> {
-  await httpClient.delete(`/admin/services/${serviceId}/features/${featureId}`);
-}
-
-export async function reorderServiceFeatures(
-  serviceId: string,
-  body: FeatureReorderRequest,
-): Promise<void> {
-  await httpClient.post(`/admin/services/${serviceId}/features/reorder`, body);
 }

@@ -1,6 +1,8 @@
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { PricingTier } from "@/client/types";
+import useCurrency from "@/client/context/useCurrency";
+import { formatMoney } from "@/client/utils/money";
 
 interface PricingCardProps {
   readonly tier: PricingTier;
@@ -8,6 +10,7 @@ interface PricingCardProps {
 
 export default function PricingCard({ tier }: PricingCardProps) {
   const { isPopular } = tier;
+  const { currency } = useCurrency();
 
   return (
     <div
@@ -39,7 +42,7 @@ export default function PricingCard({ tier }: PricingCardProps) {
               isPopular ? "text-panel-ink" : "text-text-primary"
             }`}
           >
-            {tier.price}
+            {formatMoney(tier.priceUsd, currency)}
           </span>
           <span
             className={`text-[13.5px] ${

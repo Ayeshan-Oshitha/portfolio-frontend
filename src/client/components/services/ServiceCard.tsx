@@ -16,7 +16,15 @@ export default function ServiceCard({ service }: ServiceCardProps) {
       className="group flex min-h-73 flex-col gap-4 rounded-[20px] border border-card-br bg-card p-8 shadow-card transition-colors duration-200 hover:border-hair-strong"
     >
       <IconTile>
-        <Icon size={20} aria-hidden="true" />
+        {service.iconUrl ? (
+          <img
+            src={service.iconUrl}
+            alt={service.iconAltText ?? ""}
+            className="h-5 w-5 object-contain"
+          />
+        ) : Icon ? (
+          <Icon size={20} aria-hidden="true" />
+        ) : null}
       </IconTile>
 
       <h3 className="font-display text-[21px] font-medium tracking-[-0.018em] text-text-primary">

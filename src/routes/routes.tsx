@@ -30,12 +30,19 @@ import PendingApprovalsPage from "@/admin/pages/PendingApprovalsPage";
 import TagsPage from "@/admin/pages/TagsPage";
 import ArticlesPage from "@/admin/pages/ArticlesPage";
 import ArticleEditorPage from "@/admin/pages/ArticleEditorPage";
+import ArticleOrderPage from "@/admin/pages/ArticleOrderPage";
 import AdminServicesPage from "@/admin/pages/ServicesPage";
+import ServiceEditorPage from "@/admin/pages/ServiceEditorPage";
+import ServiceOrderPage from "@/admin/pages/ServiceOrderPage";
 import PricingPage from "@/admin/pages/PricingPage";
 import ProjectsPage from "@/admin/pages/ProjectsPage";
 import ProjectEditorPage from "@/admin/pages/ProjectEditorPage";
+import ProjectOrderPage from "@/admin/pages/ProjectOrderPage";
 import FaqsPage from "@/admin/pages/FaqsPage";
+import CertificatesPage from "@/admin/pages/CertificatesPage";
 import ReviewsPage from "@/admin/pages/ReviewsPage";
+import ContactSubmissionsPage from "@/admin/pages/ContactSubmissionsPage";
+import CurrenciesPage from "@/admin/pages/CurrenciesPage";
 
 export const router = createBrowserRouter([
   {
@@ -161,6 +168,10 @@ export const router = createBrowserRouter([
                 element: <ProjectEditorPage />,
               },
               {
+                path: "projects/order",
+                element: <ProjectOrderPage />,
+              },
+              {
                 path: "projects/:id",
                 element: <ProjectEditorPage />,
               },
@@ -171,6 +182,10 @@ export const router = createBrowserRouter([
               {
                 path: "articles/new",
                 element: <ArticleEditorPage />,
+              },
+              {
+                path: "articles/order",
+                element: <ArticleOrderPage />,
               },
               {
                 path: "articles/:id",
@@ -185,6 +200,18 @@ export const router = createBrowserRouter([
                 element: <AdminServicesPage />,
               },
               {
+                path: "services/new",
+                element: <ServiceEditorPage />,
+              },
+              {
+                path: "services/order",
+                element: <ServiceOrderPage />,
+              },
+              {
+                path: "services/:id",
+                element: <ServiceEditorPage />,
+              },
+              {
                 path: "pricing",
                 element: <PricingPage />,
               },
@@ -193,8 +220,20 @@ export const router = createBrowserRouter([
                 element: <FaqsPage />,
               },
               {
+                path: "certificates",
+                element: <CertificatesPage />,
+              },
+              {
                 path: "reviews",
                 element: <ReviewsPage />,
+              },
+              {
+                path: "contact-submissions",
+                element: <ContactSubmissionsPage />,
+              },
+              {
+                path: "currencies",
+                element: <CurrenciesPage />,
               },
               {
                 path: "change-password",

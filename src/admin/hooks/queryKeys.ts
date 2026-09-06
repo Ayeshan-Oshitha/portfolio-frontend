@@ -6,10 +6,17 @@ import type { GetTagsParams } from "@/admin/services/tagsService";
 import type { GetUsersParams } from "@/admin/services/usersService";
 import type { GetFaqsParams } from "@/admin/services/faqsService";
 import type { GetReviewsParams } from "@/admin/services/reviewsService";
+import type { GetCertificatesParams } from "@/admin/services/certificatesService";
+import type { GetContactSubmissionsParams } from "@/admin/services/contactSubmissionsService";
+import type { GetCurrenciesParams } from "@/admin/services/currenciesService";
 
 export const authKeys = {
   all: ["auth"] as const,
   me: () => [...authKeys.all, "me"] as const,
+};
+
+export const mediaKeys = {
+  config: ["media", "config"] as const,
 };
 
 export const articleKeys = {
@@ -50,6 +57,10 @@ export const tagKeys = {
   list: (params: GetTagsParams) => [...tagKeys.lists(), params] as const,
 };
 
+export const techCategoryKeys = {
+  all: ["techCategories"] as const,
+};
+
 export const userKeys = {
   all: ["users"] as const,
   lists: () => [...userKeys.all, "list"] as const,
@@ -66,4 +77,26 @@ export const reviewKeys = {
   all: ["reviews"] as const,
   lists: () => [...reviewKeys.all, "list"] as const,
   list: (params: GetReviewsParams) => [...reviewKeys.lists(), params] as const,
+};
+
+export const certificateKeys = {
+  all: ["certificates"] as const,
+  lists: () => [...certificateKeys.all, "list"] as const,
+  list: (params: GetCertificatesParams) =>
+    [...certificateKeys.lists(), params] as const,
+};
+
+export const currencyKeys = {
+  all: ["currencies"] as const,
+  lists: () => [...currencyKeys.all, "list"] as const,
+  list: (params: GetCurrenciesParams) =>
+    [...currencyKeys.lists(), params] as const,
+};
+
+export const contactSubmissionKeys = {
+  all: ["contactSubmissions"] as const,
+  lists: () => [...contactSubmissionKeys.all, "list"] as const,
+  list: (params: GetContactSubmissionsParams) =>
+    [...contactSubmissionKeys.lists(), params] as const,
+  detail: (id: string) => [...contactSubmissionKeys.all, "detail", id] as const,
 };

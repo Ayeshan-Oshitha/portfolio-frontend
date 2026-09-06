@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import ThemeSwitcher from "@/client/components/ui/ThemeSwitcher";
+import CurrencySwitcher from "@/client/components/ui/CurrencySwitcher";
 
 export default function HeaderActions() {
   return (
@@ -7,6 +8,7 @@ export default function HeaderActions() {
     // reachable from the collapsed header without opening the mobile menu.
     // Below `lg` the nav and this CTA give way to the hamburger.
     <div className="flex shrink-0 items-center gap-3">
+      <CurrencySwitcher />
       <ThemeSwitcher />
 
       <Link

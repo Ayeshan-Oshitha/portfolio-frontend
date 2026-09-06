@@ -9,7 +9,7 @@ import {
   setPasswordSchema,
   type SetPasswordFormValues,
 } from "@/admin/validation/authSchemas";
-import { Alert, Button, Input } from "@/admin/components/ui";
+import { Alert, Button, Input, PasswordInput } from "@/admin/components/ui";
 
 type PageState = "form" | "error";
 
@@ -90,9 +90,8 @@ export default function SetPasswordPage() {
             noValidate
             className="space-y-5"
           >
-            <Input
+            <PasswordInput
               label="New password"
-              type="password"
               autoComplete="new-password"
               placeholder="••••••••"
               required
@@ -100,9 +99,8 @@ export default function SetPasswordPage() {
               {...register("password")}
             />
 
-            <Input
+            <PasswordInput
               label="Confirm password"
-              type="password"
               autoComplete="new-password"
               placeholder="••••••••"
               required

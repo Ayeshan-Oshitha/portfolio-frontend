@@ -1,34 +1,40 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowDown,
-  ArrowUp,
-  Eye,
-  EyeOff,
-  Pencil,
-  Plus,
-  Star,
-  Trash2,
-} from "lucide-react";
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Plus } from "lucide-react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import ReviewFormModal from "@/admin/components/reviews/ReviewFormModal";
+import SortableReviewRow from "@/admin/components/reviews/SortableReviewRow";
 import {
   useDeleteReview,
   useReorderReviews,
   useReviews,
   useUpdateReview,
 } from "@/admin/hooks/useReviews";
+import { reviewKeys } from "@/admin/hooks/queryKeys";
+import { COUNTRY_OPTIONS } from "@/admin/utils/countries";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
-import type { AdminReview, ReviewWriteRequest } from "@/admin/types";
-import { formatDate } from "@/admin/utils/format";
+import type { AdminReview, PagedResult, ReviewWriteRequest } from "@/admin/types";
 import {
-  Badge,
   Button,
   Card,
+  Combobox,
   ConfirmDialog,
   DataTableShell,
-  IconButton,
   Input,
   PageHeader,
   Pagination,
@@ -38,8 +44,6 @@ import {
   THead,
   TH,
   TBody,
-  TR,
-  TD,
 } from "@/admin/components/ui";
 
 const PAGE_SIZE = 20;
@@ -70,12 +74,12 @@ function toWriteRequest(review: AdminReview): ReviewWriteRequest {
     reviewText: review.reviewText,
     isPublished: review.isPublished,
     isFeatured: review.isFeatured,
-    sortOrder: review.sortOrder,
   };
 }
 
 export default function ReviewsPage() {
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
   const [country, setCountry] = useSearchParamState<string>("country", "");
@@ -92,17 +96,20 @@ export default function ReviewsPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminReview | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const {
-    data: result,
-    isPending: isLoading,
-    error: queryError,
-  } = useReviews({
+  const queryParams = {
     search,
     country: country || undefined,
     isPublished: toIsPublished(status),
     page,
     pageSize: PAGE_SIZE,
-  });
+  };
+
+  const {
+    data: result,
+    isPending: isLoading,
+    isFetching,
+    error: queryError,
+  } = useReviews(queryParams);
   const deleteReviewMutation = useDeleteReview();
   const reorderReviewsMutation = useReorderReviews();
   const updateReviewMutation = useUpdateReview();
@@ -110,28 +117,58 @@ export default function ReviewsPage() {
   const error = queryError ? toErrorMessage(queryError) : null;
   const rows = result?.items ?? [];
 
-  /**
-   * Sends the whole page renumbered densely from the index rather than just the
-   * two swapped rows, so the numbering stays contiguous however it started.
-   * Reviews aren't split per site, so this always applies (unlike FAQs/articles).
-   */
-  async function move(index: number, delta: number) {
-    const target = index + delta;
-    if (target < 0 || target >= rows.length) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
 
-    const next = [...rows];
-    [next[index], next[target]] = [next[target], next[index]];
+  /**
+   * Sends the whole page renumbered densely from the dropped order rather
+   * than just the two swapped rows, so the numbering stays contiguous
+   * however it started. Reviews aren't split per site, so this always
+   * applies (unlike FAQs/articles). Writes the reordered rows into the
+   * query cache immediately (before the request resolves) so dnd-kit's
+   * already-reordered drop position sticks instead of snapping back while
+   * the request is in flight, and rolls back to the pre-drag snapshot on
+   * failure.
+   */
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const fromIndex = rows.findIndex((review) => review.id === active.id);
+    const toIndex = rows.findIndex((review) => review.id === over.id);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const next = arrayMove([...rows], fromIndex, toIndex);
+    const items = next.map((review, at) => ({
+      id: review.id,
+      // Page 2 continues where page 1 left off, so the offset matters.
+      sortOrder: (page - 1) * PAGE_SIZE + at,
+    }));
+
+    const queryKey = reviewKeys.list(queryParams);
+    const previous =
+      queryClient.getQueryData<PagedResult<AdminReview>>(queryKey);
+
+    queryClient.setQueryData<PagedResult<AdminReview> | undefined>(
+      queryKey,
+      (old) =>
+        old && {
+          ...old,
+          items: next.map((review, at) => ({
+            ...review,
+            sortOrder: items[at].sortOrder,
+          })),
+        },
+    );
 
     try {
-      await reorderReviewsMutation.mutateAsync({
-        items: next.map((review, at) => ({
-          id: review.id,
-          // Page 2 continues where page 1 left off, so the offset matters.
-          sortOrder: (page - 1) * PAGE_SIZE + at,
-        })),
-      });
+      await reorderReviewsMutation.mutateAsync({ items });
       toast.success("Order updated.");
     } catch (cause) {
+      queryClient.setQueryData(queryKey, previous);
       toast.error(toErrorMessage(cause));
     }
   }
@@ -181,10 +218,9 @@ export default function ReviewsPage() {
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const isReordering = reorderReviewsMutation.isPending;
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <PageHeader
         title="Reviews"
         description={`${total} ${total === 1 ? "review" : "reviews"} — public submissions land unpublished until approved here.`}
@@ -213,14 +249,17 @@ export default function ReviewsPage() {
           containerClassName="flex-1 max-w-xs"
         />
 
-        <Input
+        <Combobox
           fieldSize="sm"
           label="Country"
-          placeholder="e.g. United States"
+          placeholder="All countries"
+          searchPlaceholder="Search countries…"
+          options={COUNTRY_OPTIONS}
+          allowClear
           value={country}
-          onChange={(event) => {
+          onChange={(value) => {
             setPage(1);
-            setCountry(event.target.value);
+            setCountry(value);
           }}
           containerClassName="w-48"
         />
@@ -242,98 +281,43 @@ export default function ReviewsPage() {
         <DataTableShell
           error={error}
           isLoading={isLoading}
+          isFetching={isFetching}
           isEmpty={rows.length === 0}
           emptyTitle="No reviews found"
           emptyDescription="No reviews match these filters."
         >
           <Table>
             <THead>
+              <TH className="w-10 sr-only">Reorder</TH>
               <TH>Reviewer</TH>
               <TH>Rating</TH>
               <TH>Status</TH>
               <TH>Submitted</TH>
               <TH className="sr-only">Actions</TH>
             </THead>
-            <TBody>
-              {rows.map((item, index) => (
-                <TR key={item.id}>
-                  <TD className="max-w-sm">
-                    <span className="block text-text-primary font-medium truncate">
-                      {item.name}
-                    </span>
-                    <span className="block text-text-muted text-xs truncate">
-                      {item.position ? `${item.position} · ` : ""}
-                      {item.country}
-                    </span>
-                    <span className="block text-text-secondary text-xs truncate mt-1">
-                      {item.reviewText}
-                    </span>
-                  </TD>
-                  <TD variant="nowrap">
-                    <span className="flex items-center gap-1 text-text-secondary">
-                      <Star
-                        className="h-3.5 w-3.5 fill-current text-primary-400"
-                        aria-hidden="true"
-                      />
-                      {item.rating}
-                    </span>
-                  </TD>
-                  <TD>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone={item.isPublished ? "success" : "neutral"}>
-                        {item.isPublished ? "Published" : "Pending"}
-                      </Badge>
-                      {item.isFeatured && <Badge tone="brand">Featured</Badge>}
-                    </div>
-                  </TD>
-                  <TD variant="nowrap">{formatDate(item.createdAt)}</TD>
-                  <TD>
-                    <div className="flex items-center justify-end gap-1">
-                      <IconButton
-                        icon={<ArrowUp className="h-4 w-4" />}
-                        label={`Move “${item.name}”'s review up`}
-                        onClick={() => move(index, -1)}
-                        disabled={isReordering || index === 0}
-                      />
-                      <IconButton
-                        icon={<ArrowDown className="h-4 w-4" />}
-                        label={`Move “${item.name}”'s review down`}
-                        onClick={() => move(index, 1)}
-                        disabled={isReordering || index === rows.length - 1}
-                      />
-
-                      <IconButton
-                        icon={
-                          item.isPublished ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )
-                        }
-                        label={
-                          item.isPublished
-                            ? `Unpublish “${item.name}”`
-                            : `Publish “${item.name}”`
-                        }
-                        onClick={() => togglePublished(item)}
-                        disabled={togglingId === item.id}
-                      />
-                      <IconButton
-                        icon={<Pencil className="h-4 w-4" />}
-                        label={`Edit “${item.name}”`}
-                        onClick={() => openEdit(item)}
-                      />
-                      <IconButton
-                        icon={<Trash2 className="h-4 w-4" />}
-                        label={`Delete “${item.name}”`}
-                        onClick={() => askDelete(item)}
-                        tone="danger"
-                      />
-                    </div>
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={rows.map((review) => review.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <TBody>
+                  {rows.map((item) => (
+                    <SortableReviewRow
+                      key={item.id}
+                      review={item}
+                      isTogglingPublished={togglingId === item.id}
+                      onTogglePublished={togglePublished}
+                      onEdit={openEdit}
+                      onDelete={askDelete}
+                    />
+                  ))}
+                </TBody>
+              </SortableContext>
+            </DndContext>
           </Table>
         </DataTableShell>
       </Card>

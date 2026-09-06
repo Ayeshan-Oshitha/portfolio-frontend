@@ -9,10 +9,11 @@ interface PageHeaderProps {
 /**
  * The heading block every admin page opens with.
  *
- * The title is the CMS's one piece of display type: Fraunces at a size that
- * actually anchors the page, against Inter everywhere else. Previously each
- * page hand-rolled this as `text-2xl font-bold`, which left the screens
- * without a focal point and drifted between pages.
+ * The title is the CMS's one piece of display type: Fraunces, against Inter
+ * everywhere else. Previously each page hand-rolled this as `text-2xl
+ * font-bold`, which left the screens without a focal point and drifted
+ * between pages — this gives every page the same anchor without costing the
+ * dense admin layouts as much vertical space as a marketing-page hero.
  */
 export default function PageHeader({
   title,
@@ -22,14 +23,14 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <div
-      className={`flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8 ${className}`}
+      className={`flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-5 ${className}`}
     >
       <div className="min-w-0">
-        <h1 className="admin-display text-[2rem] md:text-[2.5rem] leading-[1.05] text-text-primary">
+        <h1 className="admin-display text-xl md:text-2xl leading-tight text-text-primary">
           {title}
         </h1>
         {description && (
-          <p className="mt-2 text-[0.9375rem] leading-relaxed text-text-secondary">
+          <p className="mt-1 text-sm leading-relaxed text-text-secondary">
             {description}
           </p>
         )}

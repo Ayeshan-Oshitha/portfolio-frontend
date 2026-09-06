@@ -43,13 +43,15 @@ export function useDeleteReview() {
   });
 }
 
+/**
+ * No `invalidateQueries` here — the caller writes the reordered rows straight
+ * into the cache as an optimistic update, and a successful reorder leaves
+ * that cache exactly matching the server (the endpoint sets each `sortOrder`
+ * to what was sent), so there's nothing left to refetch.
+ */
 export function useReorderReviews() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: ReviewReorderRequest) =>
       reviewsService.reorderReviews(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: reviewKeys.lists() });
-    },
   });
 }

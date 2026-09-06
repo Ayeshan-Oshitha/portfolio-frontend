@@ -4,6 +4,7 @@ import { ChevronRight, ExternalLink, LogOut, Menu } from "lucide-react";
 import useAuth from "@/admin/context/useAuth";
 import Button from "@/admin/components/ui/Button";
 import IconButton from "@/admin/components/ui/IconButton";
+import AccountMenu from "./AccountMenu";
 import { ROUTE_LABELS } from "./navigation";
 
 interface TopbarProps {
@@ -36,10 +37,9 @@ function crumbsFor(pathname: string): Crumb[] {
  * Sticky header above the page content.
  *
  * Carries the mobile drawer trigger, breadcrumbs, a link out to the live
- * site, and sign-out — which moved here from the sidebar so the sidebar
- * footer is purely identity. There is deliberately no global search: the API
- * has no cross-entity search endpoint, and a search box that does nothing is
- * worse than none.
+ * site, sign-out, and the account avatar (role/status, sign-in details).
+ * There is deliberately no global search: the API has no cross-entity search
+ * endpoint, and a search box that does nothing is worse than none.
  */
 export default function Topbar({ onMenu }: TopbarProps) {
   const { logout } = useAuth();
@@ -114,6 +114,10 @@ export default function Topbar({ onMenu }: TopbarProps) {
           label="Sign out"
           onClick={handleLogout}
         />
+
+        <div className="ml-1">
+          <AccountMenu />
+        </div>
       </div>
     </header>
   );

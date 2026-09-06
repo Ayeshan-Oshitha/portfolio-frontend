@@ -17,6 +17,13 @@ export interface GetProjectsParams {
   readonly isPublished?: boolean;
   /** Case-insensitive match against the title. */
   readonly search?: string;
+  /**
+   * Skips the show-on-site filter `site` would otherwise apply — the
+   * reorder/visibility screen needs every published project in both columns,
+   * including ones not yet shown anywhere, since it's the screen that turns
+   * showing on in the first place.
+   */
+  readonly includeHidden?: boolean;
   readonly page?: number;
   readonly pageSize?: number;
 }
@@ -26,12 +33,12 @@ export interface GetProjectsParams {
  * the API's default ordering.
  */
 export async function getProjects(
-  { site, isPublished, search, page, pageSize }: GetProjectsParams = {},
+  { site, isPublished, search, includeHidden, page, pageSize }: GetProjectsParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminProject>> {
   const { data } = await httpClient.get<PagedResult<AdminProject>>(
     "/admin/projects",
-    { params: { site, isPublished, search, page, pageSize }, signal },
+    { params: { site, isPublished, search, includeHidden, page, pageSize }, signal },
   );
   return data;
 }

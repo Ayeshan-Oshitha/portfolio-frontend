@@ -10,9 +10,11 @@ import {
   useCreateArticle,
   useUpdateArticle,
 } from "@/admin/hooks/useArticles";
+import { useMediaConfig } from "@/admin/hooks/useMedia";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
-import { slugify, todayDateOnly } from "@/admin/utils/format";
+import { slugify } from "@/admin/utils/format";
+import { resolveMediaDisplayUrl } from "@/admin/utils/markdownImages";
 import type { AdminArticle, ArticleWriteRequest } from "@/admin/types";
 import {
   articleSchema,
@@ -36,17 +38,13 @@ function blankValues(): ArticleFormValues {
     title: "",
     excerpt: "",
     slug: "",
-    publishedDate: todayDateOnly(),
-    mediumUrl: "",
     coverImageKey: "",
     contentMarkdown: "",
     isPublished: false,
     showOnAgency: false,
     featuredOnAgency: false,
-    agencySortOrder: 0,
     showOnPersonal: false,
     featuredOnPersonal: false,
-    personalSortOrder: 0,
     tagIds: [],
   };
 }
@@ -62,17 +60,13 @@ function toFormValues(article: AdminArticle | null): ArticleFormValues {
     title: article.title,
     excerpt: article.excerpt,
     slug: article.slug ?? "",
-    publishedDate: article.publishedDate,
-    mediumUrl: article.mediumUrl ?? "",
     coverImageKey: article.coverImageKey ?? "",
     contentMarkdown: article.contentMarkdown ?? "",
     isPublished: article.isPublished,
     showOnAgency: article.showOnAgency,
     featuredOnAgency: article.featuredOnAgency,
-    agencySortOrder: article.agencySortOrder,
     showOnPersonal: article.showOnPersonal,
     featuredOnPersonal: article.featuredOnPersonal,
-    personalSortOrder: article.personalSortOrder,
     tagIds: article.tags.map((tag) => tag.id),
   };
 }
@@ -159,14 +153,12 @@ function ArticleForm({ article, onDone }: ArticleFormProps) {
     },
   );
 
-  // "Featured" requires "show" on the same site, so each checkbox is disabled until its partner is on.
   const title = useWatch({ control, name: "title" });
-  const showOnAgency = useWatch({ control, name: "showOnAgency" });
-  const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
   const contentMarkdown = useWatch({ control, name: "contentMarkdown" });
   const coverImageKey = useWatch({ control, name: "coverImageKey" });
   const slugValue = useWatch({ control, name: "slug" });
   const editorRef = useRef<HTMLDivElement>(null);
+  const { data: mediaConfig } = useMediaConfig();
 
   /** Uploads land under the article's folder, so they need its slug up front. */
   const uploadSlug = slugify(slugValue?.trim() || title?.trim() || "");
@@ -207,19 +199,16 @@ function ArticleForm({ article, onDone }: ArticleFormProps) {
       title: values.title.trim(),
       excerpt: values.excerpt.trim(),
       slug: blank(values.slug),
-      publishedDate: values.publishedDate,
-      mediumUrl: blank(values.mediumUrl),
       // Required by the schema, and always a full url the picker took from the body.
       coverImageKey: values.coverImageKey.trim(),
       contentMarkdown: blank(values.contentMarkdown),
       isPublished: values.isPublished,
+      // Show/feature per site are set from the reorder screen, not this form —
+      // carried through untouched so saving other fields doesn't reset them.
       showOnAgency: values.showOnAgency,
-      // Re-enforced here since a disabled checkbox keeps its last submitted value.
-      featuredOnAgency: values.showOnAgency && values.featuredOnAgency,
-      agencySortOrder: values.agencySortOrder,
+      featuredOnAgency: values.featuredOnAgency,
       showOnPersonal: values.showOnPersonal,
-      featuredOnPersonal: values.showOnPersonal && values.featuredOnPersonal,
-      personalSortOrder: values.personalSortOrder,
+      featuredOnPersonal: values.featuredOnPersonal,
       tagIds: values.tagIds,
     };
 
@@ -278,25 +267,6 @@ function ArticleForm({ article, onDone }: ArticleFormProps) {
             {...register("slug")}
           />
 
-          <div className="flex gap-4">
-            <Input
-              label="Published date"
-              type="date"
-              required
-              containerClassName="w-48"
-              error={errors.publishedDate?.message}
-              {...register("publishedDate")}
-            />
-
-            <Input
-              label="Medium URL"
-              placeholder="https://medium.com/@you/a-post (optional cross-post link)"
-              containerClassName="flex-1"
-              error={errors.mediumUrl?.message}
-              {...register("mediumUrl")}
-            />
-          </div>
-
           {/* Registered so the resolver sees it; the value is only ever set by the picker below. */}
           <input type="hidden" {...register("coverImageKey")} />
 
@@ -318,6 +288,24 @@ function ArticleForm({ article, onDone }: ArticleFormProps) {
                   height={600}
                   preview="live"
                   visibleDragbar={false}
+                  previewOptions={{
+                    // The stored markdown holds `media://` tokens, not loadable
+                    // urls — the live preview pane needs each <img> src resolved
+                    // the same way the cover picker's thumbnails are.
+                    rehypeRewrite: (node) => {
+                      if (
+                        node.type === "element" &&
+                        node.tagName === "img" &&
+                        typeof node.properties?.src === "string"
+                      ) {
+                        const resolved = resolveMediaDisplayUrl(
+                          node.properties.src,
+                          mediaConfig?.publicBaseUrl,
+                        );
+                        if (resolved) node.properties.src = resolved;
+                      }
+                    },
+                  }}
                 />
                 {errors.contentMarkdown?.message && (
                   <p className="mt-2 text-xs text-danger-400">
@@ -339,60 +327,9 @@ function ArticleForm({ article, onDone }: ArticleFormProps) {
 
           <Checkbox
             label="Published"
-            hint="Drafts stay off both public sites regardless of the visibility flags below."
+            hint="Drafts stay off both public sites. Once published, use Reorder & Visibility to show it on a site."
             {...register("isPublished")}
           />
-
-          <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
-            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-              Agency site
-            </legend>
-
-            <Checkbox label="Show on agency" {...register("showOnAgency")} />
-
-            <Checkbox
-              label="Featured on agency"
-              disabled={!showOnAgency}
-              error={errors.featuredOnAgency?.message}
-              {...register("featuredOnAgency")}
-            />
-
-            <Input
-              label="Sort order"
-              type="number"
-              step={1}
-              containerClassName="w-32"
-              error={errors.agencySortOrder?.message}
-              {...register("agencySortOrder", { valueAsNumber: true })}
-            />
-          </fieldset>
-
-          <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
-            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-              Personal site
-            </legend>
-
-            <Checkbox
-              label="Show on personal"
-              {...register("showOnPersonal")}
-            />
-
-            <Checkbox
-              label="Featured on personal"
-              disabled={!showOnPersonal}
-              error={errors.featuredOnPersonal?.message}
-              {...register("featuredOnPersonal")}
-            />
-
-            <Input
-              label="Sort order"
-              type="number"
-              step={1}
-              containerClassName="w-32"
-              error={errors.personalSortOrder?.message}
-              {...register("personalSortOrder", { valueAsNumber: true })}
-            />
-          </fieldset>
 
           <Controller
             control={control}

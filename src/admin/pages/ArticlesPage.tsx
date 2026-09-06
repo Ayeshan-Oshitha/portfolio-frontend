@@ -1,27 +1,14 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowDown,
-  ArrowUp,
-  ExternalLink,
-  Newspaper,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { ArrowUpDown, Newspaper, Pencil, Plus, Trash2 } from "lucide-react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
-import {
-  useArticles,
-  useDeleteArticle,
-  useReorderArticles,
-} from "@/admin/hooks/useArticles";
+import { useArticles, useDeleteArticle } from "@/admin/hooks/useArticles";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import type { AdminArticle, Site } from "@/admin/types";
-import { formatDate, formatDateOnly } from "@/admin/utils/format";
+import { formatDate } from "@/admin/utils/format";
 import {
-  Alert,
   Badge,
   Button,
   Card,
@@ -65,13 +52,6 @@ function toIsPublished(status: StatusFilter): boolean | undefined {
   if (status === "published") return true;
   if (status === "draft") return false;
   return undefined;
-}
-
-/** Sort order is kept per site, so which column applies depends on the filter. */
-function sortOrderFor(article: AdminArticle, site: Site): number {
-  return site === "agency"
-    ? article.agencySortOrder
-    : article.personalSortOrder;
 }
 
 /**
@@ -119,6 +99,7 @@ export default function ArticlesPage() {
   const {
     data: result,
     isPending: isLoading,
+    isFetching,
     error: queryError,
   } = useArticles({
     search,
@@ -128,50 +109,9 @@ export default function ArticlesPage() {
     pageSize: PAGE_SIZE,
   });
   const deleteArticleMutation = useDeleteArticle();
-  const reorderArticlesMutation = useReorderArticles();
 
   const error = queryError ? toErrorMessage(queryError) : null;
-
-  /**
-   * Reordering renumbers the whole visible page, so the rows have to be in the
-   * same order the arrows imply. The API already orders by the requested
-   * site's column, but sorting here keeps the two in step after a local swap.
-   */
-  const rows = useMemo(() => {
-    const items = result?.items ?? [];
-    if (!site) return items;
-    return [...items].sort(
-      (a, b) => sortOrderFor(a, site) - sortOrderFor(b, site),
-    );
-  }, [result, site]);
-
-  /**
-   * Sends the whole page renumbered densely from the index rather than just the
-   * two swapped rows, so the numbering stays contiguous however it started.
-   */
-  async function move(index: number, delta: number) {
-    if (!site) return;
-
-    const target = index + delta;
-    if (target < 0 || target >= rows.length) return;
-
-    const next = [...rows];
-    [next[index], next[target]] = [next[target], next[index]];
-
-    try {
-      await reorderArticlesMutation.mutateAsync({
-        site,
-        items: next.map((article, at) => ({
-          id: article.id,
-          // Page 2 continues where page 1 left off, so the offset matters.
-          sortOrder: (page - 1) * PAGE_SIZE + at,
-        })),
-      });
-      toast.success("Order updated.");
-    } catch (cause) {
-      toast.error(toErrorMessage(cause));
-    }
-  }
+  const rows = result?.items ?? [];
 
   function askDelete(target: AdminArticle) {
     setDeleteTarget(target);
@@ -191,22 +131,32 @@ export default function ArticlesPage() {
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const isReordering = reorderArticlesMutation.isPending;
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <PageHeader
         title="Articles"
-        description={`${total} ${total === 1 ? "article" : "articles"} linking out to Medium.`}
+        description={`${total} ${total === 1 ? "article" : "articles"}.`}
         actions={
-          <Button
-            size="sm"
-            href="/admin/articles/new"
-            icon={<Plus className="h-4 w-4" />}
-            iconPosition="left"
-          >
-            New article
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              href="/admin/articles/order"
+              icon={<ArrowUpDown className="h-4 w-4" />}
+              iconPosition="left"
+            >
+              Reorder & Visibility
+            </Button>
+            <Button
+              size="sm"
+              href="/admin/articles/new"
+              icon={<Plus className="h-4 w-4" />}
+              iconPosition="left"
+            >
+              New article
+            </Button>
+          </div>
         }
       />
 
@@ -248,18 +198,11 @@ export default function ArticlesPage() {
         />
       </Toolbar>
 
-      {/* Reordering is only meaningful within one site, so the hint is only
-          worth showing while no single site is selected. */}
-      {!site && (
-        <Alert variant="info" className="mb-6">
-          Sort order is kept per site — pick a single site to reorder articles.
-        </Alert>
-      )}
-
       <Card padding="none" className="overflow-hidden">
         <DataTableShell
           error={error}
           isLoading={isLoading}
+          isFetching={isFetching}
           isEmpty={rows.length === 0}
           emptyIcon={Newspaper}
           emptyTitle="No articles found"
@@ -276,24 +219,10 @@ export default function ArticlesPage() {
               <TH className="sr-only">Actions</TH>
             </THead>
             <TBody>
-              {rows.map((item, index) => (
+              {rows.map((item) => (
                 <TR key={item.id}>
                   <TD variant="primary" className="max-w-xs">
-                    <span className="flex items-center gap-2">
-                      <span className="truncate">{item.title}</span>
-                      <a
-                        href={item.mediumUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        aria-label={`Open “${item.title}” on Medium`}
-                        className="shrink-0 text-text-muted hover:text-primary-600 transition-colors"
-                      >
-                        <ExternalLink
-                          className="h-3.5 w-3.5"
-                          aria-hidden="true"
-                        />
-                      </a>
-                    </span>
+                    <span className="truncate">{item.title}</span>
                     {item.slug && (
                       <span className="block text-text-muted text-xs font-normal truncate">
                         {item.slug}
@@ -332,32 +261,10 @@ export default function ArticlesPage() {
                       item.tags.map((tag) => tag.name).join(", ")
                     )}
                   </TD>
-                  <TD variant="nowrap">{formatDateOnly(item.publishedDate)}</TD>
+                  <TD variant="nowrap">{formatDate(item.publishedAt)}</TD>
                   <TD variant="nowrap">{formatDate(item.updatedAt)}</TD>
                   <TD align="right">
                     <div className="flex items-center justify-end gap-1">
-                      <IconButton
-                        icon={<ArrowUp className="h-4 w-4" />}
-                        label={
-                          site
-                            ? `Move “${item.title}” up`
-                            : "Pick a single site to reorder articles"
-                        }
-                        onClick={() => move(index, -1)}
-                        disabled={!site || isReordering || index === 0}
-                      />
-                      <IconButton
-                        icon={<ArrowDown className="h-4 w-4" />}
-                        label={
-                          site
-                            ? `Move “${item.title}” down`
-                            : "Pick a single site to reorder articles"
-                        }
-                        onClick={() => move(index, 1)}
-                        disabled={
-                          !site || isReordering || index === rows.length - 1
-                        }
-                      />
                       <IconButton
                         icon={<Pencil className="h-4 w-4" />}
                         label={`Edit “${item.title}”`}

@@ -7,7 +7,12 @@ import {
   changePasswordSchema,
   type ChangePasswordFormValues,
 } from "@/admin/validation/authSchemas";
-import { Button, Input, PageHeader } from "@/admin/components/ui";
+import {
+  Button,
+  Input,
+  PageHeader,
+  PasswordInput,
+} from "@/admin/components/ui";
 
 export default function ChangePasswordPage() {
   const toast = useToast();
@@ -51,27 +56,24 @@ export default function ChangePasswordPage() {
       />
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        <Input
+        <PasswordInput
           label="Current password"
-          type="password"
           autoComplete="current-password"
           required
           error={errors.currentPassword?.message}
           {...register("currentPassword")}
         />
 
-        <Input
+        <PasswordInput
           label="New password"
-          type="password"
           autoComplete="new-password"
           required
           error={errors.newPassword?.message}
           {...register("newPassword")}
         />
 
-        <Input
+        <PasswordInput
           label="Confirm new password"
-          type="password"
           autoComplete="new-password"
           required
           error={errors.confirmNewPassword?.message}

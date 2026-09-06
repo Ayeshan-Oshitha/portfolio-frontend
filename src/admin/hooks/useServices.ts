@@ -2,18 +2,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as servicesService from "@/admin/services/servicesService";
 import type { GetServicesParams } from "@/admin/services/servicesService";
 import { serviceKeys } from "@/admin/hooks/queryKeys";
-import type {
-  FeatureReorderRequest,
-  ReorderRequest,
-  ServiceFeatureWriteRequest,
-  ServiceWriteRequest,
-} from "@/admin/types";
+import type { ReorderRequest, ServiceWriteRequest } from "@/admin/types";
 
 export function useServices(params: GetServicesParams) {
   return useQuery({
     queryKey: serviceKeys.list(params),
     queryFn: ({ signal }) => servicesService.getServices(params, signal),
     placeholderData: (previous) => previous,
+  });
+}
+
+export function useService(id: string | undefined) {
+  return useQuery({
+    queryKey: serviceKeys.detail(id ?? ""),
+    queryFn: ({ signal }) => servicesService.getService(id as string, signal),
+    enabled: id !== undefined,
   });
 }
 
@@ -33,8 +36,9 @@ export function useUpdateService() {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: ServiceWriteRequest }) =>
       servicesService.updateService(id, body),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: serviceKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: serviceKeys.detail(id) });
     },
   });
 }
@@ -60,62 +64,15 @@ export function useSetServicePublished() {
   });
 }
 
+/**
+ * No `invalidateQueries` here — the caller (the reorder/visibility screen)
+ * writes the reordered rows straight into the cache as an optimistic update,
+ * and a successful reorder leaves that cache exactly matching the server, so
+ * a refetch here would just swap in fresh object references a beat later and
+ * jolt the drag positions for no reason — see `ArticleOrderPage`'s reorder.
+ */
 export function useReorderServices() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: ReorderRequest) => servicesService.reorderServices(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: serviceKeys.lists() });
-    },
-  });
-}
-
-export function useAddServiceFeature() {
-  return useMutation({
-    mutationFn: ({
-      serviceId,
-      body,
-    }: {
-      serviceId: string;
-      body: ServiceFeatureWriteRequest;
-    }) => servicesService.addServiceFeature(serviceId, body),
-  });
-}
-
-export function useUpdateServiceFeature() {
-  return useMutation({
-    mutationFn: ({
-      serviceId,
-      featureId,
-      body,
-    }: {
-      serviceId: string;
-      featureId: string;
-      body: ServiceFeatureWriteRequest;
-    }) => servicesService.updateServiceFeature(serviceId, featureId, body),
-  });
-}
-
-export function useDeleteServiceFeature() {
-  return useMutation({
-    mutationFn: ({
-      serviceId,
-      featureId,
-    }: {
-      serviceId: string;
-      featureId: string;
-    }) => servicesService.deleteServiceFeature(serviceId, featureId),
-  });
-}
-
-export function useReorderServiceFeatures() {
-  return useMutation({
-    mutationFn: ({
-      serviceId,
-      body,
-    }: {
-      serviceId: string;
-      body: FeatureReorderRequest;
-    }) => servicesService.reorderServiceFeatures(serviceId, body),
   });
 }

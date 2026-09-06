@@ -5,13 +5,21 @@ import LoadingState from "./LoadingState";
 
 interface DataTableShellProps {
   readonly isLoading: boolean;
+  /**
+   * A background refetch is in flight — e.g. a filter changed and
+   * `placeholderData: (previous) => previous` is keeping the old rows around
+   * as `data` while the new page loads. Treated the same as `isLoading`: the
+   * stale rows are replaced with the spinner rather than left on screen, so
+   * there is exactly one loading state, not old data plus a second spinner
+   * layered on top of it.
+   */
+  readonly isFetching?: boolean;
   readonly isEmpty: boolean;
   readonly error?: string | null;
   readonly emptyTitle: string;
   readonly emptyDescription?: string;
   readonly emptyIcon?: LucideIcon;
   readonly emptyAction?: React.ReactNode;
-  readonly skeletonRows?: number;
   readonly children: React.ReactNode;
 }
 
@@ -28,13 +36,13 @@ interface DataTableShellProps {
  */
 export default function DataTableShell({
   isLoading,
+  isFetching,
   isEmpty,
   error,
   emptyTitle,
   emptyDescription,
   emptyIcon,
   emptyAction,
-  skeletonRows,
   children,
 }: DataTableShellProps) {
   return (
@@ -45,8 +53,8 @@ export default function DataTableShell({
         </div>
       )}
 
-      {isLoading ? (
-        <LoadingState rows={skeletonRows} />
+      {isLoading || isFetching ? (
+        <LoadingState />
       ) : isEmpty ? (
         <EmptyState
           icon={emptyIcon}

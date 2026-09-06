@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-/** Mirrors the hand-rolled checks in the API's `Services/ReviewService.cs`. */
+/**
+ * Mirrors the hand-rolled checks in the API's `Services/ReviewService.cs`. No
+ * editable sort order field — a new review is appended to the end
+ * server-side, and order only ever changes by dragging rows in the admin
+ * list.
+ */
 
 const optionalText = z.string().trim().optional();
-
-/** Registered with `valueAsNumber`, so a blank field arrives as NaN. */
-const sortOrder = z
-  .number({ message: "Sort order must be a whole number." })
-  .int("Sort order must be a whole number.");
 
 export const reviewSchema = z.object({
   name: z.string().trim().min(1, "Name is required."),
@@ -26,7 +26,6 @@ export const reviewSchema = z.object({
   reviewText: z.string().trim().min(1, "Review text is required."),
   isPublished: z.boolean(),
   isFeatured: z.boolean(),
-  sortOrder,
 });
 
 export type ReviewFormValues = z.infer<typeof reviewSchema>;

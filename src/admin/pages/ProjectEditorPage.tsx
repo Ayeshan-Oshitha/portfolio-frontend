@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import ProjectImagesEditor from "@/admin/components/projects/ProjectImagesEditor";
@@ -23,6 +23,7 @@ import {
   Button,
   Checkbox,
   Input,
+  MarkdownField,
   PageHeader,
   Spinner,
   TagPicker,
@@ -56,17 +57,7 @@ const TAB_FIELDS: Record<TabId, readonly (keyof ProjectFormValues)[]> = {
   ],
   "case-study": ["problem", "solution", "whatWeDelivered", "proof"],
   gallery: [],
-  visibility: [
-    "isPublished",
-    "showOnAgency",
-    "featuredOnAgency",
-    "agencySortOrder",
-    "showOnPersonal",
-    "featuredOnPersonal",
-    "personalSortOrder",
-    "seoTitle",
-    "seoDescription",
-  ],
+  visibility: ["isPublished", "seoTitle", "seoDescription"],
 };
 
 const TAB_BASE =
@@ -91,10 +82,8 @@ function blankValues(): ProjectFormValues {
     seoDescription: "",
     showOnAgency: false,
     featuredOnAgency: false,
-    agencySortOrder: 0,
     showOnPersonal: false,
     featuredOnPersonal: false,
-    personalSortOrder: 0,
     tagIds: [],
   };
 }
@@ -124,10 +113,8 @@ function toFormValues(project: AdminProject | null): ProjectFormValues {
     seoDescription: project.seoDescription ?? "",
     showOnAgency: project.showOnAgency,
     featuredOnAgency: project.featuredOnAgency,
-    agencySortOrder: project.agencySortOrder,
     showOnPersonal: project.showOnPersonal,
     featuredOnPersonal: project.featuredOnPersonal,
-    personalSortOrder: project.personalSortOrder,
     tagIds: project.tags.map((tag) => tag.id),
   };
 }
@@ -146,6 +133,10 @@ function blank(value?: string): string | undefined {
 export default function ProjectEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  // Set by the create flow below, so a brand-new project can land straight on
+  // the Gallery tab instead of the user having to find and click it.
+  const location = useLocation();
+  const initialTab = (location.state as { openTab?: TabId } | null)?.openTab;
 
   const {
     data: project,
@@ -178,6 +169,7 @@ export default function ProjectEditorPage() {
     <ProjectForm
       key={project?.id ?? "new"}
       project={project ?? null}
+      initialTab={project ? initialTab : undefined}
       onDone={() => navigate("/admin/projects")}
     />
   );
@@ -186,11 +178,14 @@ export default function ProjectEditorPage() {
 interface ProjectFormProps {
   /** `null` puts the form in create mode. */
   readonly project: AdminProject | null;
+  /** Where to land after a create redirected here — usually "gallery". */
+  readonly initialTab?: TabId;
   readonly onDone: () => void;
 }
 
-function ProjectForm({ project, onDone }: ProjectFormProps) {
-  const [tab, setTab] = useState<TabId>("details");
+function ProjectForm({ project, initialTab, onDone }: ProjectFormProps) {
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<TabId>(initialTab ?? "details");
   const toast = useToast();
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
@@ -213,10 +208,7 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
     },
   );
 
-  // "Featured" requires "show" on the same site, so each checkbox is disabled until its partner is on.
   const title = useWatch({ control, name: "title" });
-  const showOnAgency = useWatch({ control, name: "showOnAgency" });
-  const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
 
   const tabsWithErrors = useMemo(() => {
     const flagged = new Set<TabId>();
@@ -243,13 +235,12 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
       isPublished: values.isPublished,
       seoTitle: blank(values.seoTitle),
       seoDescription: blank(values.seoDescription),
+      // Show/feature per site are set from the Reorder & Visibility screen, not
+      // this form — carried through untouched so saving other fields doesn't reset them.
       showOnAgency: values.showOnAgency,
-      // Re-enforced here since a disabled checkbox keeps its last submitted value.
-      featuredOnAgency: values.showOnAgency && values.featuredOnAgency,
-      agencySortOrder: values.agencySortOrder,
+      featuredOnAgency: values.featuredOnAgency,
       showOnPersonal: values.showOnPersonal,
-      featuredOnPersonal: values.showOnPersonal && values.featuredOnPersonal,
-      personalSortOrder: values.personalSortOrder,
+      featuredOnPersonal: values.featuredOnPersonal,
       tagIds: values.tagIds,
     };
 
@@ -257,12 +248,19 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
       if (project) {
         await updateProjectMutation.mutateAsync({ id: project.id, body });
         toast.success("Project updated.");
+        clearPersisted();
+        onDone();
       } else {
-        await createProjectMutation.mutateAsync(body);
-        toast.success("Project created.");
+        const created = await createProjectMutation.mutateAsync(body);
+        toast.success("Project created — add gallery images below.");
+        clearPersisted();
+        // Straight into edit mode on the Gallery tab, not the list — a brand
+        // new project has no gallery until it has an id, so this is the
+        // earliest point images can be added.
+        navigate(`/admin/projects/${created.id}`, {
+          state: { openTab: "gallery" },
+        });
       }
-      clearPersisted();
-      onDone();
     } catch (error) {
       if (error instanceof ApiError && error.code === "slug_taken") {
         setTab("details");
@@ -373,12 +371,19 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
             {...register("shortDescription")}
           />
 
-          <Textarea
-            label="Description (markdown)"
-            required
-            rows={10}
-            error={errors.description?.message}
-            {...register("description")}
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <MarkdownField
+                label="Description"
+                required
+                height={320}
+                value={field.value}
+                onChange={field.onChange}
+                error={errors.description?.message}
+              />
+            )}
           />
 
           <Controller
@@ -398,36 +403,59 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
 
         <div className={tab === "case-study" ? "space-y-5" : "hidden"}>
           <p className="text-sm text-text-muted">
-            All four are optional and rendered as markdown on the public case
-            study page.
+            All four are optional and rendered on the public case study page.
           </p>
 
-          <Textarea
-            label="Problem"
-            rows={5}
-            error={errors.problem?.message}
-            {...register("problem")}
+          <Controller
+            control={control}
+            name="problem"
+            render={({ field }) => (
+              <MarkdownField
+                label="Problem"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.problem?.message}
+              />
+            )}
           />
 
-          <Textarea
-            label="Solution"
-            rows={5}
-            error={errors.solution?.message}
-            {...register("solution")}
+          <Controller
+            control={control}
+            name="solution"
+            render={({ field }) => (
+              <MarkdownField
+                label="Solution"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.solution?.message}
+              />
+            )}
           />
 
-          <Textarea
-            label="What we delivered"
-            rows={5}
-            error={errors.whatWeDelivered?.message}
-            {...register("whatWeDelivered")}
+          <Controller
+            control={control}
+            name="whatWeDelivered"
+            render={({ field }) => (
+              <MarkdownField
+                label="What we delivered"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.whatWeDelivered?.message}
+              />
+            )}
           />
 
-          <Textarea
-            label="Proof"
-            rows={5}
-            error={errors.proof?.message}
-            {...register("proof")}
+          <Controller
+            control={control}
+            name="proof"
+            render={({ field }) => (
+              <MarkdownField
+                label="Proof"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={errors.proof?.message}
+              />
+            )}
           />
         </div>
 
@@ -448,60 +476,9 @@ function ProjectForm({ project, onDone }: ProjectFormProps) {
         <div className={tab === "visibility" ? "space-y-5" : "hidden"}>
           <Checkbox
             label="Published"
-            hint="Drafts stay off both public sites regardless of the visibility flags below."
+            hint="Drafts stay off both public sites. Once published, use Reorder & Visibility to show it on a site."
             {...register("isPublished")}
           />
-
-          <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
-            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-              Agency site
-            </legend>
-
-            <Checkbox label="Show on agency" {...register("showOnAgency")} />
-
-            <Checkbox
-              label="Featured on agency"
-              disabled={!showOnAgency}
-              error={errors.featuredOnAgency?.message}
-              {...register("featuredOnAgency")}
-            />
-
-            <Input
-              label="Sort order"
-              type="number"
-              step={1}
-              containerClassName="w-32"
-              error={errors.agencySortOrder?.message}
-              {...register("agencySortOrder", { valueAsNumber: true })}
-            />
-          </fieldset>
-
-          <fieldset className="rounded-lg border border-border-subtle p-4 space-y-4">
-            <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-              Personal site
-            </legend>
-
-            <Checkbox
-              label="Show on personal"
-              {...register("showOnPersonal")}
-            />
-
-            <Checkbox
-              label="Featured on personal"
-              disabled={!showOnPersonal}
-              error={errors.featuredOnPersonal?.message}
-              {...register("featuredOnPersonal")}
-            />
-
-            <Input
-              label="Sort order"
-              type="number"
-              step={1}
-              containerClassName="w-32"
-              error={errors.personalSortOrder?.message}
-              {...register("personalSortOrder", { valueAsNumber: true })}
-            />
-          </fieldset>
 
           <Input
             label="SEO title"

@@ -69,13 +69,15 @@ export function useSetProjectPublished() {
   });
 }
 
+/**
+ * No `invalidateQueries` here — the caller writes the reordered rows straight
+ * into the cache as an optimistic update, and a successful reorder leaves
+ * that cache exactly matching the server (the endpoint sets each `sortOrder`
+ * to what was sent), so there's nothing left to refetch.
+ */
 export function useReorderProjects() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: ReorderRequest) => projectsService.reorderProjects(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
-    },
   });
 }
 
@@ -134,8 +136,14 @@ export function useDeleteProjectImage() {
   });
 }
 
+/**
+ * No `invalidateQueries` here — same reasoning as `useReorderProjects`: the
+ * caller writes the reordered images straight into the project's query cache
+ * as an optimistic update, and the endpoint sets each image's `sortOrder` to
+ * exactly what was sent, so a refetch here would just swap in fresh object
+ * references a beat later and jolt dnd-kit's drag positions for no reason.
+ */
 export function useReorderProjectImages() {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
       projectId,
@@ -144,7 +152,5 @@ export function useReorderProjectImages() {
       projectId: string;
       body: ImageReorderRequest;
     }) => projectsService.reorderProjectImages(projectId, body),
-    onSuccess: (_data, { projectId }) =>
-      invalidateProject(queryClient, projectId),
   });
 }

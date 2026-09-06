@@ -26,8 +26,12 @@ export default function ToastProvider({ children }: ToastProviderProps) {
     (variant: ToastItem["variant"], message: string) => {
       const id = nextId.current++;
       setToasts((current) => [...current, { id, variant, message }]);
-      const timer = setTimeout(() => dismiss(id), AUTO_DISMISS_MS);
-      timers.current.set(id, timer);
+      // Loading toasts stay until the caller dismisses them explicitly.
+      if (variant !== "loading") {
+        const timer = setTimeout(() => dismiss(id), AUTO_DISMISS_MS);
+        timers.current.set(id, timer);
+      }
+      return id;
     },
     [dismiss],
   );
@@ -49,10 +53,14 @@ export default function ToastProvider({ children }: ToastProviderProps) {
     [push],
   );
   const info = useCallback((message: string) => push("info", message), [push]);
+  const loading = useCallback(
+    (message: string) => push("loading", message),
+    [push],
+  );
 
   const value = useMemo(
-    () => ({ toasts, dismiss, success, error, info }),
-    [toasts, dismiss, success, error, info],
+    () => ({ toasts, dismiss, success, error, info, loading }),
+    [toasts, dismiss, success, error, info, loading],
   );
 
   return (

@@ -1,24 +1,26 @@
 import { useRef, useState } from "react";
 import { ImagePlus, Star } from "lucide-react";
 import { uploadImage } from "@/admin/services/mediaService";
+import { useMediaConfig } from "@/admin/hooks/useMedia";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import {
   altTextFromFileName,
   extractMarkdownImages,
   imageMarkdown,
+  resolveMediaDisplayUrl,
 } from "@/admin/utils/markdownImages";
 import { Button, Spinner } from "@/admin/components/ui";
 
 interface ArticleCoverPickerProps {
   /** The article body — the only source of selectable images. */
   readonly markdown: string;
-  /** Currently chosen cover url, or `""` when none is set yet. */
+  /** Currently chosen cover reference (a `media://` token or legacy url), or `""` when none is set yet. */
   readonly coverUrl: string;
   /** Folder the upload lands in; the API rejects an articles upload without it. */
   readonly slug: string;
   readonly onInsert: (snippet: string) => void;
-  readonly onSelectCover: (url: string) => void;
+  readonly onSelectCover: (reference: string) => void;
   readonly error?: string;
 }
 
@@ -40,6 +42,7 @@ export default function ArticleCoverPicker({
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { data: mediaConfig } = useMediaConfig();
 
   const images = extractMarkdownImages(markdown);
   const coverIsStale = coverUrl !== "" && !images.includes(coverUrl);
@@ -53,11 +56,11 @@ export default function ArticleCoverPicker({
     setIsUploading(true);
     try {
       const altText = altTextFromFileName(file.name);
-      const url = await uploadImage({ target: "articles", slug }, file);
+      const reference = await uploadImage({ target: "articles", slug }, file);
 
-      onInsert(imageMarkdown(url, altText));
+      onInsert(imageMarkdown(reference, altText));
       // First image in is almost always the intended cover; still overridable below.
-      if (!coverUrl) onSelectCover(url);
+      if (!coverUrl) onSelectCover(reference);
       toast.success("Image uploaded and added to the content.");
     } catch (cause) {
       toast.error(toErrorMessage(cause));
@@ -117,14 +120,15 @@ export default function ArticleCoverPicker({
         </p>
       ) : (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {images.map((url) => {
-            const isCover = url === coverUrl;
+          {images.map((reference) => {
+            const isCover = reference === coverUrl;
+            const displayUrl = resolveMediaDisplayUrl(reference, mediaConfig?.publicBaseUrl);
 
             return (
-              <li key={url}>
+              <li key={reference}>
                 <button
                   type="button"
-                  onClick={() => onSelectCover(url)}
+                  onClick={() => onSelectCover(reference)}
                   aria-pressed={isCover}
                   className={`group relative block w-full overflow-hidden rounded-lg border transition-colors duration-200 cursor-pointer ${
                     isCover
@@ -132,12 +136,18 @@ export default function ArticleCoverPicker({
                       : "border-border-subtle hover:border-border-default"
                   }`}
                 >
-                  <img
-                    src={url}
-                    alt=""
-                    className="h-24 w-full object-cover"
-                    loading="lazy"
-                  />
+                  {displayUrl ? (
+                    <img
+                      src={displayUrl}
+                      alt=""
+                      className="h-24 w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-24 w-full items-center justify-center bg-surface-800">
+                      <Spinner className="h-4 w-4" label="Loading" />
+                    </div>
+                  )}
 
                   <span
                     className={`flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-medium ${

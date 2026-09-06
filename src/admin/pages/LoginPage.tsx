@@ -12,7 +12,7 @@ import {
   loginSchema,
   type LoginFormValues,
 } from "@/admin/validation/authSchemas";
-import { Alert, Button, Input } from "@/admin/components/ui";
+import { Alert, Button, Input, PasswordInput } from "@/admin/components/ui";
 
 const CURATED_AUTH_ERROR_CODES = new Set([
   "invalid_credentials",
@@ -116,9 +116,8 @@ export default function LoginPage() {
           {...register("email")}
         />
 
-        <Input
+        <PasswordInput
           label="Password"
-          type="password"
           autoComplete="current-password"
           placeholder="••••••••"
           required

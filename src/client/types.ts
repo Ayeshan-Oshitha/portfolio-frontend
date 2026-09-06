@@ -82,7 +82,10 @@ export interface Service {
   readonly id: string;
   readonly title: string;
   readonly description: string;
-  readonly icon: LucideIcon;
+  /** Static, curated services carry a Lucide icon; API-driven ones carry `iconUrl` instead. */
+  readonly icon?: LucideIcon;
+  readonly iconUrl?: string;
+  readonly iconAltText?: string;
   readonly href: string;
 }
 
@@ -131,7 +134,6 @@ export interface BlogPost {
   readonly href: string;
   // Detail-page-only field, populated when the post came from the API.
   readonly contentMarkdown?: string;
-  readonly mediumUrl?: string;
 }
 
 // ─── Reviews ─────────────────────────────────────────────────
@@ -174,9 +176,6 @@ export interface ApiTag {
   readonly slug: string;
   readonly isTechnology: boolean;
   readonly technologyCategory?: string;
-  readonly iconUrl?: string;
-  readonly colorHex?: string;
-  readonly sortOrder: number;
 }
 
 export interface ApiProjectImage {
@@ -217,13 +216,67 @@ export interface ApiArticle {
   readonly title: string;
   readonly excerpt: string;
   readonly slug?: string;
-  readonly publishedDate: string;
-  readonly mediumUrl?: string;
+  readonly publishedAt?: string;
+  readonly updatedAt: string;
   readonly coverImageKey?: string;
   readonly contentMarkdown?: string;
   readonly featured: boolean;
   readonly sortOrder: number;
   readonly tags: readonly ApiTag[];
+}
+
+/** `DTOs/Public/ServiceProjectResponse.cs` — a case-study card on a service page. */
+export interface ApiServiceProject {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly shortDescription: string;
+  readonly year: number;
+  readonly imageUrl?: string;
+  readonly imageAltText?: string;
+}
+
+/** `DTOs/Public/FaqResponse.cs` */
+export interface ApiFaq {
+  readonly id: string;
+  readonly question: string;
+  readonly answer: string;
+  readonly sortOrder: number;
+}
+
+/**
+ * `DTOs/Public/ServiceResponse.cs`. `projects`/`faqs` are only populated on
+ * `GET /public/services/{slug}` — the list endpoint's cards render neither,
+ * so they come back undefined there.
+ */
+export interface ApiService {
+  readonly id: string;
+  readonly slug: string;
+  readonly name: string;
+  readonly shortDescription: string;
+  readonly eyebrow?: string;
+  readonly headline?: string;
+  readonly deck?: string;
+  readonly whoThisIsFor?: string;
+  readonly outcomes?: string;
+  readonly capabilities?: string;
+  readonly inDepth?: string;
+  readonly primaryCtaLabel?: string;
+  readonly primaryCtaUrl?: string;
+  readonly secondaryCtaLabel?: string;
+  readonly secondaryCtaUrl?: string;
+  readonly iconUrl?: string;
+  readonly iconAltText?: string;
+  readonly heroImageUrl?: string;
+  readonly heroImageAltText?: string;
+  readonly depthImageUrl?: string;
+  readonly depthImageAltText?: string;
+  readonly seoTitle?: string;
+  readonly seoDescription?: string;
+  readonly projects?: readonly ApiServiceProject[];
+  readonly faqs?: readonly ApiFaq[];
+  readonly featured: boolean;
+  readonly sortOrder: number;
 }
 
 export interface ApiReview {
@@ -296,7 +349,11 @@ export interface TechnologyCategoryData {
 export interface PricingTier {
   readonly id: string;
   readonly name: string;
-  readonly price: string;
+  /**
+   * Authored in USD, converted at display time — see `formatMoney`. A number rather than a
+   * pre-formatted string precisely so it can be shown in the visitor's own currency.
+   */
+  readonly priceUsd: number;
   readonly priceLabel: string;
   readonly description: string;
   readonly features: readonly string[];
@@ -315,10 +372,20 @@ export interface ComparisonRow {
 
 export interface AddOn {
   readonly id: string;
-  readonly price: string;
+  /** Authored in USD, converted at display time — same as `PricingTier.priceUsd`. */
+  readonly priceUsd: number;
   readonly unit?: string;
   readonly title: string;
   readonly description: string;
+}
+
+/** `DTOs/Public/CurrencyResponse.cs` — one selectable display currency and its admin-typed rate. */
+export interface ApiCurrency {
+  readonly code: string;
+  readonly name: string;
+  readonly symbol: string;
+  /** Units of this currency per 1 USD. */
+  readonly rateFromUsd: number;
 }
 
 // ─── About ───────────────────────────────────────────────────

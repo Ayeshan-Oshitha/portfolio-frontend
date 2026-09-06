@@ -65,6 +65,7 @@ export default function UsersPage() {
   const {
     data: result,
     isPending: isLoading,
+    isFetching,
     error: queryError,
   } = useUsers({
     search,
@@ -115,7 +116,7 @@ export default function UsersPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <PageHeader
         title="Users"
         description={`${total} ${total === 1 ? "account" : "accounts"} registered.`}
@@ -152,6 +153,7 @@ export default function UsersPage() {
         <DataTableShell
           error={error}
           isLoading={isLoading}
+          isFetching={isFetching}
           isEmpty={rows.length === 0}
           emptyTitle="No users found"
           emptyDescription="No users match this search."

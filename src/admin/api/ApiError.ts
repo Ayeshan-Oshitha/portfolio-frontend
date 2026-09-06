@@ -27,6 +27,11 @@ export default class ApiError extends Error {
   }
 }
 
+/** Axios rejects an aborted request with its own CanceledError, not a DOMException. */
+export function isCanceled(error: unknown): boolean {
+  return axios.isCancel(error);
+}
+
 const GENERIC_SERVER_ERROR =
   "Something went wrong on our end. Please try again in a moment.";
 const GENERIC_CONNECTION_ERROR =

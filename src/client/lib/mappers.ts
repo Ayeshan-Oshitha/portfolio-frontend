@@ -1,4 +1,13 @@
-import type { ApiArticle, ApiProject, BlogPost, Project } from "@/client/types";
+import type {
+  ApiArticle,
+  ApiFaq,
+  ApiProject,
+  ApiService,
+  BlogPost,
+  FAQ,
+  Project,
+  Service,
+} from "@/client/types";
 
 const FALLBACK_PROJECT_IMAGE = "/images/projects/placeholder.webp";
 const FALLBACK_BLOG_IMAGE = "/images/blog/placeholder.webp";
@@ -70,6 +79,38 @@ function resolveCoverImage(coverImageKey?: string): string {
   return FALLBACK_BLOG_IMAGE;
 }
 
+/**
+ * Strips the most common Markdown syntax for a plain-text card blurb — not a
+ * full parser, just enough that `shortDescription`'s emphasis/link/heading
+ * markers don't render as literal asterisks and brackets on a card.
+ */
+function stripMarkdown(markdown: string): string {
+  return markdown
+    .replace(/`{1,3}[^`]*`{1,3}/g, (match) => match.replace(/`/g, ""))
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^[-*+]\s+/gm, "")
+    .replace(/(\*\*|__|\*|_|~~)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function mapApiServiceToService(api: ApiService): Service {
+  return {
+    id: api.id,
+    title: api.name,
+    description: stripMarkdown(api.shortDescription),
+    iconUrl: api.iconUrl,
+    iconAltText: api.iconAltText,
+    href: `/services/${api.slug}`,
+  };
+}
+
+export function mapApiFaqToFaq(api: ApiFaq): FAQ {
+  return { id: api.id, question: api.question, answer: api.answer };
+}
+
 export function mapApiArticleToBlogPost(api: ApiArticle): BlogPost {
   const slug = api.slug ?? api.id;
   return {
@@ -78,11 +119,10 @@ export function mapApiArticleToBlogPost(api: ApiArticle): BlogPost {
     title: api.title,
     excerpt: api.excerpt,
     category: api.tags[0]?.name ?? "General",
-    date: formatPublishedDate(api.publishedDate),
+    date: formatPublishedDate(api.publishedAt ?? api.updatedAt),
     readTime: estimateReadTime(api.contentMarkdown),
     imagePlaceholder: resolveCoverImage(api.coverImageKey),
     href: `/blog/${slug}`,
     contentMarkdown: api.contentMarkdown,
-    mediumUrl: api.mediumUrl,
   };
 }

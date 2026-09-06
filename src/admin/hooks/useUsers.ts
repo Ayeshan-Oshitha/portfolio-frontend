@@ -4,11 +4,17 @@ import type { GetUsersParams } from "@/admin/services/usersService";
 import { userKeys } from "@/admin/hooks/queryKeys";
 import type { RejectUserRequest } from "@/admin/types";
 
-export function useUsers(params: GetUsersParams) {
+/**
+ * `enabled` defaults to `true`; pass `false` for a caller that isn't sure yet
+ * whether the current user is a super admin — this list is super-admin-only
+ * server-side, so a regular admin must never fire the request at all.
+ */
+export function useUsers(params: GetUsersParams, enabled = true) {
   return useQuery({
     queryKey: userKeys.list(params),
     queryFn: ({ signal }) => usersService.getUsers(params, signal),
     placeholderData: (previous) => previous,
+    enabled,
   });
 }
 

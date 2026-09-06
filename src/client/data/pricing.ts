@@ -17,7 +17,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "starter",
     name: "Starter website",
-    price: "$2,500",
+    priceUsd: 2500,
     priceLabel: "from",
     description:
       "A polished, fast site to establish credibility and capture leads.",
@@ -35,7 +35,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "business",
     name: "Business & e-commerce",
-    price: "$3,500",
+    priceUsd: 3500,
     priceLabel: "from",
     description:
       "A conversion-focused site or online store built to grow revenue.",
@@ -53,7 +53,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
   {
     id: "custom",
     name: "Custom & Plus",
-    price: "$7,500",
+    priceUsd: 7500,
     priceLabel: "from",
     description: "Custom web apps and Plus builds with deep functionality.",
     features: [
@@ -115,26 +115,26 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
 export const ADD_ONS: readonly AddOn[] = [
   {
     id: "brand",
-    price: "$900",
+    priceUsd: 900,
     title: "Brand identity",
     description: "Logo, palette, type and usage guide.",
   },
   {
     id: "seo-sprint",
-    price: "$1,200",
+    priceUsd: 1200,
     title: "SEO sprint",
     description: "Technical audit, fixes and a 90-day plan.",
   },
   {
     id: "care",
-    price: "$600",
+    priceUsd: 600,
     unit: "/mo",
     title: "Care plan",
     description: "Updates, backups, uptime and a support inbox.",
   },
   {
     id: "mobile-shell",
-    price: "$2,400",
+    priceUsd: 2400,
     title: "Mobile app shell",
     description: "iOS + Android wrapper with push and store setup.",
   },

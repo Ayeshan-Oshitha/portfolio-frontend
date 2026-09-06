@@ -3,8 +3,18 @@ import ServiceGrid from "@/client/components/services-page/ServiceGrid";
 import Process from "@/client/components/services-page/Process";
 import FaqSection from "@/client/components/services-page/FaqSection";
 import PanelCTA from "@/client/components/ui/PanelCTA";
+import { useFaqs } from "@/client/hooks/useFaqs";
+import { mapApiFaqToFaq } from "@/client/lib/mappers";
 
 export default function ServicesPage() {
+  const { data: apiFaqs, isPending, isError } = useFaqs();
+  // Falls back to the static FAQ_DATA (FaqSection's own default) while
+  // loading, on error, or once nothing published exists yet.
+  const faqs =
+    !isPending && !isError && apiFaqs && apiFaqs.length > 0
+      ? apiFaqs.map(mapApiFaqToFaq)
+      : undefined;
+
   return (
     <div className="relative overflow-hidden">
       <div
@@ -20,7 +30,7 @@ export default function ServicesPage() {
         <ServicesHero />
         <ServiceGrid />
         <Process />
-        <FaqSection />
+        <FaqSection faqs={faqs} />
 
         <PanelCTA
           title="Not sure which one you need?"

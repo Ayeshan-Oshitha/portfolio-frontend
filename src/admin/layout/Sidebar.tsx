@@ -17,12 +17,6 @@ const GROUP_LABEL_CLASSES =
 const LINK_BASE =
   "flex items-center gap-3 pl-3 pr-3 py-2 rounded-lg border-l-2 text-sm font-medium transition-colors duration-150";
 
-/** Two initials for the account tile, falling back to the email. */
-function initialsOf(firstName?: string, lastName?: string, email?: string) {
-  const initials = `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.trim();
-  return (initials || email?.[0] || "?").toUpperCase();
-}
-
 /**
  * The CMS sidebar. Fixed on desktop and an off-canvas drawer below `md`.
  *
@@ -101,22 +95,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             );
           })}
         </nav>
-
-        {user && (
-          <div className="shrink-0 border-t border-border-subtle p-3">
-            <div className="flex items-center gap-3 rounded-xl bg-surface-800 border border-border-subtle p-2.5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700 text-xs font-bold">
-                {initialsOf(user.firstName, user.lastName, user.email)}
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">
-                  {user.firstName} {user.lastName}
-                </p>
-                <p className="text-xs text-text-muted truncate">{user.email}</p>
-              </div>
-            </div>
-          </div>
-        )}
       </aside>
     </>
   );

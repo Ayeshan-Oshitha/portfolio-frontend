@@ -10,6 +10,8 @@
  * scroll inside its card rather than pushing the page sideways.
  */
 
+import { forwardRef } from "react";
+
 interface TableProps {
   readonly children: React.ReactNode;
   readonly className?: string;
@@ -61,15 +63,29 @@ export function TBody({ children }: { readonly children: React.ReactNode }) {
   return <tbody>{children}</tbody>;
 }
 
-export function TR({ children, className = "" }: TableProps) {
-  return (
-    <tr
-      className={`border-b border-border-subtle/70 last:border-0 hover:bg-surface-800/50 transition-colors duration-150 ${className}`}
-    >
-      {children}
-    </tr>
-  );
+interface TRProps
+  extends Omit<React.HTMLAttributes<HTMLTableRowElement>, "children"> {
+  readonly children: React.ReactNode;
 }
+
+/**
+ * Forwards its ref and any extra `<tr>` props (style, drag-and-drop
+ * attributes/listeners, ...) so list pages can wire it up as a dnd-kit
+ * sortable row without a bespoke row component.
+ */
+export const TR = forwardRef<HTMLTableRowElement, TRProps>(
+  function TR({ children, className = "", ...rest }, ref) {
+    return (
+      <tr
+        ref={ref}
+        className={`border-b border-border-subtle/70 last:border-0 hover:bg-surface-800/50 transition-colors duration-150 ${className}`}
+        {...rest}
+      >
+        {children}
+      </tr>
+    );
+  },
+);
 
 interface TDProps extends CellProps {
   /** `primary` is the row's identifying cell — darker and medium weight. */

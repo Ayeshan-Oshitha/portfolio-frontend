@@ -1,17 +1,25 @@
 import { useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
-import { useCreateTag, useUpdateTag } from "@/admin/hooks/useTags";
+import {
+  useCreateTag,
+  useTechCategories,
+  useUpdateTag,
+} from "@/admin/hooks/useTags";
 import ApiError, { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
-import {
-  TECH_CATEGORIES,
-  slugify,
-  techCategoryLabel,
-} from "@/admin/utils/format";
+import { slugify } from "@/admin/utils/format";
+import { FIELD_BASE, FIELD_LABEL, FIELD_SIZE } from "@/admin/components/ui/fieldClasses";
 import type { AdminTag, TagWriteRequest, TechCategory } from "@/admin/types";
 import { tagSchema, type TagFormValues } from "@/admin/validation/tagSchemas";
-import { Button, Checkbox, Input, Modal, Select } from "@/admin/components/ui";
+import {
+  Button,
+  Checkbox,
+  Input,
+  LoadingDots,
+  Modal,
+  Select,
+} from "@/admin/components/ui";
 
 interface TagFormModalProps {
   /** `null` opens the dialog in create mode. */
@@ -20,20 +28,11 @@ interface TagFormModalProps {
   readonly onSaved: () => void;
 }
 
-const CATEGORY_OPTIONS = TECH_CATEGORIES.map((category) => ({
-  value: category,
-  label: techCategoryLabel(category),
-}));
-
 const BLANK_VALUES: TagFormValues = {
   name: "",
   slug: "",
   isTechnology: false,
   technologyCategory: "",
-  iconCloudinaryId: "",
-  iconUrl: "",
-  colorHex: "",
-  sortOrder: 0,
 };
 
 function toFormValues(tag: AdminTag | null): TagFormValues {
@@ -44,10 +43,6 @@ function toFormValues(tag: AdminTag | null): TagFormValues {
     slug: tag.slug,
     isTechnology: tag.isTechnology,
     technologyCategory: tag.technologyCategory ?? "",
-    iconCloudinaryId: tag.iconCloudinaryId ?? "",
-    iconUrl: tag.iconUrl ?? "",
-    colorHex: tag.colorHex ?? "",
-    sortOrder: tag.sortOrder,
   };
 }
 
@@ -70,6 +65,13 @@ export default function TagFormModal({
   const createTagMutation = useCreateTag();
   const updateTagMutation = useUpdateTag();
   const isSaving = createTagMutation.isPending || updateTagMutation.isPending;
+
+  const { data: techCategories, isPending: isLoadingCategories } =
+    useTechCategories();
+  const categoryOptions = (techCategories ?? []).map((option) => ({
+    value: option.value,
+    label: option.label,
+  }));
 
   const {
     register,
@@ -97,12 +99,6 @@ export default function TagFormModal({
       technologyCategory: values.isTechnology
         ? (blank(values.technologyCategory) as TechCategory | undefined)
         : undefined,
-      iconCloudinaryId: values.isTechnology
-        ? blank(values.iconCloudinaryId)
-        : undefined,
-      iconUrl: values.isTechnology ? blank(values.iconUrl) : undefined,
-      colorHex: blank(values.colorHex)?.toLowerCase(),
-      sortOrder: values.sortOrder,
     };
 
     try {
@@ -156,56 +152,30 @@ export default function TagFormModal({
 
         <Checkbox
           label="Technology"
-          hint="Technology tags appear in the tech grid and need a category and icon. Leave off for a project or article category."
+          hint="Technology tags appear in the tech grid and need a category. Leave off for a project or article category."
           {...register("isTechnology")}
         />
 
-        {isTechnology && (
-          <>
+        {isTechnology &&
+          (isLoadingCategories ? (
+            <div>
+              <span className={FIELD_LABEL}>Tech Category</span>
+              <div
+                className={`${FIELD_BASE} ${FIELD_SIZE.md} flex items-center border-border-default text-text-muted`}
+              >
+                <LoadingDots label="Loading categories" />
+              </div>
+            </div>
+          ) : (
             <Select
-              label="Category"
+              label="Tech Category"
               required
               placeholder="Select a category"
-              options={CATEGORY_OPTIONS}
+              options={categoryOptions}
               error={errors.technologyCategory?.message}
               {...register("technologyCategory")}
             />
-
-            <Input
-              label="Icon Cloudinary id"
-              required
-              placeholder="client/tech/react"
-              error={errors.iconCloudinaryId?.message}
-              {...register("iconCloudinaryId")}
-            />
-
-            <Input
-              label="Icon URL"
-              placeholder="https://res.cloudinary.com/…"
-              error={errors.iconUrl?.message}
-              {...register("iconUrl")}
-            />
-          </>
-        )}
-
-        <div className="flex gap-4">
-          <Input
-            label="Colour"
-            placeholder="#38bdf8"
-            containerClassName="flex-1"
-            error={errors.colorHex?.message}
-            {...register("colorHex")}
-          />
-
-          <Input
-            label="Sort order"
-            type="number"
-            step={1}
-            containerClassName="w-32"
-            error={errors.sortOrder?.message}
-            {...register("sortOrder", { valueAsNumber: true })}
-          />
-        </div>
+          ))}
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button

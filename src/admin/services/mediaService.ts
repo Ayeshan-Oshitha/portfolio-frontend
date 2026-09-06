@@ -1,9 +1,8 @@
 import axios from "axios";
 import type {
+  MediaConfigResponse,
   PresignedUploadRequest,
   PresignedUploadResponse,
-  UploadSignatureRequest,
-  UploadSignatureResponse,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
 
@@ -29,29 +28,42 @@ export async function createPresignedUpload(
 export async function uploadToPresignedUrl(
   uploadUrl: string,
   file: File,
+  onProgress?: (percent: number) => void,
 ): Promise<void> {
   await axios.put(uploadUrl, file, {
     headers: { "Content-Type": file.type },
+    onUploadProgress: onProgress
+      ? (event) => {
+          if (event.total) onProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      : undefined,
   });
 }
 
-/** Uploads a file and resolves to the URL it will be readable at. */
+/**
+ * Uploads a file and resolves to a `media://` token identifying it — not the
+ * resolved URL. Storing the token (rather than the long real URL) keeps
+ * markdown short and readable, and lets storage move without rewriting every
+ * article; `resolveMediaDisplayUrl` (in `utils/markdownImages.ts`) turns it
+ * back into something an `<img>` can load, using `getMediaConfig` below.
+ */
 export async function uploadImage(
   request: PresignedUploadRequest,
   file: File,
 ): Promise<string> {
   const presigned = await createPresignedUpload(request);
   await uploadToPresignedUrl(presigned.uploadUrl, file);
-  return presigned.publicUrl;
+  return `media://${presigned.objectKey}`;
 }
 
-/** Feeds a direct, signed upload from the browser straight to Cloudinary. */
-export async function createUploadSignature(
-  body: UploadSignatureRequest,
-): Promise<UploadSignatureResponse> {
-  const { data } = await httpClient.post<UploadSignatureResponse>(
-    "/admin/media/signature",
-    body,
+/**
+ * The base URL a `media://` token's prefix is swapped for to become loadable.
+ * Fetched once and cached — see `useMediaConfig` — rather than resolved
+ * per-image server-side.
+ */
+export async function getMediaConfig(): Promise<MediaConfigResponse> {
+  const { data } = await httpClient.get<MediaConfigResponse>(
+    "/admin/media/config",
   );
   return data;
 }

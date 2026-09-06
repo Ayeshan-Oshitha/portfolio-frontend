@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as tagsService from "@/admin/services/tagsService";
 import type { GetTagsParams } from "@/admin/services/tagsService";
-import { tagKeys } from "@/admin/hooks/queryKeys";
+import { tagKeys, techCategoryKeys } from "@/admin/hooks/queryKeys";
 import type { TagWriteRequest } from "@/admin/types";
 
 export function useTags(params: GetTagsParams) {
@@ -9,6 +9,15 @@ export function useTags(params: GetTagsParams) {
     queryKey: tagKeys.list(params),
     queryFn: ({ signal }) => tagsService.getTags(params, signal),
     placeholderData: (previous) => previous,
+  });
+}
+
+/** The fixed `TechCategory` list — effectively static, so it's fetched once and kept. */
+export function useTechCategories() {
+  return useQuery({
+    queryKey: techCategoryKeys.all,
+    queryFn: ({ signal }) => tagsService.getTechCategories(signal),
+    staleTime: Infinity,
   });
 }
 

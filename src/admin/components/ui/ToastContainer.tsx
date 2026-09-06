@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import AdminPortal from "@/admin/layout/AdminPortal";
 import type { ToastItem, ToastVariant } from "@/admin/context/toastContext";
+import LoadingDots from "./LoadingDots";
 
 interface ToastContainerProps {
   readonly toasts: readonly ToastItem[];
@@ -13,6 +14,7 @@ const VARIANT_CLASSES: Record<ToastVariant, string> = {
   error: "text-danger-500 border-border-subtle border-l-danger-500",
   success: "text-success-500 border-border-subtle border-l-success-500",
   info: "text-text-primary border-border-subtle border-l-accent-500",
+  loading: "text-text-primary border-border-subtle border-l-border-strong",
 };
 
 /**
@@ -34,15 +36,22 @@ export default function ToastContainer({
             role={toast.variant === "error" ? "alert" : "status"}
             className={`flex items-start gap-3 rounded-lg bg-surface-900 border border-l-2 px-4 py-3 text-sm shadow-panel motion-safe:animate-slide-in-right ${VARIANT_CLASSES[toast.variant]}`}
           >
-            <p className="flex-1 min-w-0">{toast.message}</p>
-            <button
-              type="button"
-              onClick={() => onDismiss(toast.id)}
-              aria-label="Dismiss notification"
-              className="shrink-0 -mr-1 -mt-0.5 p-1 rounded text-current opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
-            >
-              <X className="h-3.5 w-3.5" aria-hidden="true" />
-            </button>
+            <p className="flex flex-1 min-w-0 items-center gap-2">
+              <span className="min-w-0">{toast.message}</span>
+              {toast.variant === "loading" && (
+                <LoadingDots className="text-text-muted" label="Working" />
+              )}
+            </p>
+            {toast.variant !== "loading" && (
+              <button
+                type="button"
+                onClick={() => onDismiss(toast.id)}
+                aria-label="Dismiss notification"
+                className="shrink-0 -mr-1 -mt-0.5 p-1 rounded text-current opacity-70 hover:opacity-100 transition-opacity duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-current"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            )}
           </div>
         ))}
       </div>

@@ -1,6 +1,7 @@
 import type {
+  ContactBudgetRange,
+  ContactSubmissionStatus,
   PriceType,
-  TechCategory,
   UserRole,
   UserStatus,
 } from "@/admin/types";
@@ -26,6 +27,16 @@ export function statusLabel(status: UserStatus): string {
   return STATUS_LABELS[status] ?? status;
 }
 
+/** Two initials for an account avatar, falling back to the email. */
+export function initialsOf(
+  firstName?: string,
+  lastName?: string,
+  email?: string,
+): string {
+  const initials = `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.trim();
+  return (initials || email?.[0] || "?").toUpperCase();
+}
+
 /** The API omits `lastLoginAt` entirely when the user has never signed in. */
 export function formatDate(value?: string): string {
   if (!value) return "—";
@@ -37,27 +48,6 @@ export function formatDate(value?: string): string {
   });
 }
 
-const TECH_CATEGORY_LABELS: Record<TechCategory, string> = {
-  frontend: "Frontend",
-  backend: "Backend",
-  language: "Language",
-  database: "Database",
-  tool_or_platform: "Tool / platform",
-  cloud_devops: "Cloud & DevOps",
-  ai_ml_dl: "AI / ML / DL",
-  agentic_ai: "Agentic AI",
-  design: "Design",
-  other: "Other",
-};
-
-/** Every `TechCategory` in the order the API's enum declares them. */
-export const TECH_CATEGORIES = Object.keys(
-  TECH_CATEGORY_LABELS,
-) as readonly TechCategory[];
-
-export function techCategoryLabel(category: TechCategory): string {
-  return TECH_CATEGORY_LABELS[category] ?? category;
-}
 
 /**
  * Preview only — the API generates the real slug with `SlugGenerator.Generate`
@@ -69,28 +59,6 @@ export function slugify(value: string): string {
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-/**
- * `publishedDate` is a `DateOnly` (`YYYY-MM-DD`). Parsing it with `new Date`
- * would read it as UTC midnight and render the previous day west of Greenwich,
- * so the parts are split out and handed to a local-time constructor instead.
- */
-export function formatDateOnly(value?: string): string {
-  if (!value) return "—";
-  const [year, month, day] = value.split("-").map(Number);
-  if (!year || !month || !day) return "—";
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
-    dateStyle: "medium",
-  });
-}
-
-/** Today as `YYYY-MM-DD` in local time — the default for a new article. */
-export function todayDateOnly(): string {
-  const now = new Date();
-  const month = `${now.getMonth() + 1}`.padStart(2, "0");
-  const day = `${now.getDate()}`.padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 const PRICE_TYPE_LABELS: Record<PriceType, string> = {
@@ -135,12 +103,31 @@ export function formatPrice(plan: {
   }
 }
 
-/** How long delivery takes, preferring the free-text override when set. */
-export function formatDelivery(plan: {
-  readonly deliveryDays?: number;
-  readonly deliveryText?: string;
-}): string {
-  if (plan.deliveryText) return plan.deliveryText;
-  if (plan.deliveryDays === undefined) return "—";
-  return `${plan.deliveryDays} ${plan.deliveryDays === 1 ? "day" : "days"}`;
+/** Delivery is free text only — there's no separate numeric days field. */
+export function formatDelivery(plan: { readonly deliveryText?: string }): string {
+  return plan.deliveryText ?? "—";
+}
+
+const CONTACT_STATUS_LABELS: Record<ContactSubmissionStatus, string> = {
+  new: "New",
+  read: "Read",
+  replied: "Replied",
+  archived: "Archived",
+  spam: "Spam",
+};
+
+export function contactStatusLabel(status: ContactSubmissionStatus): string {
+  return CONTACT_STATUS_LABELS[status] ?? status;
+}
+
+const CONTACT_BUDGET_RANGE_LABELS: Record<ContactBudgetRange, string> = {
+  under_one_k: "Under $1k",
+  one_to_five_k: "$1k–$5k",
+  five_to_fifteen_k: "$5k–$15k",
+  over_fifteen_k: "$15k+",
+  not_sure: "Not sure",
+};
+
+export function contactBudgetRangeLabel(range: ContactBudgetRange): string {
+  return CONTACT_BUDGET_RANGE_LABELS[range] ?? range;
 }

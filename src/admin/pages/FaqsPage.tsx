@@ -1,20 +1,40 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import FaqFormModal from "@/admin/components/faqs/FaqFormModal";
+import SortableFaqRow from "@/admin/components/faqs/SortableFaqRow";
 import { useDeleteFaq, useFaqs, useReorderFaqs } from "@/admin/hooks/useFaqs";
+import { useServices } from "@/admin/hooks/useServices";
+import { faqKeys } from "@/admin/hooks/queryKeys";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
-import type { AdminFaq, Site } from "@/admin/types";
-import { formatDate } from "@/admin/utils/format";
+import type { AdminFaq, PagedResult, Site } from "@/admin/types";
+import {
+  FIELD_BASE,
+  FIELD_LABEL,
+  FIELD_STATE,
+} from "@/admin/components/ui/fieldClasses";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import {
-  Badge,
   Button,
   Card,
+  Checkbox,
   ConfirmDialog,
   DataTableShell,
-  IconButton,
   Input,
   PageHeader,
   Pagination,
@@ -24,31 +44,45 @@ import {
   THead,
   TH,
   TBody,
-  TR,
-  TD,
 } from "@/admin/components/ui";
 
 const PAGE_SIZE = 20;
-
-/** `""` means "either site" — the API omits the filter entirely then. */
-type SiteFilter = "" | Site;
-
-const SITE_OPTIONS = [
-  { value: "", label: "All sites" },
-  { value: "agency", label: "Agency" },
-  { value: "personal", label: "Personal" },
-] as const;
-
-/** Sort order is kept per site, so which column applies depends on the filter. */
-function sortOrderFor(faq: AdminFaq, site: Site): number {
-  return site === "agency" ? faq.agencySortOrder : faq.personalSortOrder;
-}
+/** Well above any realistic service count — this filter isn't paged. */
+const SERVICE_PAGE_SIZE = 100;
+/** Sentinel `<select>` values — actual service ids never collide with these. */
+const SCOPE_ALL = "";
+const SCOPE_GLOBAL = "__global__";
 
 export default function FaqsPage() {
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [searchInput, setSearchInput] = useSearchParamState<string>("q", "");
   const search = useDebounce(searchInput);
-  const [site, setSite] = useSearchParamState<SiteFilter>("site", "");
+
+  // Encoded as "1"/"0" strings so the default (agency only) leaves the URL
+  // clean — `useSearchParamState` omits a param once it matches its default.
+  const [agencyParam, setAgencyParam] = useSearchParamState<string>(
+    "agency",
+    "1",
+  );
+  const [personalParam, setPersonalParam] = useSearchParamState<string>(
+    "personal",
+    "0",
+  );
+  const agencyChecked = agencyParam === "1";
+  const personalChecked = personalParam === "1";
+  const bothChecked = agencyChecked && personalChecked;
+  const noneChecked = !agencyChecked && !personalChecked;
+  const activeSite: Site | null =
+    agencyChecked !== personalChecked
+      ? agencyChecked
+        ? "agency"
+        : "personal"
+      : null;
+  // Both and neither both mean "don't filter by site" to the API — the
+  // "match nothing" case is handled by not querying at all, below.
+  const querySite = activeSite ?? undefined;
+
   const [pageParam, setPageParam] = useSearchParamState<string>("page", "1");
   const page = Number(pageParam) || 1;
   const setPage = (updater: number | ((prev: number) => number)) => {
@@ -60,52 +94,103 @@ export default function FaqsPage() {
   const [editing, setEditing] = useState<AdminFaq | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminFaq | null>(null);
 
+  // "" = every scope (today's behaviour), a magic string = global only,
+  // anything else = that service's own FAQs.
+  const [scopeParam, setScopeParam] = useSearchParamState<string>(
+    "scope",
+    SCOPE_ALL,
+  );
+  const { data: servicesResult } = useServices({ pageSize: SERVICE_PAGE_SIZE });
+  const scopeOptions = [
+    { value: SCOPE_ALL, label: "Every scope" },
+    { value: SCOPE_GLOBAL, label: "Global only" },
+    ...(servicesResult?.items ?? []).map((service) => ({
+      value: service.id,
+      label: service.name,
+    })),
+  ];
+  const serviceId =
+    scopeParam !== SCOPE_ALL && scopeParam !== SCOPE_GLOBAL
+      ? scopeParam
+      : undefined;
+  const globalOnly = scopeParam === SCOPE_GLOBAL;
+
   const {
     data: result,
-    isPending: isLoading,
+    isPending: isLoadingQuery,
+    isFetching: isFetchingQuery,
     error: queryError,
-  } = useFaqs({ search, page, pageSize: PAGE_SIZE });
+  } = useFaqs(
+    { search, site: querySite, serviceId, globalOnly, page, pageSize: PAGE_SIZE },
+    !noneChecked,
+  );
   const deleteFaqMutation = useDeleteFaq();
   const reorderFaqsMutation = useReorderFaqs();
 
+  // With no site selected there is nothing to fetch — the query above stays
+  // disabled, so `isLoadingQuery`/`isFetchingQuery` never resolve on their own.
+  const isLoading = !noneChecked && isLoadingQuery;
+  const isFetching = !noneChecked && isFetchingQuery;
   const error = queryError ? toErrorMessage(queryError) : null;
 
+  // Already ordered by sortOrder server-side — FAQs share one order across
+  // both sites, so there's no per-site re-sort to do here.
+  const rows = noneChecked ? [] : (result?.items ?? []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    }),
+  );
+
   /**
-   * Reordering renumbers the whole visible page, so the rows have to be in the
-   * same order the arrows imply.
+   * Sends the whole page renumbered densely from the dropped order rather
+   * than just the two swapped rows, so the numbering stays contiguous
+   * however it started. Writes the reordered rows into the query cache
+   * immediately (before the request resolves) so dnd-kit's already-reordered
+   * drop position sticks instead of snapping back while the request is in
+   * flight, and rolls back to the pre-drag snapshot on failure.
    */
-  const rows = useMemo(() => {
-    const items = result?.items ?? [];
-    if (!site) return items;
-    return [...items].sort(
-      (a, b) => sortOrderFor(a, site) - sortOrderFor(b, site),
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const fromIndex = rows.findIndex((faq) => faq.id === active.id);
+    const toIndex = rows.findIndex((faq) => faq.id === over.id);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const next = arrayMove([...rows], fromIndex, toIndex);
+    const items = next.map((faq, at) => ({
+      id: faq.id,
+      // Page 2 continues where page 1 left off, so the offset matters.
+      sortOrder: (page - 1) * PAGE_SIZE + at,
+    }));
+
+    const queryKey = faqKeys.list({
+      search,
+      site: querySite,
+      serviceId,
+      globalOnly,
+      page,
+      pageSize: PAGE_SIZE,
+    });
+    const previous =
+      queryClient.getQueryData<PagedResult<AdminFaq>>(queryKey);
+
+    queryClient.setQueryData<PagedResult<AdminFaq> | undefined>(
+      queryKey,
+      (old) =>
+        old && {
+          ...old,
+          items: next.map((faq, at) => ({ ...faq, sortOrder: items[at].sortOrder })),
+        },
     );
-  }, [result, site]);
-
-  /**
-   * Sends the whole page renumbered densely from the index rather than just the
-   * two swapped rows, so the numbering stays contiguous however it started.
-   */
-  async function move(index: number, delta: number) {
-    if (!site) return;
-
-    const target = index + delta;
-    if (target < 0 || target >= rows.length) return;
-
-    const next = [...rows];
-    [next[index], next[target]] = [next[target], next[index]];
 
     try {
-      await reorderFaqsMutation.mutateAsync({
-        site,
-        items: next.map((faq, at) => ({
-          id: faq.id,
-          // Page 2 continues where page 1 left off, so the offset matters.
-          sortOrder: (page - 1) * PAGE_SIZE + at,
-        })),
-      });
+      await reorderFaqsMutation.mutateAsync({ items });
       toast.success("Order updated.");
     } catch (cause) {
+      queryClient.setQueryData(queryKey, previous);
       toast.error(toErrorMessage(cause));
     }
   }
@@ -136,15 +221,24 @@ export default function FaqsPage() {
     }
   }
 
-  const total = result?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const isReordering = reorderFaqsMutation.isPending;
+  const totalCount = result?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const description = noneChecked
+    ? "Select at least one site to see its FAQs."
+    : bothChecked
+      ? `${totalCount} ${totalCount === 1 ? "question" : "questions"} shown across both sites.`
+      : `${totalCount} ${totalCount === 1 ? "question" : "questions"} shown for ${activeSite === "agency" ? "Agency" : "Personal"}.`;
+
+  const hint = noneChecked
+    ? "Check Agency and/or Personal to see FAQs."
+    : "Drag by the handle to set the order FAQs appear in — the order is shared by both sites.";
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <PageHeader
         title="FAQs"
-        description={`${total} ${total === 1 ? "question" : "questions"} shown across both sites.`}
+        description={description}
         actions={
           <Button
             size="sm"
@@ -172,87 +266,86 @@ export default function FaqsPage() {
 
         <Select
           fieldSize="sm"
-          label="Site"
-          options={SITE_OPTIONS}
-          value={site}
+          label="Scope"
+          options={scopeOptions}
+          value={scopeParam}
           onChange={(event) => {
             setPage(1);
-            setSite(event.target.value as SiteFilter);
+            setScopeParam(event.target.value);
           }}
-          containerClassName="w-40"
+          containerClassName="w-48"
         />
+
+        <div className="ml-3">
+          <span className={FIELD_LABEL}>Site</span>
+          <div
+            className={`${FIELD_BASE} ${FIELD_STATE.default} flex h-9 items-center gap-4 px-3`}
+          >
+            <Checkbox
+              label="Agency"
+              checked={agencyChecked}
+              onChange={(event) => {
+                setPage(1);
+                setAgencyParam(event.target.checked ? "1" : "0");
+              }}
+            />
+            <Checkbox
+              label="Personal"
+              checked={personalChecked}
+              onChange={(event) => {
+                setPage(1);
+                setPersonalParam(event.target.checked ? "1" : "0");
+              }}
+            />
+          </div>
+        </div>
       </Toolbar>
 
-      <p className="text-xs text-text-muted mb-6">
-        {site
-          ? "Use the arrows to set the order FAQs appear in on the selected site."
-          : "Sort order is kept per site — pick a single site to reorder FAQs."}
-      </p>
+      <p className="text-xs text-text-muted mb-6">{hint}</p>
 
       <Card padding="none" className="overflow-hidden">
         <DataTableShell
           error={error}
           isLoading={isLoading}
+          isFetching={isFetching}
           isEmpty={rows.length === 0}
           emptyTitle="No FAQs found"
-          emptyDescription="No FAQs match this search."
+          emptyDescription={
+            noneChecked
+              ? "Check Agency and/or Personal above to see FAQs."
+              : "No FAQs match this search."
+          }
         >
           <Table>
             <THead>
+              <TH className="w-10 sr-only">Reorder</TH>
               <TH>Question</TH>
-              <TH>Category</TH>
+              <TH>Scope</TH>
               <TH>Status</TH>
               <TH>Updated</TH>
               <TH className="sr-only">Actions</TH>
             </THead>
-            <TBody>
-              {rows.map((item, index) => (
-                <TR key={item.id}>
-                  <TD className="max-w-sm">
-                    <span className="block text-text-primary font-medium truncate">
-                      {item.question}
-                    </span>
-                  </TD>
-                  <TD>{item.category ?? "—"}</TD>
-                  <TD>
-                    <Badge tone={item.isPublished ? "success" : "neutral"}>
-                      {item.isPublished ? "Published" : "Draft"}
-                    </Badge>
-                  </TD>
-                  <TD variant="nowrap">{formatDate(item.updatedAt)}</TD>
-                  <TD>
-                    <div className="flex items-center justify-end gap-1">
-                      <IconButton
-                        icon={<ArrowUp className="h-4 w-4" />}
-                        label={`Move “${item.question}” up`}
-                        onClick={() => move(index, -1)}
-                        disabled={!site || isReordering || index === 0}
-                      />
-                      <IconButton
-                        icon={<ArrowDown className="h-4 w-4" />}
-                        label={`Move “${item.question}” down`}
-                        onClick={() => move(index, 1)}
-                        disabled={
-                          !site || isReordering || index === rows.length - 1
-                        }
-                      />
-
-                      <IconButton
-                        icon={<Pencil className="h-4 w-4" />}
-                        label={`Edit “${item.question}”`}
-                        onClick={() => openEdit(item)}
-                      />
-                      <IconButton
-                        icon={<Trash2 className="h-4 w-4" />}
-                        label={`Delete “${item.question}”`}
-                        onClick={() => askDelete(item)}
-                        tone="danger"
-                      />
-                    </div>
-                  </TD>
-                </TR>
-              ))}
-            </TBody>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={rows.map((faq) => faq.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <TBody>
+                  {rows.map((item) => (
+                    <SortableFaqRow
+                      key={item.id}
+                      faq={item}
+                      onEdit={openEdit}
+                      onDelete={askDelete}
+                    />
+                  ))}
+                </TBody>
+              </SortableContext>
+            </DndContext>
           </Table>
         </DataTableShell>
       </Card>

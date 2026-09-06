@@ -1,18 +1,15 @@
-import { useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePersistedForm } from "@/shared/hooks/usePersistedForm";
 import { useCreateFaq, useUpdateFaq } from "@/admin/hooks/useFaqs";
+import { useServices } from "@/admin/hooks/useServices";
 import { toErrorMessage } from "@/admin/api/ApiError";
 import useToast from "@/admin/context/useToast";
 import type { AdminFaq, FaqWriteRequest } from "@/admin/types";
 import { faqSchema, type FaqFormValues } from "@/admin/validation/faqSchemas";
-import {
-  Button,
-  Checkbox,
-  Input,
-  Modal,
-  Textarea,
-} from "@/admin/components/ui";
+import { Button, Checkbox, Modal, Select, Textarea } from "@/admin/components/ui";
+
+/** Well above any realistic service count — this picker isn't paged. */
+const SERVICE_PAGE_SIZE = 100;
 
 interface FaqFormModalProps {
   /** `null` opens the dialog in create mode. */
@@ -22,41 +19,25 @@ interface FaqFormModalProps {
 }
 
 const BLANK_VALUES: FaqFormValues = {
+  serviceId: "",
   question: "",
   answer: "",
-  category: "",
-  sortOrder: 0,
   isPublished: false,
   showOnAgency: true,
-  featuredOnAgency: false,
-  agencySortOrder: 0,
   showOnPersonal: false,
-  featuredOnPersonal: false,
-  personalSortOrder: 0,
 };
 
 function toFormValues(faq: AdminFaq | null): FaqFormValues {
   if (!faq) return BLANK_VALUES;
 
   return {
+    serviceId: faq.serviceId ?? "",
     question: faq.question,
     answer: faq.answer,
-    category: faq.category ?? "",
-    sortOrder: faq.sortOrder,
     isPublished: faq.isPublished,
     showOnAgency: faq.showOnAgency,
-    featuredOnAgency: faq.featuredOnAgency,
-    agencySortOrder: faq.agencySortOrder,
     showOnPersonal: faq.showOnPersonal,
-    featuredOnPersonal: faq.featuredOnPersonal,
-    personalSortOrder: faq.personalSortOrder,
   };
-}
-
-/** `""` is how an untouched optional field reaches us; the API wants it gone. */
-function blank(value?: string): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : undefined;
 }
 
 /**
@@ -73,10 +54,18 @@ export default function FaqFormModal({
   const updateFaqMutation = useUpdateFaq();
   const isSaving = createFaqMutation.isPending || updateFaqMutation.isPending;
 
+  const { data: servicesResult } = useServices({ pageSize: SERVICE_PAGE_SIZE });
+  const scopeOptions = [
+    { value: "", label: "Global (both sites' shared list)" },
+    ...(servicesResult?.items ?? []).map((service) => ({
+      value: service.id,
+      label: service.name,
+    })),
+  ];
+
   const {
     register,
     handleSubmit,
-    control,
     reset,
     clearPersisted,
     formState: { errors, isSubmitting },
@@ -85,23 +74,15 @@ export default function FaqFormModal({
     defaultValues: toFormValues(faq),
   });
 
-  const showOnAgency = useWatch({ control, name: "showOnAgency" });
-  const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
-
   async function onSubmit(values: FaqFormValues) {
     // Built explicitly rather than spread: PUT replaces the whole record, so any omitted field resets to default.
     const body: FaqWriteRequest = {
+      serviceId: values.serviceId ? values.serviceId : undefined,
       question: values.question.trim(),
       answer: values.answer.trim(),
-      category: blank(values.category),
-      sortOrder: values.sortOrder,
       isPublished: values.isPublished,
       showOnAgency: values.showOnAgency,
-      featuredOnAgency: values.featuredOnAgency,
-      agencySortOrder: values.agencySortOrder,
       showOnPersonal: values.showOnPersonal,
-      featuredOnPersonal: values.featuredOnPersonal,
-      personalSortOrder: values.personalSortOrder,
     };
 
     try {
@@ -133,6 +114,17 @@ export default function FaqFormModal({
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+        <div>
+          <Select
+            label="Scope"
+            options={scopeOptions}
+            {...register("serviceId")}
+          />
+          <p className="mt-2 text-xs text-text-muted">
+            A service&rsquo;s own FAQs render only on that service&rsquo;s page, not the shared list.
+          </p>
+        </div>
+
         <Textarea
           label="Question"
           required
@@ -151,24 +143,6 @@ export default function FaqFormModal({
           {...register("answer")}
         />
 
-        <div className="flex gap-4">
-          <Input
-            label="Category"
-            containerClassName="flex-1"
-            error={errors.category?.message}
-            {...register("category")}
-          />
-
-          <Input
-            label="Sort order"
-            type="number"
-            step={1}
-            containerClassName="w-32"
-            error={errors.sortOrder?.message}
-            {...register("sortOrder", { valueAsNumber: true })}
-          />
-        </div>
-
         <div className="pt-4 border-t border-border-subtle">
           <Checkbox
             label="Published"
@@ -177,57 +151,19 @@ export default function FaqFormModal({
           />
         </div>
 
-        <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-            Agency site
-          </legend>
+        <div className="pt-4 border-t border-border-subtle space-y-4">
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
+            Site
+          </span>
 
-          <Checkbox label="Show on agency" {...register("showOnAgency")} />
-
-          <div className="flex items-center gap-6 pl-7">
+          <div className="flex items-center gap-6">
+            <Checkbox label="Show on agency" {...register("showOnAgency")} />
             <Checkbox
-              label="Featured"
-              disabled={!showOnAgency}
-              error={errors.featuredOnAgency?.message}
-              {...register("featuredOnAgency")}
-            />
-            <Input
-              label="Order"
-              type="number"
-              step={1}
-              disabled={!showOnAgency}
-              containerClassName="w-28"
-              error={errors.agencySortOrder?.message}
-              {...register("agencySortOrder", { valueAsNumber: true })}
+              label="Show on personal"
+              {...register("showOnPersonal")}
             />
           </div>
-        </fieldset>
-
-        <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-            Personal site
-          </legend>
-
-          <Checkbox label="Show on personal" {...register("showOnPersonal")} />
-
-          <div className="flex items-center gap-6 pl-7">
-            <Checkbox
-              label="Featured"
-              disabled={!showOnPersonal}
-              error={errors.featuredOnPersonal?.message}
-              {...register("featuredOnPersonal")}
-            />
-            <Input
-              label="Order"
-              type="number"
-              step={1}
-              disabled={!showOnPersonal}
-              containerClassName="w-28"
-              error={errors.personalSortOrder?.message}
-              {...register("personalSortOrder", { valueAsNumber: true })}
-            />
-          </div>
-        </fieldset>
+        </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button

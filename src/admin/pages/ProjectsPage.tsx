@@ -1,12 +1,11 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowDown,
-  ArrowUp,
+  Archive,
+  ArrowUpDown,
   ExternalLink,
-  Eye,
-  EyeOff,
   FolderKanban,
+  Globe,
   Pencil,
   Plus,
   Trash2,
@@ -14,7 +13,6 @@ import {
 import {
   useDeleteProject,
   useProjects,
-  useReorderProjects,
   useSetProjectPublished,
 } from "@/admin/hooks/useProjects";
 import { toErrorMessage } from "@/admin/api/ApiError";
@@ -24,7 +22,6 @@ import { formatDate } from "@/admin/utils/format";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParamState } from "@/shared/hooks/useSearchParamState";
 import {
-  Alert,
   Badge,
   Button,
   Card,
@@ -68,13 +65,6 @@ function toIsPublished(status: StatusFilter): boolean | undefined {
   if (status === "published") return true;
   if (status === "draft") return false;
   return undefined;
-}
-
-/** Sort order is kept per site, so which column applies depends on the filter. */
-function sortOrderFor(project: AdminProject, site: Site): number {
-  return site === "agency"
-    ? project.agencySortOrder
-    : project.personalSortOrder;
 }
 
 /**
@@ -124,6 +114,7 @@ export default function ProjectsPage() {
   const {
     data: result,
     isPending: isLoading,
+    isFetching,
     error: queryError,
   } = useProjects({
     search,
@@ -134,22 +125,9 @@ export default function ProjectsPage() {
   });
   const deleteProjectMutation = useDeleteProject();
   const setPublishedMutation = useSetProjectPublished();
-  const reorderProjectsMutation = useReorderProjects();
 
   const error = queryError ? toErrorMessage(queryError) : null;
-
-  /**
-   * Reordering renumbers the whole visible page, so the rows have to be in the
-   * same order the arrows imply. The API already orders by the requested
-   * site's column, but sorting here keeps the two in step after a local swap.
-   */
-  const rows = useMemo(() => {
-    const items = result?.items ?? [];
-    if (!site) return items;
-    return [...items].sort(
-      (a, b) => sortOrderFor(a, site) - sortOrderFor(b, site),
-    );
-  }, [result, site]);
+  const rows = result?.items ?? [];
 
   async function togglePublished(target: AdminProject) {
     setPublishingId(target.id);
@@ -163,34 +141,6 @@ export default function ProjectsPage() {
       toast.error(toErrorMessage(cause));
     } finally {
       setPublishingId(null);
-    }
-  }
-
-  /**
-   * Sends the whole page renumbered densely from the index rather than just the
-   * two swapped rows, so the numbering stays contiguous however it started.
-   */
-  async function move(index: number, delta: number) {
-    if (!site) return;
-
-    const target = index + delta;
-    if (target < 0 || target >= rows.length) return;
-
-    const next = [...rows];
-    [next[index], next[target]] = [next[target], next[index]];
-
-    try {
-      await reorderProjectsMutation.mutateAsync({
-        site,
-        items: next.map((project, at) => ({
-          id: project.id,
-          // Page 2 continues where page 1 left off, so the offset matters.
-          sortOrder: (page - 1) * PAGE_SIZE + at,
-        })),
-      });
-      toast.success("Order updated.");
-    } catch (cause) {
-      toast.error(toErrorMessage(cause));
     }
   }
 
@@ -212,22 +162,32 @@ export default function ProjectsPage() {
 
   const total = result?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const isReordering = reorderProjectsMutation.isPending;
 
   return (
-    <div className="max-w-6xl">
+    <div>
       <PageHeader
         title="Projects"
         description={`${total} ${total === 1 ? "case study" : "case studies"} across both sites.`}
         actions={
-          <Button
-            size="sm"
-            onClick={() => navigate("/admin/projects/new")}
-            icon={<Plus className="h-4 w-4" />}
-            iconPosition="left"
-          >
-            New project
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              href="/admin/projects/order"
+              icon={<ArrowUpDown className="h-4 w-4" />}
+              iconPosition="left"
+            >
+              Reorder & Visibility
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => navigate("/admin/projects/new")}
+              icon={<Plus className="h-4 w-4" />}
+              iconPosition="left"
+            >
+              New project
+            </Button>
+          </div>
         }
       />
 
@@ -269,18 +229,11 @@ export default function ProjectsPage() {
         />
       </Toolbar>
 
-      {/* Reordering is only meaningful within one site, so the hint is only
-          worth showing while no single site is selected. */}
-      {!site && (
-        <Alert variant="info" className="mb-6">
-          Sort order is kept per site — pick a single site to reorder projects.
-        </Alert>
-      )}
-
       <Card padding="none" className="overflow-hidden">
         <DataTableShell
           error={error}
           isLoading={isLoading}
+          isFetching={isFetching}
           isEmpty={rows.length === 0}
           emptyIcon={FolderKanban}
           emptyTitle="No projects found"
@@ -297,7 +250,7 @@ export default function ProjectsPage() {
               <TH className="sr-only">Actions</TH>
             </THead>
             <TBody>
-              {rows.map((item, index) => (
+              {rows.map((item) => (
                 <TR key={item.id}>
                   <TD variant="primary" className="max-w-xs">
                     <span className="flex items-center gap-2">
@@ -356,33 +309,11 @@ export default function ProjectsPage() {
                   <TD align="right">
                     <div className="flex items-center justify-end gap-1">
                       <IconButton
-                        icon={<ArrowUp className="h-4 w-4" />}
-                        label={
-                          site
-                            ? `Move “${item.title}” up`
-                            : "Pick a single site to reorder projects"
-                        }
-                        onClick={() => move(index, -1)}
-                        disabled={!site || isReordering || index === 0}
-                      />
-                      <IconButton
-                        icon={<ArrowDown className="h-4 w-4" />}
-                        label={
-                          site
-                            ? `Move “${item.title}” down`
-                            : "Pick a single site to reorder projects"
-                        }
-                        onClick={() => move(index, 1)}
-                        disabled={
-                          !site || isReordering || index === rows.length - 1
-                        }
-                      />
-                      <IconButton
                         icon={
                           item.isPublished ? (
-                            <EyeOff className="h-4 w-4" />
+                            <Globe className="h-4 w-4" />
                           ) : (
-                            <Eye className="h-4 w-4" />
+                            <Archive className="h-4 w-4" />
                           )
                         }
                         label={
@@ -392,6 +323,7 @@ export default function ProjectsPage() {
                         }
                         onClick={() => togglePublished(item)}
                         disabled={publishingId === item.id}
+                        className={item.isPublished ? "text-primary-500 hover:text-primary-400" : ""}
                       />
                       <IconButton
                         icon={<Pencil className="h-4 w-4" />}

@@ -61,20 +61,14 @@ const BLANK_VALUES: PricingPlanFormValues = {
   description: "",
   priceType: "starting_from",
   priceAmount: undefined,
-  currency: "LKR",
-  deliveryDays: undefined,
+  // USD is the base every display rate converts from, and the seeded default.
+  currency: "USD",
   deliveryText: "",
   ctaLabel: "",
   ctaUrl: "",
   isPublished: false,
   isPopular: false,
-  sortOrder: 0,
-  showOnAgency: true,
-  featuredOnAgency: false,
-  agencySortOrder: 0,
-  showOnPersonal: false,
-  featuredOnPersonal: false,
-  personalSortOrder: 0,
+  featured: false,
   features: [],
 };
 
@@ -90,19 +84,12 @@ function toFormValues(plan: AdminPricingPlan | null): PricingPlanFormValues {
     priceType: plan.priceType,
     priceAmount: plan.priceAmount,
     currency: plan.currency,
-    deliveryDays: plan.deliveryDays,
     deliveryText: plan.deliveryText ?? "",
     ctaLabel: plan.ctaLabel ?? "",
     ctaUrl: plan.ctaUrl ?? "",
     isPublished: plan.isPublished,
     isPopular: plan.isPopular,
-    sortOrder: plan.sortOrder,
-    showOnAgency: plan.showOnAgency,
-    featuredOnAgency: plan.featuredOnAgency,
-    agencySortOrder: plan.agencySortOrder,
-    showOnPersonal: plan.showOnPersonal,
-    featuredOnPersonal: plan.featuredOnPersonal,
-    personalSortOrder: plan.personalSortOrder,
+    featured: plan.featured,
     // Already ordered by the API; the array index becomes `sortOrder` on save.
     features: plan.features.map((feature) => ({
       id: feature.id,
@@ -210,8 +197,6 @@ export default function PricingFormModal({
 
   const kind = useWatch({ control, name: "kind" });
   const priceType = useWatch({ control, name: "priceType" });
-  const showOnAgency = useWatch({ control, name: "showOnAgency" });
-  const showOnPersonal = useWatch({ control, name: "showOnPersonal" });
 
   // A combo pack has no service; the API rejects a `custom` priceType that still carries an amount.
   useEffect(() => {
@@ -236,22 +221,17 @@ export default function PricingFormModal({
       tagline: blank(values.tagline),
       priceAmount:
         values.priceType === "custom" ? undefined : values.priceAmount,
-      currency: values.currency.trim().toUpperCase(),
+      // Every plan is authored in USD, the fixed base every display rate
+      // converts from — there's no per-plan currency picker any more.
+      currency: "USD",
       priceType: values.priceType,
-      deliveryDays: values.deliveryDays,
       deliveryText: blank(values.deliveryText),
       description: values.description.trim(),
       isPopular: values.isPopular,
       ctaLabel: blank(values.ctaLabel),
       ctaUrl: blank(values.ctaUrl),
       isPublished: values.isPublished,
-      sortOrder: values.sortOrder,
-      showOnAgency: values.showOnAgency,
-      featuredOnAgency: values.featuredOnAgency,
-      agencySortOrder: values.agencySortOrder,
-      showOnPersonal: values.showOnPersonal,
-      featuredOnPersonal: values.featuredOnPersonal,
-      personalSortOrder: values.personalSortOrder,
+      featured: values.featured,
     };
 
     try {
@@ -340,7 +320,7 @@ export default function PricingFormModal({
           />
 
           <Input
-            label="Amount"
+            label="Amount (USD)"
             type="number"
             step="0.01"
             min={0}
@@ -350,38 +330,14 @@ export default function PricingFormModal({
             error={errors.priceAmount?.message}
             {...register("priceAmount", { setValueAs: toOptionalNumber })}
           />
-
-          <Input
-            label="Currency"
-            required
-            maxLength={3}
-            placeholder="LKR"
-            containerClassName="w-28"
-            className="uppercase"
-            error={errors.currency?.message}
-            {...register("currency")}
-          />
         </div>
 
-        <div className="flex gap-4">
-          <Input
-            label="Delivery days"
-            type="number"
-            step={1}
-            min={1}
-            containerClassName="w-36"
-            error={errors.deliveryDays?.message}
-            {...register("deliveryDays", { setValueAs: toOptionalNumber })}
-          />
-
-          <Input
-            label="Delivery text"
-            placeholder="2–3 weeks"
-            containerClassName="flex-1"
-            error={errors.deliveryText?.message}
-            {...register("deliveryText")}
-          />
-        </div>
+        <Input
+          label="Delivery text"
+          placeholder="2–3 weeks"
+          error={errors.deliveryText?.message}
+          {...register("deliveryText")}
+        />
 
         <div className="flex gap-4">
           <Input
@@ -429,67 +385,12 @@ export default function PricingFormModal({
             {...register("isPopular")}
           />
 
-          <Input
-            label="Tier order"
-            type="number"
-            step={1}
-            containerClassName="w-36"
-            error={errors.sortOrder?.message}
-            {...register("sortOrder", { valueAsNumber: true })}
+          <Checkbox
+            label="Featured"
+            hint="Shows this plan on the agency home page. Pricing only ever appears on the agency site."
+            {...register("featured")}
           />
         </div>
-
-        <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-            Agency site
-          </legend>
-
-          <Checkbox label="Show on agency" {...register("showOnAgency")} />
-
-          <div className="flex items-center gap-6 pl-7">
-            <Checkbox
-              label="Featured"
-              disabled={!showOnAgency}
-              error={errors.featuredOnAgency?.message}
-              {...register("featuredOnAgency")}
-            />
-            <Input
-              label="Order"
-              type="number"
-              step={1}
-              disabled={!showOnAgency}
-              containerClassName="w-28"
-              error={errors.agencySortOrder?.message}
-              {...register("agencySortOrder", { valueAsNumber: true })}
-            />
-          </div>
-        </fieldset>
-
-        <fieldset className="pt-4 border-t border-border-subtle space-y-4">
-          <legend className="text-[11px] font-semibold uppercase tracking-[0.12em] text-text-secondary">
-            Personal site
-          </legend>
-
-          <Checkbox label="Show on personal" {...register("showOnPersonal")} />
-
-          <div className="flex items-center gap-6 pl-7">
-            <Checkbox
-              label="Featured"
-              disabled={!showOnPersonal}
-              error={errors.featuredOnPersonal?.message}
-              {...register("featuredOnPersonal")}
-            />
-            <Input
-              label="Order"
-              type="number"
-              step={1}
-              disabled={!showOnPersonal}
-              containerClassName="w-28"
-              error={errors.personalSortOrder?.message}
-              {...register("personalSortOrder", { valueAsNumber: true })}
-            />
-          </div>
-        </fieldset>
 
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button

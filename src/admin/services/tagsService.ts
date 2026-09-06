@@ -3,6 +3,7 @@ import type {
   PagedResult,
   TagWriteRequest,
   TechCategory,
+  TechCategoryOption,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
 
@@ -45,4 +46,15 @@ export async function updateTag(
 /** Soft delete. The API refuses with 409 `tag_in_use` while content still carries it. */
 export async function deleteTag(id: string): Promise<void> {
   await httpClient.delete(`/admin/tags/${id}`);
+}
+
+/** The fixed `TechCategory` list, value plus display label — never paged, rarely changes. */
+export async function getTechCategories(
+  signal?: AbortSignal,
+): Promise<TechCategoryOption[]> {
+  const { data } = await httpClient.get<TechCategoryOption[]>(
+    "/admin/tags/categories",
+    { signal },
+  );
+  return data;
 }

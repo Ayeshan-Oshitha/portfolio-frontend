@@ -2,11 +2,9 @@ import axios, { type InternalAxiosRequestConfig } from "axios";
 import type { ApiProblem, AuthResponse } from "@/admin/types";
 import ApiError from "@/admin/api/ApiError";
 import {
-  clearStoredToken,
+  clearAccessToken,
   getActiveAccessToken,
-  getStoredToken,
-  isRefreshExpired,
-  setStoredToken,
+  setAccessToken,
 } from "@/admin/api/tokenStorage";
 
 const BASE_URL = (
@@ -32,6 +30,8 @@ declare module "axios" {
 export const httpClient = axios.create({
   baseURL: BASE_URL,
   headers: { Accept: "application/json" },
+  // Needed so the httpOnly refresh-token cookie rides along on requests to the API origin.
+  withCredentials: true,
 });
 
 httpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
@@ -48,21 +48,14 @@ httpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 let refreshPromise: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
-  const stored = getStoredToken();
-  if (!stored || isRefreshExpired(stored)) return null;
-
   try {
+    // No body — the httpOnly refresh-token cookie is the credential.
     const { data } = await axios.post<AuthResponse>(
       `${BASE_URL}/admin/auth/refresh`,
-      { refreshToken: stored.refreshToken },
-      { headers: { Accept: "application/json" } },
+      {},
+      { headers: { Accept: "application/json" }, withCredentials: true },
     );
-    setStoredToken({
-      accessToken: data.accessToken,
-      expiresAt: data.expiresAt,
-      refreshToken: data.refreshToken,
-      refreshTokenExpiresAt: data.refreshTokenExpiresAt,
-    });
+    setAccessToken({ accessToken: data.accessToken, expiresAt: data.expiresAt });
     return data.accessToken;
   } catch {
     return null;
@@ -107,7 +100,7 @@ httpClient.interceptors.response.use(
     }
 
     if (error.isAuthExpired) {
-      clearStoredToken();
+      clearAccessToken();
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
     }
 

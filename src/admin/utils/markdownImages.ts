@@ -7,29 +7,47 @@ const IMAGE_PATTERN =
   /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+["'][^"']*["'])?\s*\)/g;
 
 /**
- * Only absolute http(s) urls count. The editor's own image button inserts a
- * `![image](url)` placeholder, and the API stores the cover verbatim without
- * resolving it — so anything that isn't already a working url would surface as
- * a broken thumbnail here and a broken cover on the public site.
+ * An absolute http(s) url (an article saved before the `media://` token
+ * scheme existed) or a `media://` token (every upload since). Anything else
+ * would surface as a broken thumbnail here and a broken cover on save.
  */
-function isUsableImageUrl(url: string): boolean {
-  return /^https?:\/\//i.test(url);
+function isUsableImageReference(reference: string): boolean {
+  return /^https?:\/\//i.test(reference) || /^media:\/\/[\w\-./]+$/.test(reference);
 }
 
-/** Every usable image url in the markdown body, in order, without duplicates. */
+/** Every usable image reference in the markdown body, in order, without duplicates. */
 export function extractMarkdownImages(markdown: string | undefined): string[] {
   if (!markdown) return [];
 
-  const urls = [...markdown.matchAll(IMAGE_PATTERN)]
+  const references = [...markdown.matchAll(IMAGE_PATTERN)]
     .map((match) => match[1])
-    .filter(isUsableImageUrl);
+    .filter(isUsableImageReference);
 
-  return [...new Set(urls)];
+  return [...new Set(references)];
 }
 
 /** The markdown an upload is appended to the body as. */
-export function imageMarkdown(url: string, altText: string): string {
-  return `![${altText}](${url})`;
+export function imageMarkdown(reference: string, altText: string): string {
+  return `![${altText}](${reference})`;
+}
+
+const MEDIA_TOKEN_PREFIX = "media://";
+
+/**
+ * Turns a stored image reference into something an `<img>` can load. A
+ * `media://` token needs `mediaBaseUrl` (from `useMediaConfig`) swapped in for
+ * its prefix; a legacy real url already loads as-is. Returns `undefined` for
+ * a token when `mediaBaseUrl` hasn't loaded yet, so callers can show a
+ * placeholder instead of a broken image for that brief window.
+ */
+export function resolveMediaDisplayUrl(
+  reference: string,
+  mediaBaseUrl: string | undefined,
+): string | undefined {
+  if (!reference.startsWith(MEDIA_TOKEN_PREFIX)) return reference;
+  if (!mediaBaseUrl) return undefined;
+
+  return `${mediaBaseUrl}/${reference.slice(MEDIA_TOKEN_PREFIX.length)}`;
 }
 
 /** Filenames make reasonable default alt text, and stay editable in the body. */

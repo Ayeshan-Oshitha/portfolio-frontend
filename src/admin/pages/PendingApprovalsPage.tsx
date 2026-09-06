@@ -42,6 +42,7 @@ export default function PendingApprovalsPage() {
   const {
     data: result,
     isPending: isLoading,
+    isFetching,
     error: queryError,
   } = useUsers({ status: "pending", page, pageSize: PAGE_SIZE });
   const approveUserMutation = useApproveUser();
@@ -81,7 +82,7 @@ export default function PendingApprovalsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <PageHeader
         title="Pending approvals"
         description={`${total} ${total === 1 ? "account" : "accounts"} waiting for approval.`}
@@ -91,6 +92,7 @@ export default function PendingApprovalsPage() {
         <DataTableShell
           error={error}
           isLoading={isLoading}
+          isFetching={isFetching}
           isEmpty={rows.length === 0}
           emptyTitle="No pending accounts found"
           emptyDescription="No accounts waiting for approval."

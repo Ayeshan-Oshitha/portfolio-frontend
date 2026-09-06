@@ -2,17 +2,12 @@
 // Enable by setting VITE_USE_MOCK_DATA=true in a local .env.local (gitignored).
 import type { ApiArticle, ApiProject, ApiReview } from "@/client/types";
 
-function tag(
-  name: string,
-  isTechnology: boolean,
-  sortOrder: number,
-): ApiProject["tags"][number] {
+function tag(name: string, isTechnology: boolean): ApiProject["tags"][number] {
   return {
     id: `tag-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
     name,
     slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     isTechnology,
-    sortOrder,
   };
 }
 
@@ -55,11 +50,11 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     featured: true,
     sortOrder: 1,
     tags: [
-      tag("Frontend Development", false, 1),
-      tag("Backend Development", false, 2),
-      tag("Next.js", true, 1),
-      tag("React", true, 2),
-      tag("TypeScript", true, 3),
+      tag("Frontend Development", false),
+      tag("Backend Development", false),
+      tag("Next.js", true),
+      tag("React", true),
+      tag("TypeScript", true),
     ],
     images: [image("img-dropfi-1", "DropFi", true, 1)],
   },
@@ -84,11 +79,11 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     featured: true,
     sortOrder: 2,
     tags: [
-      tag("Frontend Development", false, 1),
-      tag("Web Design", false, 2),
-      tag("Blockchain Development", false, 3),
-      tag("React", true, 1),
-      tag("Solidity", true, 2),
+      tag("Frontend Development", false),
+      tag("Web Design", false),
+      tag("Blockchain Development", false),
+      tag("React", true),
+      tag("Solidity", true),
     ],
     images: [image("img-cryptoland-1", "CryptoLand", true, 1)],
   },
@@ -112,11 +107,11 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     featured: true,
     sortOrder: 3,
     tags: [
-      tag("Web Design", false, 1),
-      tag("Content Management (CMS)", false, 2),
-      tag("Integrations & Automation", false, 3),
-      tag("Vue.js", true, 1),
-      tag("PostgreSQL", true, 2),
+      tag("Web Design", false),
+      tag("Content Management (CMS)", false),
+      tag("Integrations & Automation", false),
+      tag("Vue.js", true),
+      tag("PostgreSQL", true),
     ],
     images: [image("img-sfventures-1", "SF Ventures", true, 1)],
   },
@@ -140,10 +135,10 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     featured: false,
     sortOrder: 4,
     tags: [
-      tag("Web Design", false, 1),
-      tag("Frontend Development", false, 2),
-      tag("React", true, 1),
-      tag("Stripe API", true, 2),
+      tag("Web Design", false),
+      tag("Frontend Development", false),
+      tag("React", true),
+      tag("Stripe API", true),
     ],
     images: [image("img-flavourfusion-1", "Flavour Fusion", true, 1)],
   },
@@ -167,10 +162,10 @@ export const MOCK_PROJECTS: readonly ApiProject[] = [
     featured: false,
     sortOrder: 5,
     tags: [
-      tag("Mobile Development", false, 1),
-      tag("Backend Development", false, 2),
-      tag("React Native", true, 1),
-      tag("GraphQL", true, 2),
+      tag("Mobile Development", false),
+      tag("Backend Development", false),
+      tag("React Native", true),
+      tag("GraphQL", true),
     ],
     images: [image("img-apexfitness-1", "Apex Fitness", true, 1)],
   },
@@ -183,12 +178,13 @@ export const MOCK_ARTICLES: readonly ApiArticle[] = [
     excerpt:
       "Not sure if it's time for a new website? Here are seven clear signs your business site needs a redesign — and what a modern, high-converting site should do instead.",
     slug: "signs-your-website-needs-a-redesign",
-    publishedDate: "2026-06-07T00:00:00Z",
+    publishedAt: "2026-06-07T00:00:00Z",
+    updatedAt: "2026-06-07T00:00:00Z",
     contentMarkdown:
       "## Is it time?\n\nIf your site still looks like it was built for a smaller screen and a slower internet, it's costing you conversions.\n\n1. It isn't mobile-friendly\n2. Load times exceed three seconds\n3. Your bounce rate is climbing\n4. The design doesn't reflect your brand anymore\n5. It's hard to update content yourself\n6. There's no clear call to action\n7. Competitors' sites feel more modern\n\nA redesign done right pays for itself in the first quarter.",
     featured: true,
     sortOrder: 1,
-    tags: [tag("Guides", false, 1)],
+    tags: [tag("Guides", false)],
   },
   {
     id: "mock-article-2",
@@ -196,12 +192,13 @@ export const MOCK_ARTICLES: readonly ApiArticle[] = [
     excerpt:
       "A deep dive into architecture patterns, state management, and performance optimization techniques for enterprise-grade React codebases.",
     slug: "scalable-react-applications",
-    publishedDate: "2026-05-22T00:00:00Z",
+    publishedAt: "2026-05-22T00:00:00Z",
+    updatedAt: "2026-05-22T00:00:00Z",
     contentMarkdown:
       "## Architecture first\n\nScalability starts with a clear content/presentation split and predictable data flow.\n\n- Keep state close to where it's used\n- Prefer composition over inheritance\n- Cache aggressively, invalidate deliberately\n- Measure before optimizing\n\nThese patterns keep large codebases maintainable as teams grow.",
     featured: true,
     sortOrder: 2,
-    tags: [tag("Engineering", false, 1)],
+    tags: [tag("Engineering", false)],
   },
   {
     id: "mock-article-3",
@@ -209,12 +206,13 @@ export const MOCK_ARTICLES: readonly ApiArticle[] = [
     excerpt:
       "Understanding how different hues impact user behavior, emotions, and conversion rates on modern web platforms.",
     slug: "psychology-of-color-in-ui-design",
-    publishedDate: "2026-04-14T00:00:00Z",
+    publishedAt: "2026-04-14T00:00:00Z",
+    updatedAt: "2026-04-14T00:00:00Z",
     contentMarkdown:
       "## Color shapes behavior\n\nWarm colors draw attention and urgency; cool colors build trust and calm.\n\nWhen designing a call-to-action, contrast matters more than the specific hue — but once contrast is solved, color choice can still nudge conversion rates by a meaningful margin.",
     featured: false,
     sortOrder: 3,
-    tags: [tag("Design", false, 1)],
+    tags: [tag("Design", false)],
   },
 ];
 

@@ -1,25 +1,40 @@
 import type {
   AdminFaq,
+  FaqReorderRequest,
   FaqWriteRequest,
   PagedResult,
-  ReorderRequest,
+  Site,
 } from "@/admin/types";
 import { httpClient } from "@/admin/services/httpClient";
 
 export interface GetFaqsParams {
   readonly search?: string;
-  readonly category?: string;
+  /** Omit for every FAQ regardless of site; the API filters server-side otherwise. */
+  readonly site?: Site;
+  /** Only FAQs scoped to this service. Wins over `globalOnly` if both are sent. */
+  readonly serviceId?: string;
+  /** Only FAQs with no service — the shared list both public sites render. */
+  readonly globalOnly?: boolean;
+  readonly isPublished?: boolean;
   readonly page?: number;
   readonly pageSize?: number;
 }
 
-/** Ordered by `sortOrder`. */
+/** Ordered by `sortOrder`, within whichever scope was requested. */
 export async function getFaqs(
-  { search, category, page, pageSize }: GetFaqsParams = {},
+  {
+    search,
+    site,
+    serviceId,
+    globalOnly,
+    isPublished,
+    page,
+    pageSize,
+  }: GetFaqsParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminFaq>> {
   const { data } = await httpClient.get<PagedResult<AdminFaq>>("/admin/faqs", {
-    params: { search, category, page, pageSize },
+    params: { search, site, serviceId, globalOnly, isPublished, page, pageSize },
     signal,
   });
   return data;
@@ -43,10 +58,7 @@ export async function deleteFaq(id: string): Promise<void> {
   await httpClient.delete(`/admin/faqs/${id}`);
 }
 
-/**
- * Bulk sort-order update. Sort order is kept per site, so `site` is required —
- * there is no site-agnostic ordering to renumber. Answers 204.
- */
-export async function reorderFaqs(body: ReorderRequest): Promise<void> {
+/** Bulk sort-order update — FAQs share one order across both sites. Answers 204. */
+export async function reorderFaqs(body: FaqReorderRequest): Promise<void> {
   await httpClient.post("/admin/faqs/reorder", body);
 }

@@ -14,18 +14,25 @@ export interface GetArticlesParams {
   readonly isPublished?: boolean;
   /** Case-insensitive match against the title. */
   readonly search?: string;
+  /**
+   * Skips the show-on-site filter `site` would otherwise apply — the
+   * reorder/visibility screen needs every published article in both columns,
+   * including ones not yet shown anywhere, since it's the screen that turns
+   * showing on in the first place.
+   */
+  readonly includeHidden?: boolean;
   readonly page?: number;
   readonly pageSize?: number;
 }
 
-/** Ordered by `publishedDate` descending, then title. */
+/** Ordered by most recently updated, then title. */
 export async function getArticles(
-  { site, isPublished, search, page, pageSize }: GetArticlesParams = {},
+  { site, isPublished, search, includeHidden, page, pageSize }: GetArticlesParams = {},
   signal?: AbortSignal,
 ): Promise<PagedResult<AdminArticle>> {
   const { data } = await httpClient.get<PagedResult<AdminArticle>>(
     "/admin/articles",
-    { params: { site, isPublished, search, page, pageSize }, signal },
+    { params: { site, isPublished, search, includeHidden, page, pageSize }, signal },
   );
   return data;
 }

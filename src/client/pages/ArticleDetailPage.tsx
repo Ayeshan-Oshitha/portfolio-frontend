@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import MDEditor from "@uiw/react-md-editor";
-import { ArrowLeft, ArrowUpRight, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useArticle } from "@/client/hooks/useArticle";
 import { useDocumentTitle } from "@/shared/hooks/useDocumentTitle";
 import { toErrorMessage } from "@/client/services/ApiError";
@@ -130,17 +130,6 @@ export default function ArticleDetailPage() {
             </p>
           )}
 
-          {post.mediumUrl && (
-            <div className="mt-12 border-t border-hair pt-8">
-              <Button
-                href={post.mediumUrl}
-                variant="outline"
-                icon={<ArrowUpRight size={15} />}
-              >
-                Read the original on Medium
-              </Button>
-            </div>
-          )}
         </article>
 
         <div className="mt-20">

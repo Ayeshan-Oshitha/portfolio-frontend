@@ -6,7 +6,7 @@ import type {
   FeatureReorderRequest,
   PricingFeatureWriteRequest,
   PricingPlanWriteRequest,
-  ReorderRequest,
+  PricingReorderRequest,
 } from "@/admin/types";
 
 export function usePricingPlans(params: GetPricingPlansParams) {
@@ -60,14 +60,15 @@ export function useSetPricingPlanPublished() {
   });
 }
 
+/**
+ * No `invalidateQueries` here — the caller writes the reordered rows straight
+ * into the cache as an optimistic update, and a successful reorder leaves
+ * that cache exactly matching the server, so there's nothing left to refetch.
+ */
 export function useReorderPricingPlans() {
-  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: ReorderRequest) =>
+    mutationFn: (body: PricingReorderRequest) =>
       pricingService.reorderPricingPlans(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: pricingKeys.lists() });
-    },
   });
 }
 
